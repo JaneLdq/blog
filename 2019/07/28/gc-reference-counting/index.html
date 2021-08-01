@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="GC," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="什么是垃圾？不可能再被任何途径使用的对象。 由此很容易想到采用引用计数的方法：让对象记录下有多少其他对象引用自己。当引用数为0时，对象就被该作为垃圾回收了。  引用计数法引用计数法的基本实现很简单，它不像标记-清除算法那样有明确的 GC 操作，而是在创建对象时和对指针进行更新时同时完成引用计数器的更新。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GC算法笔记（二）引用计数法">
+<meta property="og:url" content="http://liaodanqi.xyz/2019/07/28/gc-reference-counting/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="什么是垃圾？不可能再被任何途径使用的对象。 由此很容易想到采用引用计数的方法：让对象记录下有多少其他对象引用自己。当引用数为0时，对象就被该作为垃圾回收了。  引用计数法引用计数法的基本实现很简单，它不像标记-清除算法那样有明确的 GC 操作，而是在创建对象时和对指针进行更新时同时完成引用计数器的更新。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2019-07-28T08:13:54.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.540Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="GC">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2019/07/28/gc-reference-counting/"/>
+
+
+
+
+
+  <title>GC算法笔记（二）引用计数法 | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2019/07/28/gc-reference-counting/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">GC算法笔记（二）引用计数法</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-28T16:13:54+08:00">
+                2019-07-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>什么是垃圾？不可能再被任何途径使用的对象。</p>
+<p>由此很容易想到采用<strong>引用计数</strong>的方法：让对象记录下<strong>有多少其他对象引用自己</strong>。当引用数为0时，对象就被该作为垃圾回收了。</p>
+<hr>
+<h1 id="引用计数法"><a href="#引用计数法" class="headerlink" title="引用计数法"></a>引用计数法</h1><p>引用计数法的基本实现很简单，它不像标记-清除算法那样有明确的 GC 操作，而是在<strong>创建对象时</strong>和<strong>对指针进行更新时</strong>同时完成引用计数器的更新。<br><span id="more"></span></p>
+<p>我们来看一下引用计数法的伪码：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建对象时，将其引用计数赋值为1</span></span><br><span class="line"><span class="built_in">new_obj</span>(size) &#123;</span><br><span class="line">    obj = <span class="built_in">pickup_chunk</span>(size, $free_list)</span><br><span class="line">    <span class="keyword">if</span> (obj == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">allocation_fail</span>()</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        obj.ref_cnt = <span class="number">1</span></span><br><span class="line">        <span class="keyword">return</span> obj</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将对象赋值给一个指针时，将指针原来引用的对象的引用计数减一</span></span><br><span class="line"><span class="built_in">update_ptr</span>(ptr, obj) &#123;</span><br><span class="line">    <span class="comment">// 对指针ptr新引用的对象的引用计数器加一（小P: 新墙头～我来了～</span></span><br><span class="line">    <span class="built_in">inc_ref_cnt</span>(obj)</span><br><span class="line">    <span class="comment">// 对指针ptr之前指向的对象的引用计数器减一（小P: 对不起，你失去本指针了</span></span><br><span class="line">    <span class="built_in">dec_ref_cnt</span>(*ptr)</span><br><span class="line">    *ptr = obj</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>计数器增减操作：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 引用计数器加一操作</span></span><br><span class="line"><span class="built_in">inc_ref_cnt</span>(obj) &#123;</span><br><span class="line">    obj.ref_cnt++</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 引用计数器减一操作</span></span><br><span class="line"><span class="built_in">dec_ref_cnt</span>(obj) &#123;</span><br><span class="line">    obj.ref_cnt--</span><br><span class="line">    <span class="comment">// 如果obj的引用数为0，那么它就要被回收了，所有被它引用的对象的引用计数器也要递减</span></span><br><span class="line">    <span class="keyword">if</span> (obj.ref_cnt == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">for</span> (child: obj.children) &#123;</span><br><span class="line">            <span class="built_in">dec_ref_cnt</span>(child)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 回收obj，将obj连接到空闲链表</span></span><br><span class="line">        <span class="built_in">reclaim</span>(obj)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>那么问题来了，<strong>为什么在更新指针时要先增后减呢？先减后增不是一样的吗？</strong><br>还真不一样哦，<strong>考虑 <code>*ptr</code> 和 <code>obj</code> 是同一对象时的情况</strong>。如果先减后增，而 <code>obj</code> 的引用计数在减一之后为 0 的话，它就直接被回收了，再执行<code>inc_ref_cnt</code>就要出错了。反过来，先增后减的话就可以避免这种情况发生。</p>
+<p>通过更新指针，可能会产生没有被其他任何地方引用的“垃圾”，引用计数法会在指针更新时监督是否有垃圾产生，从而在垃圾产生时将其立刻回收。同时这也意味着，在为新对象申请空间时如果没有分块，就没法新分配对象，因为堆中所有的对象都为活动对象。</p>
+<hr>
+<h1 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h1><h2 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h2><ul>
+<li><strong>可即刻回收垃圾</strong> - 当对象的被引用数变为 0 的那一刻，它就明白自己已经是个垃圾了，然后它就会非常自觉地把自己作为空闲空间连接到空闲链表中去。</li>
+<li><strong>暂停时间短</strong> - 垃圾回收在每次指针变更时都会进行，因此单次垃圾回收量并不大，时间自然更短</li>
+<li><strong>不用沿指针查找</strong> - 在需要减少沿指针查找的次数时，引用计数法就有优势了。（举个例子，在分布式环境中如果要沿节点之间的指针进行查找，成本就会很高。）</li>
+</ul>
+<h2 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h2><ul>
+<li><strong>计数器值的更新太频繁</strong> - 通常情况下指针的更新是非常频繁的，而任何指针的变动都会触发计数器的更新。</li>
+<li><strong>计数器需要占用很多空间</strong> - 每个对象都要为计数器保留空间。而引用计数的最大值必须能涵盖堆中所有对象的引用数。比如一个 32 位的机器，可能就需要 32 位的计数器。假如一个对象自己本身大小才 2 个字长，那么引用计数器就占到该对象总空间的三分之一了。如果类似情况频繁出现，那么内存的实际利用率就相当低了。</li>
+<li><strong>无法回收循环引用的对象</strong> - 对于循环引用的对象们，它们的引用计数器一定是非零的，针对这种情况，上述的引用计数法拿他们是没辙的。</li>
+</ul>
+<h3 id="循环引用举例"><a href="#循环引用举例" class="headerlink" title="循环引用举例"></a>循环引用举例</h3><p>先看一段代码：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span> </span>&#123;</span><br><span class="line">    string name;</span><br><span class="line">    Person lover;</span><br><span class="line">&#125;</span><br><span class="line">Person A = <span class="keyword">new</span> Person(<span class="string">&quot;Alice&quot;</span>)</span><br><span class="line">Person B = <span class="keyword">new</span> Person(<span class="string">&quot;Bob&quot;</span>)</span><br><span class="line">A.lover = B</span><br><span class="line">B.lover = A</span><br><span class="line">A = <span class="keyword">null</span></span><br><span class="line">B = <span class="keyword">null</span></span><br></pre></td></tr></table></figure><br>在程序执行后，<code>Alice</code> 和 <code>Bob</code> 都不再被其他任何对象引用，按理说应该属于被回收的垃圾了。然而，由于他们彼此相依，互相引用，各自的引用计数器均为 1，所以依照上述引用计数法，他们不会被回收，就此成为一对“私奔”的恋人。</p>
+<p>虽然引用计数法的缺点不少，但只要稍加改良，它还是一个非常实用的垃圾回收算法哒。</p>
+<p>下面我们就来看看基于最基本的引用计数的思想，又孵化出了哪些改进算法呢？</p>
+<hr>
+<h1 id="优化"><a href="#优化" class="headerlink" title="优化"></a>优化</h1><h2 id="延迟引用计数法"><a href="#延迟引用计数法" class="headerlink" title="延迟引用计数法"></a>延迟引用计数法</h2><p>延迟引用计数法 (Deferred Reference Counting) 是由 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/L._Peter_Deutsch">L.Peter Deutsch</a> 和 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Daniel_G._Bobrow">Daniel G. Bobrow</a> 1976 年在文章 <strong><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Reference_counting">An Efficient, Incremental, Automatic Garbage Collector</a></strong> 中提出来的。</p>
+<p>前面提到引用计数法的一大缺点就是计数器值更新过于频繁，每一次对根引用的更新都要触发所有子节点引用数的更新。延迟引用计数法就是针对这一点进行的优化。<br>延迟引用计数法的改进基本思路主要是以下两点：</p>
+<ul>
+<li><strong>局部变量引用（variable reference）不计入引用计数</strong>，也就是说那些只被本地变量（操作栈和寄存器中）引用的对象不在延迟引用计数法管理范围内，默认他们随着栈弹出消亡，只有当堆中对象的引用计数发生变化时才进行更新。</li>
+<li><strong>用哈希表保存对象的引用数</strong>。</li>
+</ul>
+<p>延迟引用计数法引入了两个表的概念：</p>
+<ul>
+<li><strong>MRT (Multi-Reference Table)</strong> - MRT 是一个哈希表，<strong>key 为对象 (cell address)，value 为引用数</strong>，并且 MRT 中只记录<strong>引用数大于等于 2</strong>的对象。</li>
+<li><strong>ZCT (Zero Count Table)</strong> - ZCT 是一个普通表，它记录的是<strong>所有引用数为 0 的对象</strong>。</li>
+</ul>
+<p>再次强调，<strong>这里的提到的引用数都没有包括来自局部变量的引用，所以即使引用数为 0，ZCT 中记录的对象也不一定是垃圾，因此会被暂时保留</strong>。</p>
+<p>这两张表的值在以下三类事务中进行维护：</p>
+<ul>
+<li><strong>allocate 事务</strong> - 在 ZCT 中增加一条记录，因为此时还没有任何指针引用新建的对象。</li>
+<li><strong>created pointer 事务</strong> - 分三种情况：<ol>
+<li>如果被引用的对象在 ZCT 中，那么将它从 ZCT 中移除，因为此时它的引用数为 1 了；</li>
+<li>如果被引用的对象在 MRT 中，那么将它的引用数加一；</li>
+<li>否则被引用的对象原来的引用数为默认值 1，将它加到 MRT 中并设置引用数为 2。</li>
+</ol>
+</li>
+<li><strong>destroy pointer 事务</strong> - 分三种情况：<ol>
+<li>如果指针引用的对象在 MRT 中且引用数为 2，那么将它从 MRT 中移除；</li>
+<li>如果指针引用的对象在 MRT 中且引用数大于 2，那么将其引用数减一；</li>
+<li>如果指针引用的对象不在 MRT 中，那么这个对象原来的引用数为 1，将其记录到 ZCT 中。</li>
+</ol>
+</li>
+</ul>
+<p>根据以上规则，我们可以知道可以被回收的对象就是<strong>记录在 ZCT 中且不被任何其他局部变量引用的对象</strong>。</p>
+<p><strong>「优缺点」</strong><br>延迟引用计数法最主要的优点就是<strong>减轻了引用频繁发生变化导致的计数器增减带来的负担</strong>。<br>其缺点也很显然：</p>
+<ul>
+<li><strong>垃圾不能马上得到回收</strong>，失去了可即刻回收垃圾这一大优点</li>
+<li>依然<strong>没有解决循环引用的问题</strong>，要与跟踪垃圾收集器 (tracing garbage collector) 配合使用</li>
+</ul>
+<hr>
+<p>除了延迟引用计数外，还有两类与采用延迟操作类似思想的优化方案：<strong>合并</strong>和<strong>缓存</strong>：</p>
+<ul>
+<li>合并 - 许多引用计数操作都是临时性的、“不必要”的，通过在程序运行时仅跟踪对象在某一时段开始和结束时的状态，忽略中间过程引起的计数值变更，达到减少引用值频繁修改的目的。</li>
+<li>缓存 - 将所有引用计数值增减操作缓冲起来以便后续进行处理，同时只有回收线程可以执行引用计数变更操作。缓冲引用计数关注的是<strong>何时</strong>执行变更，而不是<strong>是否</strong>执行变更。<br>这三种方案的思想是相通的：都是将程序的执行划分为一系列时段 (epoch)，在同一时段内赋值器可以省略部分甚至所有的同步引用计数操作，或将其替换为非同步的写操作。这样，当个时段内的本地引用计数变更就不会暴露到全局了。</li>
+</ul>
+<hr>
+<h2 id="Sticky-引用计数法"><a href="#Sticky-引用计数法" class="headerlink" title="Sticky 引用计数法"></a>Sticky 引用计数法</h2><p>前面有提到引用计数法的缺点之一就是计数器占用的空间太多。如果一个计数器采用 32 位，那么对于一个整体占用空间小的对象来说，计数器占比就太大了。<br>那如果使用较少位宽呢？比如一个 5 位的计数器，那这样计数器的最大值就只有 31，如果一个对象被引用的次数超过 31，计数器就溢出了。</p>
+<p>针对计数器溢出的对象，我们可以有两种处理方法：</p>
+<ol>
+<li><strong>什么都不做</strong> - 不再增减计数器的值，什么都不做。不过这样的话，即使这个对象变成了垃圾，也不能将其回收。也就是说，白白浪费了空间。</li>
+<li><p><strong>使用标记-清除算法进行管理</strong> - 不过这个标记-清除算法跟我们之前提到的稍有不同：</p>
+<ul>
+<li>一开始把所有对象的计数器值设为 0（这样带来的一个优点是可以处理循环引用，循环引用的对象不会再被外界对象引用到，因此从根引用出发标记完后它们的引用数仍然为 0）</li>
+<li>不标记对象，而是对计数器进行增量操作</li>
+<li><p>为了对计数器进行增量操作，对活动对象进行了不止一次的搜索。（这样会导致算法比一般的标记-清除算法处理时间更长，降低了吞吐量）</p>
+<p>我们可以看一下伪码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mark_sweep_for_counter_overflow</span>() &#123;</span><br><span class="line">    <span class="built_in">reset_all_ref_cnt</span>()</span><br><span class="line">    <span class="built_in">mark_phase</span>()</span><br><span class="line">    <span class="built_in">sweep_phase</span>()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">mark_phase</span>() &#123;</span><br><span class="line">    <span class="keyword">for</span> (r: roots) &#123;</span><br><span class="line">        mark_stack.<span class="built_in">push</span>(r)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (<span class="built_in">is_empty</span>(mark_stack) == FALSE) &#123;</span><br><span class="line">        obj = mark_stack.<span class="built_in">pop</span>()</span><br><span class="line">        <span class="comment">// 对计数器进行增量操作</span></span><br><span class="line">        obj.ref_cnt++</span><br><span class="line">        <span class="keyword">if</span> (obj.ref_cnt == <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (child: obj.children) &#123;</span><br><span class="line">                mark_stack.<span class="built_in">push</span>(child)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">sweep_phase</span> () &#123;</span><br><span class="line">    cursor = $heap_start;</span><br><span class="line">    <span class="keyword">while</span> (cursor &lt; $head_end) &#123;</span><br><span class="line">        <span class="keyword">if</span> (cursor.ref_cnt == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="built_in">reclaim</span>(cursor)</span><br><span class="line">        &#125;</span><br><span class="line">        cursor += cursor.size</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="1-bit-引用计数法"><a href="#1-bit-引用计数法" class="headerlink" title="1-bit 引用计数法"></a>1-bit 引用计数法</h2><p>1-bit 引用计数法是 Sticky 引用计数法的一个极端例子，即计数器只有 1 位大小。<br>计数器只有 1 位，那还有什么意义？分分钟溢出给你看。然而，有研究者表明“几乎没有对象是被共有的，所有对象都能马上回收”。如果事实是这样，那么 <strong>1 位的计数器，采用 0 表示引用数为 1，用 1 表示引用数大于等于 2</strong>，也是能有效率地进行内存管理的。</p>
+<p>W.R. Stoye、T.J.W Clark 和 A.C.Norman 在 <em>Some Practical Methods for Rapid Combinator Reduction</em> (published in LISP and Functional Programming 1984)* 提出了 1-bit 引用计数法。（下论文要付费，好贵贵，突然好怀念学生时代，虽然当时也没好好利用学校的资源）</p>
+<p>他们三人提出让指针持有计数器。如何实现呢？通过在指针的某一位来标记引用对象的状态：</p>
+<ul>
+<li>0 表示状态 <strong>UNIQUE</strong>，即引用数为1</li>
+<li>1 表示状态 <strong>MULTIPLE</strong>，即引用数大于等于2</li>
+</ul>
+<p>然后通过更新指针进行内存管理，只不过是通过复制指针的方式来更新指针：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">copy_ptr</span>(dest_ptr, src_ptr) &#123;</span><br><span class="line">    <span class="comment">// 先尝试回收dest_ptr指向的对象</span></span><br><span class="line">    <span class="built_in">delete_ptr</span>(dest_ptr)</span><br><span class="line">    <span class="comment">// 复制指针</span></span><br><span class="line">    *dest_ptr = *src_ptr</span><br><span class="line">    <span class="comment">// 更新指针的引用数标签</span></span><br><span class="line">    <span class="built_in">set_multiple_tag</span>(dest_ptr)</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">tag</span>(src_ptr) == UNIQUE) &#123;</span><br><span class="line">        <span class="built_in">set_multiple_tag</span>(str_ptr)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">delete_ptr</span>(ptr) &#123;</span><br><span class="line">    <span class="comment">// 当指针的标签为UNIQUE，即引用数为1时，将对象回收</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">tag</span>(ptr) == UNIQUE) &#123;</span><br><span class="line">        <span class="built_in">reclaim</span>(*ptr)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>「优缺点」</strong><br>1-bit 引用计数法的优点是不容易出现高速缓存缺失，因为它不需要在更新计数器时读取要引用的对象，因此一定程度上避免了高速缓存缺失。另外就是不需要额外的给计数器留空间，节省了内存空间。<br>缺点就是要如果有大量计数器溢出的对象，会给堆造成巨大的负担，甚至很难保证分块。</p>
+<p>（老实说，这个算法我自己还有点疑问，但是能找到的资料也比较少，看看之后能不能薅到原文的羊毛吧 /_\）</p>
+<hr>
+<p>炎热的夏天令人心不在焉，导致这篇笔记整理得格外艰难，简直就像挤牙膏，明明内容也不多。(&gt;﹏&lt;)</p>
+<hr>
+<p><strong>参考资料</strong></p>
+<ul>
+<li><em>垃圾回收的算法与实现</em></li>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Reference_counting">Reference Counting</a></li>
+<li>L. Peter Deutsch and Daniel G. Bobrow, <em>An Efficient, Incremental, Automatic Garbage Collector</em>, 1976</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/GC/" rel="tag"># GC</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/07/20/gc-mark-sweep/" rel="next" title="GC算法笔记（一）标记-清除算法">
+                <i class="fa fa-chevron-left"></i> GC算法笔记（一）标记-清除算法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/07/31/gc-copying/" rel="prev" title="GC算法笔记（三）复制算法">
+                GC算法笔记（三）复制算法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BC%95%E7%94%A8%E8%AE%A1%E6%95%B0%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">引用计数法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-number">2.</span> <span class="nav-text">优缺点</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%98%E7%82%B9"><span class="nav-number">2.1.</span> <span class="nav-text">优点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%BA%E7%82%B9"><span class="nav-number">2.2.</span> <span class="nav-text">缺点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E5%BC%95%E7%94%A8%E4%B8%BE%E4%BE%8B"><span class="nav-number">2.2.1.</span> <span class="nav-text">循环引用举例</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BC%98%E5%8C%96"><span class="nav-number">3.</span> <span class="nav-text">优化</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%B6%E8%BF%9F%E5%BC%95%E7%94%A8%E8%AE%A1%E6%95%B0%E6%B3%95"><span class="nav-number">3.1.</span> <span class="nav-text">延迟引用计数法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Sticky-%E5%BC%95%E7%94%A8%E8%AE%A1%E6%95%B0%E6%B3%95"><span class="nav-number">3.2.</span> <span class="nav-text">Sticky 引用计数法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-bit-%E5%BC%95%E7%94%A8%E8%AE%A1%E6%95%B0%E6%B3%95"><span class="nav-number">3.3.</span> <span class="nav-text">1-bit 引用计数法</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Ford-Fulkerson,最大流问题," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="无论是解决网络流量或是交通流量，最大流问题都是网络流问题中最基本的问题之一。 什么是网络流？很简单：  给定一个有向图G&#x3D;(V, E)，它的每条边的容量为c(v,w)，对于任意一条边(v, w)最多有c(v, w)个单位的“流”可以通过； 它有两个顶点，一个是s，称为源点(source)，一个是t，称为汇点(sink)，从s发出的流必须等于流入t的流。  最大流问题就是确定从s到t可以通过的最大流">
+<meta property="og:type" content="article">
+<meta property="og:title" content="最大流问题和Ford-Fulkerson方法">
+<meta property="og:url" content="http://liaodanqi.xyz/2018/09/09/ford-fulkerson/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="无论是解决网络流量或是交通流量，最大流问题都是网络流问题中最基本的问题之一。 什么是网络流？很简单：  给定一个有向图G&#x3D;(V, E)，它的每条边的容量为c(v,w)，对于任意一条边(v, w)最多有c(v, w)个单位的“流”可以通过； 它有两个顶点，一个是s，称为源点(source)，一个是t，称为汇点(sink)，从s发出的流必须等于流入t的流。  最大流问题就是确定从s到t可以通过的最大流">
+<meta property="og:locale">
+<meta property="og:image" content="http://static.zybuluo.com/JaneL/9z5oz7hfq4lnlqqrsxlkexgy/maxflow.png">
+<meta property="og:image" content="http://static.zybuluo.com/JaneL/ek3vx5ov4nolkj7g2jszq7t4/maxflow-steps.png">
+<meta property="og:image" content="http://static.zybuluo.com/JaneL/blzxkwwbnwmxy4zwfnkpdb5j/wrong-maxflow.png">
+<meta property="og:image" content="http://static.zybuluo.com/JaneL/uw0qiz9it96eo25eupc1g4zq/correct-maxflow.png">
+<meta property="article:published_time" content="2018-09-09T00:12:29.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.537Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="Ford-Fulkerson">
+<meta property="article:tag" content="最大流问题">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://static.zybuluo.com/JaneL/9z5oz7hfq4lnlqqrsxlkexgy/maxflow.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2018/09/09/ford-fulkerson/"/>
+
+
+
+
+
+  <title>最大流问题和Ford-Fulkerson方法 | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2018/09/09/ford-fulkerson/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">最大流问题和Ford-Fulkerson方法</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-09T08:12:29+08:00">
+                2018-09-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index">
+                    <span itemprop="name">算法</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>无论是解决网络流量或是交通流量，最大流问题都是网络流问题中最基本的问题之一。</p>
+<p>什么是网络流？很简单：</p>
+<ol>
+<li>给定一个有向图G=(V, E)，它的每条边的容量为c(v,w)，对于任意一条边(v, w)最多有c(v, w)个单位的“流”可以通过；</li>
+<li>它有两个顶点，一个是s，称为源点(source)，一个是t，称为汇点(sink)，从s发出的流必须等于流入t的流。</li>
+</ol>
+<p>最大流问题就是<strong>确定从s到t可以通过的最大流量</strong>。</p>
+<p><img src="http://static.zybuluo.com/JaneL/9z5oz7hfq4lnlqqrsxlkexgy/maxflow.png" alt="flow network"><br>上图是一个简单的网络流图及其最大流的例子，斜杠左边代表经过一条边的流，右边代表边的容量。不难看出，图中最大流为5。</p>
+<span id="more"></span>
+<hr>
+<h1 id="Ford-Fulkerson方法"><a href="#Ford-Fulkerson方法" class="headerlink" title="Ford-Fulkerson方法"></a>Ford-Fulkerson方法</h1><p>在介绍Ford-Fulkerson方法前，先引入几个与网络流相关的概念：</p>
+<ul>
+<li>流图：从原始的图G构造一个流图Gf，表示当前以达到的流。初始时，所有边的流均为0。</li>
+<li><strong>残余图(Residual Graph)</strong>：从原始的图G构造一个流图Gr，它表示每条边上还能再添加多少流。边上当前残余的流 = 边容量 - 边上当前通过的流。</li>
+<li><strong>增广路径(Augmenting Path)</strong>：在图Gr中找到一条从s到t的路径，这就是一条增广路径。一条增广路径上最小的边值（bottleneck）就是可以添加到路径每一条边上的流量。</li>
+<li><strong>割(Cut)</strong>：定义网络流G=(V, E)的割(S, T)将V划分成S和T=V-S两部分，使得s∈S，t∈T。割的容量为c(S, T)。</li>
+</ul>
+<p>Ford-Fulkerson方法是1956年由<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/L._R._Ford_Jr.">L. R. Ford Jr.</a>和<br><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/D._R._Fulkerson">D. R. Fulkerson</a>提出的一种解决最大流问题的方法。</p>
+<p>Ford-Fulkerson的主要思路是这样的：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (还能找到增广路径) &#123;</span><br><span class="line">    <span class="number">1.</span> 找到一条增广路径</span><br><span class="line">    <span class="number">2.</span> 找到增广路径上最小的流量（bottleneck）</span><br><span class="line">    <span class="number">3.</span> 沿着增广路径增加总流量以及每条路径上通过的流量</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>反正我第一次看到这么拗口的概念定义时整个人都是晕的，我们还是举个例子更清晰，下图展示的过程就是基于如上算法确定上图所示最大流的过程：<br><img src="http://static.zybuluo.com/JaneL/ek3vx5ov4nolkj7g2jszq7t4/maxflow-steps.png" alt="maxflow step by step example"></p>
+<p>看起来很棒棒，然而，假设我们在第一步不是选择的s-&gt;a-&gt;c-&gt;t这条路径，而是选择s-&gt;a-&gt;d-&gt;t会发生什么呢？<br><img src="http://static.zybuluo.com/JaneL/blzxkwwbnwmxy4zwfnkpdb5j/wrong-maxflow.png" alt="wrong maxflow"></p>
+<p>这样一来，在添加了3个单位的流后，算法就终止了，并没有找到最优解。<br>如何解决呢？方法很简单，<strong>对应Gf中的每条边(v, w)，我们都在Gr中添加一条容量为f(v,w)的边(w, v).</strong>相当于，我们通过往相反方向发回一个流来使算法解除它原来的决定。（其实好比人脑中思考的过程，我们发现s-&gt;a-&gt;d-&gt;t不对的时候，会考虑从t-&gt;d-&gt;a回退，那么反向添加边，就是给算法赋予了在选择下一条增广路径时能够进行回退操作的能力。）<br>下图为修正后的过程：<br><img src="http://static.zybuluo.com/JaneL/uw0qiz9it96eo25eupc1g4zq/correct-maxflow.png" alt="correct maxflow"><br>从上图可以看到，在添加了反向流之后，算法可以在Gr中找到一条包含回退操作的边s-&gt;b-&gt;d-&gt;a-&gt;c-&gt;t，并注入2个单位的流量，最终得到最大流5.</p>
+<hr>
+<h2 id="Edmonds–Karp算法"><a href="#Edmonds–Karp算法" class="headerlink" title="Edmonds–Karp算法"></a>Edmonds–Karp算法</h2><p>L. R. Ford Jr.和D. R. Fulkerson只是提出了算法的思想并没有定义如何选取增广路径，由此也诞生了很多基于Ford-Fulkerson的实现。</p>
+<p>这里介绍一种由<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Jack_Edmonds">Jack Edmonds</a>和<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Richard_M._Karp">Richard Karp</a>在1972提出的实现算法。</p>
+<p>Edmonds-Karp算法的基本思想是通过广度优先遍历(BFS)获取增广路径。在BFS的基础上他们又提出了两种选择增广路径的方式：</p>
+<ul>
+<li>Shortest Augmenting Path(SAP)，每次选取的增广路径都是残留图中从s到t的最短路径。（实现代码见下一节）</li>
+<li>Maximum Capacity Augmenting Path， 每次选取的增广路径都是残留图中从s到t容量最大的路径。（选取MCAP的过程参考Dijkstra最短路径算法那，使用优先队列实现）</li>
+</ul>
+<h3 id="SAP算法的实现"><a href="#SAP算法的实现" class="headerlink" title="SAP算法的实现"></a>SAP算法的实现</h3><p>下面给出Edmons-Karps算法（采用SAP）的实现：</p>
+<p>算法的复杂度是O(VE^2)：</p>
+<ul>
+<li>基于BFS选取增广路径的复杂度为O(E)；</li>
+<li>Edmonds-Karp对流进行增加的全部次数为O(VE)。证明比较复杂，参见《算法导论》26.2节。</li>
+</ul>
+<p>下面是实现代码：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FordFulkerson</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> V; <span class="comment">// number of vertices</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span>[] marked; <span class="comment">// marked[v] = true if path s-&gt;v in residual network</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> FlowEdge[] edgeTo; <span class="comment">// edgeTo[v] = last edge on path s-&gt;v</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">double</span> value; <span class="comment">// value of max flow</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">FordFulkerson</span><span class="params">(FlowNetwork G, <span class="keyword">int</span> s, <span class="keyword">int</span> t)</span> </span>&#123;</span><br><span class="line">        V = G.V();</span><br><span class="line">        validate(s);</span><br><span class="line">        validate(t);</span><br><span class="line">        value = <span class="number">0.0</span>;</span><br><span class="line">        <span class="keyword">while</span>(hasAugmentingPath(G, s, t)) &#123;</span><br><span class="line">            <span class="keyword">double</span> bottle = Double.POSITIVE_INFINITY;</span><br><span class="line">            <span class="comment">// compute bottleneck capacity</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> v = t; v != s; v = edgeTo[v].other(v)) &#123;</span><br><span class="line">                bottle = Math.min(bottle, edgeTo[v].residualCapacityTo(v));</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// augment flow</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> v = t; v != s; v = edgeTo[v].other(v)) &#123;</span><br><span class="line">                edgeTo[v].addResidualFlowTo(v, bottle);</span><br><span class="line">            &#125;</span><br><span class="line">            value += bottle;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// This implementation finds a shortest augmenting path (fewest number of edges),</span></span><br><span class="line">    <span class="comment">// which performs well both in theory and in practice</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">hasAugmentingPath</span><span class="params">(FlowNetwork G, <span class="keyword">int</span> s, <span class="keyword">int</span> t)</span> </span>&#123;</span><br><span class="line">        edgeTo = <span class="keyword">new</span> FlowEdge[G.V()];</span><br><span class="line">        marked = <span class="keyword">new</span> <span class="keyword">boolean</span>[G.V()];</span><br><span class="line"></span><br><span class="line">        <span class="comment">// breadth-first search</span></span><br><span class="line">        Queue&lt;Integer&gt; q = <span class="keyword">new</span> Queue&lt;&gt;();</span><br><span class="line">        q.enqueue(s);</span><br><span class="line">        marked[s] = <span class="keyword">true</span>;</span><br><span class="line">        <span class="keyword">while</span>(!q.isEmpty()) &#123;</span><br><span class="line">            <span class="keyword">int</span> v = q.dequeue();</span><br><span class="line">            <span class="keyword">for</span> (FlowEdge e: G.adj(v)) &#123;</span><br><span class="line">                <span class="keyword">int</span> w = e.other(v);</span><br><span class="line">                <span class="comment">// found path from s to w in the residual network</span></span><br><span class="line">                <span class="comment">// if residual capacity of v -&gt; w &gt; 0</span></span><br><span class="line">                <span class="keyword">if</span> (e.residualCapacityTo(w) &gt; <span class="number">0</span> &amp;&amp; !marked[w]) &#123;</span><br><span class="line">                    edgeTo[w] = e;</span><br><span class="line">                    marked[w] = <span class="keyword">true</span>;</span><br><span class="line">                    q.enqueue(w);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// is t reachable from s in residual network</span></span><br><span class="line">        <span class="keyword">return</span> marked[t];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">double</span> <span class="title">value</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> value;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Reture true if v is on the s side of min-cut</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">inCut</span><span class="params">(<span class="keyword">int</span> v)</span> </span>&#123;</span><br><span class="line">        validate(v);</span><br><span class="line">        <span class="comment">// If path s-&gt;v is in residual network, then v is in min-cut</span></span><br><span class="line">        <span class="keyword">return</span> marked[v];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">validate</span><span class="params">(<span class="keyword">int</span> v)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (v &lt; <span class="number">0</span> || v &gt;= V) <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>注：由于主要参考书是Algorithms, 4th Edition, 下面的代码中有引用随书algs4.jar中的类，其实官方也有提供更完善版本的Ford-Fulkerson算法实现<a target="_blank" rel="noopener" href="https://algs4.cs.princeton.edu/64maxflow/FordFulkerson.java.html">FordFulkerson.java</a>。</p>
+<p>另外，上面代码用到了两个辅助类FlowNetWork和FlowEdge定义如下:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FlowEdge</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> v, w;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">double</span> capacity;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">double</span> flow;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">FlowEdge</span><span class="params">(<span class="keyword">int</span> v, <span class="keyword">int</span> w, <span class="keyword">double</span> capacity)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.v = v;</span><br><span class="line">        <span class="keyword">this</span>.w = w;</span><br><span class="line">        <span class="keyword">this</span>.capacity = capacity;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">from</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> v;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">to</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> w;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">other</span><span class="params">(<span class="keyword">int</span> vertex)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (vertex == v) <span class="keyword">return</span> w;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (vertex == w) <span class="keyword">return</span> v;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">&quot;Illegal endpoint&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">double</span> <span class="title">residualCapacityTo</span><span class="params">(<span class="keyword">int</span> vertex)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (vertex == v) <span class="keyword">return</span> flow;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (vertex == w) <span class="keyword">return</span> capacity - flow;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addResidualFlowTo</span><span class="params">(<span class="keyword">int</span> vertex, <span class="keyword">double</span> delta)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (vertex == v) flow -= delta;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (vertex == w) flow += delta;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FlowNetwork</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> V;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> E;</span><br><span class="line">    <span class="keyword">private</span> Bag&lt;FlowEdge&gt;[] adj;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">FlowNetwork</span><span class="params">(<span class="keyword">int</span> V)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.V = V;</span><br><span class="line">        <span class="keyword">this</span>.E = <span class="number">0</span>;</span><br><span class="line">        adj = (Bag&lt;FlowEdge&gt;[]) <span class="keyword">new</span> Bag[V];</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> v = <span class="number">0</span>; v &lt; V; v++) &#123;</span><br><span class="line">            adj[v] = <span class="keyword">new</span> Bag&lt;&gt;();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addEdge</span><span class="params">(FlowEdge e)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> v = e.from();</span><br><span class="line">        <span class="keyword">int</span> w = e.to();</span><br><span class="line">        adj[v].add(e); <span class="comment">// forward edge</span></span><br><span class="line">        adj[w].add(e); <span class="comment">// backward edge</span></span><br><span class="line">        E++;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Iterable&lt;FlowEdge&gt; <span class="title">adj</span><span class="params">(<span class="keyword">int</span> v)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> adj[v];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">V</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> V;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">E</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> E;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>另：推荐一个介绍Ford-Fulkerson方法的视频<a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=Tl90tNtKvxs&amp;vl=en">Ford-Fulkerson in 5 minutes — Step by step example</a>.</p>
+<hr>
+<h1 id="最大流最小割定理"><a href="#最大流最小割定理" class="headerlink" title="最大流最小割定理"></a>最大流最小割定理</h1><p>一个流网络的最小割就是网络的所有割中容量最小的割，最大流的值一定不能超过最小割的容量。<br>实际上，最大流的值就等于某一最小割容量。</p>
+<p>最大流最小割定理如下：</p>
+<blockquote>
+<p>如果f是具有源点s和汇点t的流网络G=(V, E)中的一个流，则如下条件是等价的：<br>1.f是G的一个最大流<br>2.残留网络Gf不包含增广路径<br>3.对G的某个割(S, T)，有|f|=c(S, T).(|f|仅表示流f的值)</p>
+</blockquote>
+<p>上面的FordFulkerson实现代码中，marked[]中所有值为true的顶点都属于当前找到的最小割中的S子集，因为marked[]中最终包含的是所有能从源点s抵达的却在中途因为没有残余流量而无法抵达汇点t的顶点，中间隔断的所有边都是饱和的，其容量和=最大流的值，因此在找到最大流的同时，我们也找到了一个最小割。</p>
+<hr>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Ford%E2%80%93Fulkerson_algorithm">Wikipedia - Ford–Fulkerson algorithm</a></li>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Edmonds%E2%80%93Karp_algorithm">Wikipedia - Edmonds–Karp algorithm</a></li>
+<li><strong>Data Structures and Algorithms in Java, 3rd Edition</strong>, Book by Mark Allen Weiss</li>
+<li><strong>Introduction to Algorithms</strong>, Book by Charles E. Leiserson, Clifford Stein, Ronald Rivest, and Thomas H. Cormen</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Ford-Fulkerson/" rel="tag"># Ford-Fulkerson</a>
+          
+            <a href="/tags/%E6%9C%80%E5%A4%A7%E6%B5%81%E9%97%AE%E9%A2%98/" rel="tag"># 最大流问题</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/31/hystrix-intro/" rel="next" title="Hystrix简单介绍">
+                <i class="fa fa-chevron-left"></i> Hystrix简单介绍
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/09/10/git-merge-rebase/" rel="prev" title="Git - Merging & Rebasing">
+                Git - Merging & Rebasing <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Ford-Fulkerson%E6%96%B9%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">Ford-Fulkerson方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Edmonds%E2%80%93Karp%E7%AE%97%E6%B3%95"><span class="nav-number">1.1.</span> <span class="nav-text">Edmonds–Karp算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#SAP%E7%AE%97%E6%B3%95%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.1.1.</span> <span class="nav-text">SAP算法的实现</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9C%80%E5%A4%A7%E6%B5%81%E6%9C%80%E5%B0%8F%E5%89%B2%E5%AE%9A%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">最大流最小割定理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">3.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

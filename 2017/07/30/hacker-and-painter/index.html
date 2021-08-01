@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="终于拿起了躺在书架上有一年多都没被翻牌子的《黑客与画家》，书名于我还是很有吸引力的，黑客与专业相关，画家也算是小时候的梦想之一了，受家庭环境的影响一直对画画还是颇感兴趣，然而并没有专业学过，只是个眼高手低的手残党。 其实这本书读起来还是很有意思的，至少我在读《黑客与画家》这一章时很有一种找到了灵魂知己的感觉，“哇！对！就是这样！”，这种感觉，大晚上的看得也是很激动。不过Paul大概是个Lisp真爱">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hacker? Painter?">
+<meta property="og:url" content="http://liaodanqi.xyz/2017/07/30/hacker-and-painter/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="终于拿起了躺在书架上有一年多都没被翻牌子的《黑客与画家》，书名于我还是很有吸引力的，黑客与专业相关，画家也算是小时候的梦想之一了，受家庭环境的影响一直对画画还是颇感兴趣，然而并没有专业学过，只是个眼高手低的手残党。 其实这本书读起来还是很有意思的，至少我在读《黑客与画家》这一章时很有一种找到了灵魂知己的感觉，“哇！对！就是这样！”，这种感觉，大晚上的看得也是很激动。不过Paul大概是个Lisp真爱">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-07-30T05:05:37.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.540Z">
+<meta property="article:author" content="Jane Liao">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2017/07/30/hacker-and-painter/"/>
+
+
+
+
+
+  <title>Hacker? Painter? | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2017/07/30/hacker-and-painter/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Hacker? Painter?</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-30T13:05:37+08:00">
+                2017-07-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">读书笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>终于拿起了躺在书架上有一年多都没被翻牌子的《黑客与画家》，书名于我还是很有吸引力的，黑客与专业相关，画家也算是小时候的梦想之一了，受家庭环境的影响一直对画画还是颇感兴趣，然而并没有专业学过，只是个眼高手低的手残党。</p>
+<p>其实这本书读起来还是很有意思的，至少我在读《黑客与画家》这一章时很有一种找到了灵魂知己的感觉，“哇！对！就是这样！”，这种感觉，大晚上的看得也是很激动。不过Paul大概是个Lisp真爱粉了，有不少篇幅在卖Lisp安利，可惜我实在是不能好好看下去 :)</p>
+<p>不过有不少观点还是很能启发思考的。</p>
+<span id="more"></span>
+<h2 id="黑客与画家啊"><a href="#黑客与画家啊" class="headerlink" title="黑客与画家啊"></a>黑客与画家啊</h2><blockquote>
+<p>“出于兴趣而解决某个难题，不管它有没有用，这就是黑客。” —— Richard Stallman<br>“黑客与画家的共同之处，在于他们都是创作者。与作曲家、建筑师、作家一样，黑客和画家都是试图创作出优秀的作品。” —— Paul Graham</p>
+</blockquote>
+<p>Paul Graham作为本书的作者，身兼黑客与画家双重身份，本科读完计算机研究生进修绘画，有才有智商，任性。<br>Paul把黑客归类在创作者，在我看来是十分贴切的。作为一个喜欢画画和建筑设计却对自己的创作天赋以及理科能力十分怀疑的人，在大学选专业时并没有勇气选建筑，最终却学了软件工程。四年过去，我有些庆幸，也心怀忐忑。庆幸的是，我发现开发正如Paul所言，也是一个创作过程，需要有新想法需要设计，我们也会用优美、优雅来形容好的代码、好的产品。忐忑的是，其创作的性质加之对数学基础的要求，仿佛又回到了最初的自我怀疑。</p>
+<p>我不是很聪明的那类人，所以看到Paul总结黑客行为的特征包括好玩、高智商、探索精神时，我觉得我基本告别黑客了(:з」∠) 还是先努力成为一名优秀的码农吧，虽然在学基础的东西都会让我日常怀疑智商，但其实应该也没有那么笨的。（干一碗鸡汤，还能再战！</p>
+<h2 id="爱好就让它只是爱好吧"><a href="#爱好就让它只是爱好吧" class="headerlink" title="爱好就让它只是爱好吧"></a>爱好就让它只是爱好吧</h2><p>书中提到黑客总是以好玩为动力进行创作，而好玩的东西却不一定有用。所有的创作者都面临这个问题。价格是由供给和需求共同决定的。好玩的软件的需求量，比不上解决客户麻烦问题的软件的需求量。黑客该如何生存？如何才能做自己喜欢的事情？<br>我认为这个问题的解决方法是一个几乎所有创作者都知道的方法：找一份养家糊口的“白天工作”（day job）。这个词是从音乐家身上来的，他们晚上表演音乐，所以白天可以找一份其他工作。更一般地说，“白天工作”的意思是，你有一份为了赚钱的工作，还有一份为了爱好的工作。<br>对于这个观点，我的认知可以说是十分深刻了，毕竟身边就有这样的人。当兴趣不足以支撑生活，你总是需要另一份工作用于养家糊口的。幸运的时候也许能得到一份与之相关的工作，更多的时候，可能做的是完全不搭界的事情吧。正因为这样，对于爱好，我一直持不要把爱好作为工作这样的观点，是怕当爱好面临作为维持生存的一种手段而带来的压力，就失去了爱好作为爱好本应带来的快乐。现实总是残酷的，当你不具备无视现实的条件，总是会学着妥协。</p>
+<p>但是并不是所有人都这样，总有很小一部分人，他们坚定又执着，所以当他们披荆斩棘带着灿烂的光环进入人们视野时，总是令人钦佩的。</p>
+<h2 id="画作永远没有完工的一天"><a href="#画作永远没有完工的一天" class="headerlink" title="画作永远没有完工的一天"></a>画作永远没有完工的一天</h2><p>“画作永远没有完工的一天，你只是不再画下去而已。”在全书的结尾，Paul如是说。而这篇笔记就恰好印证了这一点，其实还有想到很多，只是不再想继续敲下去而已。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/07/09/cathedral-and-bazaar/" rel="next" title="《大教堂与集市》笔记与读后感">
+                <i class="fa fa-chevron-left"></i> 《大教堂与集市》笔记与读后感
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/08/29/no-fairy-tale/" rel="prev" title="没有童话">
+                没有童话 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%BB%91%E5%AE%A2%E4%B8%8E%E7%94%BB%E5%AE%B6%E5%95%8A"><span class="nav-number">1.</span> <span class="nav-text">黑客与画家啊</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%88%B1%E5%A5%BD%E5%B0%B1%E8%AE%A9%E5%AE%83%E5%8F%AA%E6%98%AF%E7%88%B1%E5%A5%BD%E5%90%A7"><span class="nav-number">2.</span> <span class="nav-text">爱好就让它只是爱好吧</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%BB%E4%BD%9C%E6%B0%B8%E8%BF%9C%E6%B2%A1%E6%9C%89%E5%AE%8C%E5%B7%A5%E7%9A%84%E4%B8%80%E5%A4%A9"><span class="nav-number">3.</span> <span class="nav-text">画作永远没有完工的一天</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

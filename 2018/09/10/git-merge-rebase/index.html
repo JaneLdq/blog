@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Git," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="平时只用过最简单的git merge，还一般都是在GUI上点点按钮就结束了，今天正好遇到了一个比较不一样的操作，趁着记忆还新鲜，就顺便聊聊git merge与git rebase那些事吧～ 简化版故事背景是这样的：  dev是主要开发分支 master一般不动，只在release时把dev的代码merge过来  结果，今天正好在dev改了些代码，而且又正好要往mastermerge，结果发现上一次">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Git - Merging &amp; Rebasing">
+<meta property="og:url" content="http://liaodanqi.xyz/2018/09/10/git-merge-rebase/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="平时只用过最简单的git merge，还一般都是在GUI上点点按钮就结束了，今天正好遇到了一个比较不一样的操作，趁着记忆还新鲜，就顺便聊聊git merge与git rebase那些事吧～ 简化版故事背景是这样的：  dev是主要开发分支 master一般不动，只在release时把dev的代码merge过来  结果，今天正好在dev改了些代码，而且又正好要往mastermerge，结果发现上一次">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-09-10T12:36:54.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.540Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="Git">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2018/09/10/git-merge-rebase/"/>
+
+
+
+
+
+  <title>Git - Merging & Rebasing | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2018/09/10/git-merge-rebase/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Git - Merging & Rebasing</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-10T20:36:54+08:00">
+                2018-09-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index">
+                    <span itemprop="name">工具</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>平时只用过最简单的git merge，还一般都是在GUI上点点按钮就结束了，今天正好遇到了一个比较不一样的操作，趁着记忆还新鲜，就顺便聊聊git merge与git rebase那些事吧～</p>
+<p>简化版故事背景是这样的：</p>
+<ol>
+<li><code>dev</code>是主要开发分支</li>
+<li><code>master</code>一般不动，只在release时把<code>dev</code>的代码merge过来</li>
+</ol>
+<p>结果，今天正好在<code>dev</code>改了些代码，而且又正好要往<code>master</code>merge，结果发现上一次merge到<code>master</code>的代码改动又出现在了这次的提交中，检查<code>master</code>发现代码确实已经过去了，但是git在对比时的时候还是会识别出提交过的代码，很奇怪。</p>
+<p>又是一番检查，发现问题就出在这条命令上：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git merge --squash</span><br></pre></td></tr></table></figure></p>
+<span id="more"></span>
+<h1 id="git-merge"><a href="#git-merge" class="headerlink" title="$ git merge"></a>$ git merge</h1><p>我们先来看看git merge的一般情况。<br>如上所述，我们在开发新功能时一般都会切分支单独开发，开发结束后再把代码merge回<code>master</code>。</p>
+<p>假设当前提交历史如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">... - A - B - C - G         &lt;== master</span><br><span class="line">       \</span><br><span class="line">        D - E - F           &lt;== dev</span><br></pre></td></tr></table></figure>
+<p>在<code>master</code>分支上调用<code>$ git merge dev</code>就会基于<code>master</code>把<code>dev</code>上的commits重放（replay）到<code>master</code>上，并且新建一个<strong>“merge commit”</strong>记录merge后的变更，变成这样：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">... - A - B - C - G - H     &lt;== master</span><br><span class="line">       \            /</span><br><span class="line">         D - E - F          &lt;== dev</span><br></pre></td></tr></table></figure>
+<p><code>H</code>就是由merge操作创建的新的”merge commit”。</p>
+<p>如果加上<code>--squash</code>参数，git不会帮我们创建新的commit，也不会移动HEAD，但是squash merge之后，所有来自<code>dev</code>分支的commit做的更改就像被复制到<code>master</code>上，好像所有的改动都是原本就是基于master做的，调用<code>$ git status</code>可以查看到是merge之后的变动尚未提交。这时，我们就可以把所有的变更打包成新的单个commit，这个commit的内容跟<code>dev</code>分支一样，但它完全独立于<code>dev</code>。<br>如下图，所示，H中包含了D-E-F中的所有改动，并且并不会如常规merge一般与F连接起来。<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">... - A - B - C - G - H     &lt;== master</span><br><span class="line">       \         </span><br><span class="line">        D - E - F           &lt;== dev</span><br></pre></td></tr></table></figure><br>官方解释：</p>
+<blockquote>
+<p>–squash: Produce the working tree and index state as if a real merge happened (except for the merge information), but do not actually make a commit, move the HEAD, or record $GIT_DIR/MERGE_HEAD (to cause the next git commit command to create a merge commit). This allows you to create a single commit on top of the current branch whose effect is the same as merging another branch</p>
+</blockquote>
+<p>这样就能解释为什么会出现文章开头遇到的情况了。因为上一次把<code>dev</code>合并到<code>master</code>用的是squash merge，但是merge之后没有删除<code>dev</code>而是随后又接着在<code>dev</code>上开发I-J-K，下一次merge时，git找到的<code>dev</code>和<code>master</code>的共同祖先还是A，所以D-E-F-I-J-K都会被算作是新的commit，然后重复更改就出现了。</p>
+<p>所以，如果使用squash merge某个分支后，以后还要基于该分支开发，那么就应该在merge后立即删除并且重新从<code>master</code>切出来，以保证提交历史的一致性。</p>
+<hr>
+<h1 id="git-rebase"><a href="#git-rebase" class="headerlink" title="$ git rebase"></a>$ git rebase</h1><p>由于我们遇到的情况是<code>dev</code>分支上已经有了新的提交，就不能直接删除了，所以想看看能不能用rebase抢救一下～</p>
+<p>按我的理解，不同于merge会保持原始的分支记录，只在最后新建一个merge commit把二者合一；rebase则是在base分支上，把merge分支的所有commit重新提交了一遍，相当于重写了提交历史，使得提交历史更简洁清晰。</p>
+<p>假设当前提交历史如下：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">... - A - B - C - G         &lt;== master</span><br><span class="line">       \</span><br><span class="line">        D - E - F           &lt;== dev</span><br></pre></td></tr></table></figure><br>在<code>dev</code>分支调用<code>$ git rebase master</code>后就变成了这样：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">... - A - B - C - G - D&#x27; - E&#x27; - F&#x27;</span><br><span class="line">                  ^             ^</span><br><span class="line">                master         dev</span><br></pre></td></tr></table></figure><br>git会找到<code>master</code>和<code>dev</code>提交历史的共同祖先A，然后把D-E-F的变更保存在临时文件中，把指针指向base分支的当前commit，也就是G，最后按顺序把D-E-F重新基于base操作一遍，变成D’-E’-F’。</p>
+<p>这时再把<code>dev</code>merge到<code>master</code>就可以看到提交历史是线性的，就好像所有提交都是按顺序发生的，不同于直接merge保留的并行历史。</p>
+<blockquote>
+<p>Rebasing replays changes from one line of work onto another in the order they were introduced, whereas merging takes the endpoints and merges them together.</p>
+</blockquote>
+<p>整洁的历史记录看起来令人心旷神怡，然而，在使用rebase时一定要记得遵守如下指南哦，否则后果可能就不那么令人愉快了～</p>
+<p>重要的事情，说三遍。<br><strong>Do not rebase commits that exist outside your repository！</strong><br><strong>Do not rebase commits that exist outside your repository！</strong><br><strong>Do not rebase commits that exist outside your repository！</strong></p>
+<p>为什么不要这样做？因为rebase操作实际上是把原有的commits都丢弃，重新创建commits，即使内容和顺序完全一样，有的东西就是不一样了，你懂的。</p>
+<p>官网上有个看起来就很头大的例子，参观请移步<a target="_blank" rel="noopener" href="https://git-scm.com/book/en/v2/Git-Branching-Rebasing">Git-Rebasing #The Perils of Rebasing</a></p>
+<hr>
+<h1 id="Merging-or-rebasing"><a href="#Merging-or-rebasing" class="headerlink" title="Merging or rebasing?"></a>Merging or rebasing?</h1><p>merge和rebase其实体现的是看待提交历史的不同角度。<br>如果把提交历史看做是<strong>用来记录实际发生了些什么</strong>，那么它就不应该被修改，而merge能原始的保留历史记录状态，但是要注意一点，每一次merge都会创建一条新的merge commit（这里指常规merge），这会导致历史记录中出现很多merge commit。</p>
+<p>而如果把提交历史<strong>用于讲述整个项目是如何创造出来的故事线</strong>，那么你可能需要记录的是关键的里程碑节点和清晰的描述。就好比原始提交记录是草稿，那么通过rebase可以做一些整理、编辑操作，使得最终呈现出来的是更加完整而清晰的作品。</p>
+<p>我们不能说merge和rebase一定谁更好，否则就不会有两者同时存在了，更多的时候你会需要结合所遇到的情形组合使用各种命令。</p>
+<p>不过有一种常见的做法值得参考的是：在提交本地分支前可以rebase一下，以保持本地分支的历史记录的整洁。但是，千万记得不要轻易rebase公共branch哦！</p>
+<hr>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging">Git-Basic Merging</a></li>
+<li><a target="_blank" rel="noopener" href="https://git-scm.com/book/en/v2/Git-Branching-Rebasing">Git-Rebasing</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.atlassian.com/git/tutorials/merging-vs-rebasing">Merging vs. Rebasing</a></li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/44021102/how-to-squash-commits-in-git">StackOverflow-How to squash commits in Git</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Git/" rel="tag"># Git</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/09/ford-fulkerson/" rel="next" title="最大流问题和Ford-Fulkerson方法">
+                <i class="fa fa-chevron-left"></i> 最大流问题和Ford-Fulkerson方法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/09/19/kmp/" rel="prev" title="字符串搜索玩耍指南（一）- KMP算法">
+                字符串搜索玩耍指南（一）- KMP算法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#git-merge"><span class="nav-number">1.</span> <span class="nav-text">$ git merge</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#git-rebase"><span class="nav-number">2.</span> <span class="nav-text">$ git rebase</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Merging-or-rebasing"><span class="nav-number">3.</span> <span class="nav-text">Merging or rebasing?</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">4.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

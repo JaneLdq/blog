@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Java," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="在跑Code Scan的时候报了一个关于equals()的问题：  父类重写了equals，子类继承了父类并添加了新的属性，却没有重写equals。  印象中equals的重写是个比较难处理好的问题。首先我们先回顾一下Java中默认的Object类的默认equals实现。  Object.equalsJava中最顶层的Object类中默认的equals实现很简单，就是比较两个对象的引用，如果指向同">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【译记】关于equals那些事">
+<meta property="og:url" content="http://liaodanqi.xyz/2018/08/13/java-equals/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="在跑Code Scan的时候报了一个关于equals()的问题：  父类重写了equals，子类继承了父类并添加了新的属性，却没有重写equals。  印象中equals的重写是个比较难处理好的问题。首先我们先回顾一下Java中默认的Object类的默认equals实现。  Object.equalsJava中最顶层的Object类中默认的equals实现很简单，就是比较两个对象的引用，如果指向同">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-08-13T06:20:43.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.542Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2018/08/13/java-equals/"/>
+
+
+
+
+
+  <title>【译记】关于equals那些事 | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2018/08/13/java-equals/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">【译记】关于equals那些事</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-13T14:20:43+08:00">
+                2018-08-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在跑Code Scan的时候报了一个关于equals()的问题：</p>
+<blockquote>
+<p>父类重写了equals，子类继承了父类并添加了新的属性，却没有重写equals。</p>
+</blockquote>
+<p>印象中equals的重写是个比较难处理好的问题。首先我们先回顾一下Java中默认的Object类的默认equals实现。</p>
+<hr>
+<h1 id="Object-equals"><a href="#Object-equals" class="headerlink" title="Object.equals"></a>Object.equals</h1><p>Java中最顶层的Object类中默认的equals实现很简单，就是比较两个对象的引用，如果指向同一个地址则相同，反之则不同。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Object</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object obj)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (<span class="keyword">this</span> == obj);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>这种实现适用于绝大部分情况。但是如果我们想通过对象内部的某些属性（或者说是对象的状态）来判断两个对象是否相同，就会需要重写equals。<br><span id="more"></span></p>
+<hr>
+<h1 id="那么如何在Java中如何重写equals呢？"><a href="#那么如何在Java中如何重写equals呢？" class="headerlink" title="那么如何在Java中如何重写equals呢？"></a>那么如何在Java中如何重写equals呢？</h1><p>恰好找到了一篇文章<a target="_blank" rel="noopener" href="https://www.artima.com/lejava/articles/equality.html"><strong>How to Write an Equality Method in Java</strong></a>，虽然是2009年的文章，但是并不影响它写得很好，下文是主要部分的翻译笔记。</p>
+<p>这篇文章里主要介绍了4个在Java中重写equals时容易踩的坑，我们一个个来看。</p>
+<h2 id="Pitfall-1-Defining-equals-with-wrong-signature"><a href="#Pitfall-1-Defining-equals-with-wrong-signature" class="headerlink" title="Pitfall #1: Defining equals with wrong signature."></a>Pitfall #1: Defining equals with wrong signature.</h2><p>考虑给如下的Point类增加一个equals：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Point</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> x;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> y;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Point</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.x = x;</span><br><span class="line">        <span class="keyword">this</span>.y = y;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getX</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> x;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getY</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> y;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>一种显而易见错误定义方式如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 完全错误！</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Point other)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (<span class="keyword">this</span>.getX() == other.getX() &amp;&amp; <span class="keyword">this</span>.getY() == other.getY());</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<p>这种定义错在哪里呢？第一眼看过去好像没什么问题诶：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Point p1 = <span class="keyword">new</span> Point(<span class="number">1</span>, <span class="number">2</span>);</span><br><span class="line">Point p2 = <span class="keyword">new</span> Point(<span class="number">1</span>, <span class="number">2</span>);</span><br><span class="line">Point q = <span class="keyword">new</span> Point(<span class="number">2</span>, <span class="number">3</span>);</span><br><span class="line">System.out.println(p1.equals(p2)); <span class="comment">// true</span></span><br><span class="line">System.out.println(p1.equals(q)); <span class="comment">// false</span></span><br></pre></td></tr></table></figure><br>然而，一旦你把points放到一个集合中，问题就出现了：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">HashSet&lt;Point&gt; coll = <span class="keyword">new</span> HashSet&lt;&gt;();</span><br><span class="line">coll.add(p1);</span><br><span class="line">System.out.println(coll.contains(p2)); <span class="comment">// false</span></span><br></pre></td></tr></table></figure><br>为什么coll中不包含p2呢？虽然coll中添加的是p1，但是p1和p2应该是等同的呀。原因就出在这里：在进行比较的两个point中有一个point的精确类型被遮盖了的。<br>HashSet的contains方法是这样的：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">contains</span><span class="params">(Object o)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> map.containsKey(o);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>所以上面那段比较等同于如下代码：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Object p2a = p2;</span><br><span class="line">System.out.println(p1.equals(p2a)); <span class="comment">// false</span></span><br></pre></td></tr></table></figure><br>到底是哪里错了呢？实际上，之前定义的<code>equals(Point p)</code>并没有重写标准的<code>equals(Object other)</code>，因为参数类型不同，这是重载。重载在Java中是由参数的静态类型决定的，而不是运行时类型。所以，只要静态类型是Point，那么Point类中的equals才会被调用，如果静态类型是Object，那么就会调用Object类中的equals。而在上例中，<code>equals(Object other)</code>并没有被重写，它还是按照对象的引用来进行比较的。所以<code>p1.equals(p2)</code>返回的是<code>false</code>，即使p1和p2a都有相同的x和y。这也是为什么HashSet的contains会返回<code>false</code>。</p>
+<p>一种稍微好一点的实现如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object other)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">boolean</span> result = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (other <span class="keyword">instanceof</span> Point) &#123;</span><br><span class="line">        Point that = (Point) other;</span><br><span class="line">        result = (<span class="keyword">this</span>.getX() == that.getX() &amp;&amp; <span class="keyword">this</span>.getY() == that.getY());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>这样equals以Object类型作为参数，以boolean作为返回值，这样就是正确的重写方式。在方法内部，先使用<code>instanceof</code>判断传入的参数other是不是Point类型，如果是，则进一步比较坐标，否则返回false。</p>
+<hr>
+<h2 id="Pitfall-2：Changing-equals-without-also-changing-hashCode"><a href="#Pitfall-2：Changing-equals-without-also-changing-hashCode" class="headerlink" title="Pitfall #2：Changing equals without also changing hashCode"></a>Pitfall #2：Changing equals without also changing hashCode</h2><p>如果你重新使用上面的定义比较p1和p2a，你会得到true。然而，如果你重新使用HashSet.contains进行测试，那么你有可能得到false。<br>为什么会这样呢？就是因为<strong>在Point中重写了equals却没有重写hashCode</strong>。</p>
+<p>在上例中用到的集合是HashSet，也就意味着每个元素都被放到一个由它们的hash值决定的篮子里。<code>contains</code>方法首先会计算出需要查找的这个对象的hash值，然后到对应的篮子里逐一比较。而我们上面定义的Point类，重写了equals，却没有同时重写hashCode，那么它的hashCode还是调用的在Object类中定义的那个版本，也就是使用对象分配的地址进行转换得到的某个值。所以p1和p2即使有相同的坐标也极大概率不会被分到同一个篮子里了（当然这个几率还是有的，只是非常小而已）。</p>
+<p>所以呢，问题就出在上个版本的Point的实现违反了hashCode的定义：</p>
+<blockquote>
+<p>If two objects are equal according to the equals(Object) method, then calling the hashCode method on each of the two objects must produce the same integer result.</p>
+</blockquote>
+<p>实际上，在Java中hashCode和equals总是如影随形的已经是众所周知的事情啦。进一步说，hashCode中只应该依赖于equals中依赖的那些属性。以Point类为例，如下是一个合适的hashCode的定义：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Point</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> x;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> y;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Point</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.x = x;</span><br><span class="line">        <span class="keyword">this</span>.y = y;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getX</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> x;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getY</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> y;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object other)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">boolean</span> result = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (other <span class="keyword">instanceof</span> Point) &#123;</span><br><span class="line">            Point that = (Point) other;</span><br><span class="line">            result = (<span class="keyword">this</span>.getX() == that.getX() &amp;&amp; <span class="keyword">this</span>.getY() == that.getY());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (<span class="number">41</span> * (<span class="number">41</span> + getX()) + getY());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>上面这个hashCode的实现只是诸多实现方式中的一种。<br>通过同时重写hashCode能解决像如上的Point类的equals问题，但是，仍然还有其他需要小心的陷阱哦~</p>
+<hr>
+<h2 id="Pitfall-3-Defining-equals-in-terms-of-mutable-fields"><a href="#Pitfall-3-Defining-equals-in-terms-of-mutable-fields" class="headerlink" title="Pitfall #3: Defining equals in terms of mutable fields."></a>Pitfall #3: Defining equals in terms of mutable fields.</h2><p>考虑对Point类做如下改动：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Point</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> x;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> y;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Point</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.x = x;</span><br><span class="line">        <span class="keyword">this</span>.y = y;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setX</span><span class="params">(<span class="keyword">int</span> x)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.x = x;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setY</span><span class="params">(<span class="keyword">int</span> y)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.y = y;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>这里唯一的变动就是x和y不再是final的，并且新增了两个set方法。而这里的equals和hashCode都依赖于这些可变的属性，当属性的值发生变化时它们运行的结果也会发生变化。这时若把points放到集合中，会出现奇怪的结果：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Point p = <span class="keyword">new</span> Point(<span class="number">1</span>, <span class="number">2</span>);</span><br><span class="line">HashSet&lt;Point&gt; coll = <span class="keyword">new</span> HashSet&lt;&gt;();</span><br><span class="line">coll.add(p);</span><br><span class="line">System.out.println(coll.contains(p)); <span class="comment">// true</span></span><br></pre></td></tr></table></figure><br>此时，如果你改变p的某个值，这个point还在集合中吗？<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">p.setX(p.getX() + <span class="number">1</span>);</span><br><span class="line">System.out.println(coll.contains(p)); <span class="comment">// false(probably)</span></span><br></pre></td></tr></table></figure><br>好奇怪，p去哪里了？如果你使用迭代器遍历来检查coll中是否包含p还会遇到更奇怪的事情哦：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Iterator&lt;Point&gt; itr = coll.iterator();</span><br><span class="line"><span class="keyword">boolean</span> containedP = <span class="keyword">false</span>;</span><br><span class="line"><span class="keyword">while</span>(itr.hasNext()) &#123;</span><br><span class="line">    Point nextP = itr.next();</span><br><span class="line">    <span class="keyword">if</span> (nextP.equals(p)) &#123;</span><br><span class="line">        containedP = <span class="keyword">true</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">System.out.println(containedP); <span class="comment">// true</span></span><br></pre></td></tr></table></figure><br>集合说它不包含p，但是p又明明出现在了它的元素中。怎么回事？其实很简单啦，在p的x值发生更改之后，再计算得到的hash值会指向一个错误的篮子，这个篮子不再是原来放的那个篮子，自然就找不到了。换句话说，就是p还在coll中，但是我们已经看不到它了(dropped out of sight)。</p>
+<p>这个例子想说明的就是当equals和hashCode依赖于可变的属性时，可能会对使用者造成影响。如果使用时把对象放到集合中，就要非常小心不要去改变这些方法依赖的状态，这可不是什么好事。如果你在进行比较时需要考虑到一个对象当前的状态，最好是单独定义一个方法，而不要使用equals。<br>以上面这个版本的Point类为例，一种更好的方式是不要重写equals和hashCode，而是新建一个方法比如叫equalContents来实现坐标的比较。这样Point类就会继承默认的Object的equals和hashCode方法。这样即使修改了p的内容也可以在集合中找到p了。</p>
+<hr>
+<h2 id="Pitfall-4-Failing-to-define-equals-as-an-equivalence-relation"><a href="#Pitfall-4-Failing-to-define-equals-as-an-equivalence-relation" class="headerlink" title="Pitfall #4: Failing to define equals as an equivalence relation"></a>Pitfall #4: Failing to define equals as an equivalence relation</h2><p>Object中的equals方法必须在非空对象间为等价关系：</p>
+<ul>
+<li>自反性：for any non-null value x，x.equals(x) returns true</li>
+<li>对称性：for any non-null values x and y, x.equals(y) returns true iff y.equals(x) returns true.</li>
+<li>传递性：for any non-null values x, y and z, if x.equals(y) returns true and y.equals(z) returns true, then x.equals(z) returns true.</li>
+<li>一致性：for any non-null values x and y, multiple invocations of x.equals(y) should consistently return true or consistently return false, provided no information used in equals comparisons on the objects is modified.</li>
+<li>For any non-null value x, x.equals(null) returns false.</li>
+</ul>
+<p>上面的Point类的例子中的equals实现都是符合如上规则的，然而，一旦我们引入了继承关系，情况就变得复杂了起来。（这正是这篇笔记最最开始抛出问题的地方。）</p>
+<p>现在引入一个新的Point的子类ColoredPoint，定义如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">enum</span> <span class="title">Color</span> </span>&#123;</span><br><span class="line">    RED, ORANGE, YELLOW, GREEN, BLUE, INDIGO, VIOLET;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ColoredPoint</span> <span class="keyword">extends</span> <span class="title">Point</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Color color;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ColoredPoint</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y, Color color)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(x, y);</span><br><span class="line">        <span class="keyword">this</span>.color = color;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object other)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">boolean</span> result = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (other <span class="keyword">instanceof</span> ColoredPoint) &#123;</span><br><span class="line">            ColoredPoint that = (ColoredPoint) other;</span><br><span class="line">            result = <span class="keyword">this</span>.color.equals(that.color) &amp;&amp; <span class="keyword">super</span>.equals(that);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>上面是很多程序员可能写出来的代码。注意，在这里ColoredPoint类不需要重写hashCode，因为ColoredPoint类中的equals比Point中定义的更严格，因此hashCode仍然是有效的。如果两个彩色的point相同，它们一定有相同的坐标，那么它们的hashCode也一定是相同的。</p>
+<p>这时单独比较ColoredPoint，它的equals是没问题的。但是如果把Point和ColoredPoint混合起来，equals的等价的约束就被打破了。考虑如下代码：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Point p = <span class="keyword">new</span> Point(<span class="number">1</span>, <span class="number">2</span>);</span><br><span class="line">ColoredPoint cp = <span class="keyword">new</span> ColoredPoint(<span class="number">1</span>, <span class="number">2</span>, Color.RED);</span><br><span class="line">System.out.println(p.equals(cp)); <span class="comment">// true</span></span><br><span class="line">System.out.println(cp.equals(p)); <span class="comment">// false</span></span><br></pre></td></tr></table></figure><br><code>p.equals(cp)</code>调用的是Point的equals，它只考虑两个point的坐标，因此返回true。而<code>cp.equals(p)</code>调用的是ColoredPoint的equals，它会返回false，因为p不是ColoredPoint类的实例。那么，这个关系就不满足对称性了。</p>
+<p>要怎么做才能使得equals满足对称性呢？有两种方式：</p>
+<h3 id="把相等关系定义得更宽泛"><a href="#把相等关系定义得更宽泛" class="headerlink" title="把相等关系定义得更宽泛"></a>把相等关系定义得更宽泛</h3><p>假设有a和b两个对象，只要a.equals(b)或b.equals(a)中只要有一个返回true，那么就认为a和b是相等的。代码如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ColoredPoint</span> <span class="keyword">extends</span> <span class="title">Point</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Color color;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ColoredPoint</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y, Color color)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(x, y);</span><br><span class="line">        <span class="keyword">this</span>.color = color;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object other)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">boolean</span> result = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (other <span class="keyword">instanceof</span> ColoredPoint) &#123;</span><br><span class="line">            ColoredPoint that = (ColoredPoint) other;</span><br><span class="line">            result = <span class="keyword">this</span>.color.equals(that.color) &amp;&amp; <span class="keyword">super</span>.equals(that);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (other <span class="keyword">instanceof</span> Point) &#123;</span><br><span class="line">            Point that = (Point) other;</span><br><span class="line">            result = that.equals(<span class="keyword">this</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>这个ColoredPoint中新定义的equals多检测了一种情况：如果other是Point的实例却不是ColoredPoint的实例，那么就用Point的equals方法进行比较。这样，<code>cp.equals(p)</code>和<code>p.equals(cp)</code>都会返回true。然而，<strong>这样做仍然会破坏equals的约束，新的实现会打破equals的传递性！</strong>看如下代码：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Point p = <span class="keyword">new</span> Point(<span class="number">1</span>, <span class="number">2</span>);</span><br><span class="line">ColoredPoint redP = <span class="keyword">new</span> ColoredPoint(<span class="number">1</span>, <span class="number">2</span>, Color.RED);</span><br><span class="line">ColoredPoint blueP = <span class="keyword">new</span> ColoredPoint(<span class="number">1</span>, <span class="number">2</span>, Color.BLUE);</span><br><span class="line">System.out.println(redP.equals(p)); <span class="comment">// true</span></span><br><span class="line">System.out.println(p.equals(blueP)); <span class="comment">// true</span></span><br><span class="line">System.out.println(redP.equals(blueP)); <span class="comment">// false</span></span><br></pre></td></tr></table></figure></p>
+<p>可见，equals的传递性不被满足了。<br>似乎把equals的关系泛化把我们带到沟里了。那让我们在试试另一条路：</p>
+<h3 id="把相等关系定义得更严格"><a href="#把相等关系定义得更严格" class="headerlink" title="把相等关系定义得更严格"></a>把相等关系定义得更严格</h3><p>使得关系更严格第一种方式是总是把两个不同类的对象看作是不同的，这可以通过修改Point和ColoredPoint类的equals方法实现：在原来的equals方法中加上对运行时类型的比较：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// A technically valid, but unsatisfying, equals method</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Point</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> x;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> y;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Point</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.x = x;</span><br><span class="line">        <span class="keyword">this</span>.y = y;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object other)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">boolean</span> result = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (other <span class="keyword">instanceof</span> Point) &#123;</span><br><span class="line">            Point that = (Point) other;</span><br><span class="line">            result = (<span class="keyword">this</span>.getX() == that.getX() &amp;&amp; <span class="keyword">this</span>.getY() == that.getY()</span><br><span class="line">                    &amp;&amp; <span class="keyword">this</span>.getClass().equals(that.getClass()));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (<span class="number">41</span> * (<span class="number">41</span> + getX()) + getY());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>然后把ColoredPoint改回到前一个版本：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ColoredPoint</span> <span class="keyword">extends</span> <span class="title">Point</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Color color;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ColoredPoint</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y, Color color)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(x, y);</span><br><span class="line">        <span class="keyword">this</span>.color = color;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object other)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">boolean</span> result = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (other <span class="keyword">instanceof</span> ColoredPoint) &#123;</span><br><span class="line">            ColoredPoint that = (ColoredPoint) other;</span><br><span class="line">            result = <span class="keyword">this</span>.color.equals(that.color) &amp;&amp; <span class="keyword">super</span>.equals(that);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>这样，如果一个Point类的实例p等于另一个对象实例other，那么这个对象实例other一定在运行时的类型一定也是Point，并且与p有相同的坐标。这个新的equals方法既满足了对称性又满足了传递性。因为一个ColoredPoint的实例永远不可能等同于一个Point类的实例，因为它们的运行时类型不同。<br>这个实现在技术上是合法的，但是有人会说了，这个新的equals好像严格过头了。</p>
+<p>考虑如下这段代码：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Point pAnon = <span class="keyword">new</span> Point(<span class="number">1</span>, <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getY</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">2</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>这里的pAnon和p是相等的吗？答案是No。因为p和pAnon的java.lang.Class对象是不同的。p的getClass是Point，而pAnon的是一个Point的匿名子类。然而，从内容上来看，pAnon就是另一个坐标也为(1, 2)的点，如果把p和pAnon看成不同的似乎不那么合理呀。</p>
+<hr>
+<h3 id="The-canEqual-Method"><a href="#The-canEqual-Method" class="headerlink" title="The canEqual Method"></a>The canEqual Method</h3><p>那怎么办呢？太宽泛也不行，太严格也不行。到底还能不能愉快地玩耍了呢？解决方法还是有的，这个方法的思想是：一旦一个类重写了它的equals和hashCode方法，它也应该显示地声明，如果这个类的父类实现了一个不同的equals方法，那么任何一个该类的实例都不等于这个父类的某个实例。</p>
+<blockquote>
+<p>The idea is that as soon as a class redefines equals (and hashCode), it should also explicitly state that objects of this class are never equal to objects of some superclass that implement a different equality method. </p>
+</blockquote>
+<p>要达到这个目标，需要在每一个重写了equals方法的类中新增一个canEqual方法，canEqual的声明如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">canEqual</span><span class="params">(Object other)</span></span></span><br></pre></td></tr></table></figure></p>
+<p>如果other是当前定义canEqual类的一个实例则返回true，否则返回false。这个canEqual在equals中被调用，用于确保对象从两个方向进行比较。下面是Point类实现的最新也是最后的版本：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Point</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> x;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> y;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Point</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.x = x;</span><br><span class="line">        <span class="keyword">this</span>.y = y;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getX</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> x;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getY</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> y;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object other)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">boolean</span> result = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (other <span class="keyword">instanceof</span> Point) &#123;</span><br><span class="line">            Point that = (Point) other;</span><br><span class="line">            result = (that.canEqual(<span class="keyword">this</span>) &amp;&amp; <span class="keyword">this</span>.getX() == that.getX() &amp;&amp; <span class="keyword">this</span>.getY() == that.getY());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (<span class="number">41</span> * (<span class="number">41</span> + getX()) + getY());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">canEqual</span><span class="params">(Object other)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> other <span class="keyword">instanceof</span> Point;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>上面这个Point类的equals增加了一个判断条件：other是不是具备跟this进行比较的资格（the other object can equal this one）。在canEqual中进行的判断表示任何一个Point类的实例都是<strong>可以</strong>与this进行比较的。</p>
+<p>下面是对应的ColoredPoint的实现：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ColoredPoint</span> <span class="keyword">extends</span> <span class="title">Point</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Color color;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ColoredPoint</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y, Color color)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(x, y);</span><br><span class="line">        <span class="keyword">this</span>.color = color;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object other)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">boolean</span> result = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (other <span class="keyword">instanceof</span> ColoredPoint) &#123;</span><br><span class="line">            ColoredPoint that = (ColoredPoint)other;</span><br><span class="line">            result = that.canEqual(<span class="keyword">this</span>) &amp;&amp; <span class="keyword">this</span>.color.equals(that.color) &amp;&amp; <span class="keyword">super</span>.equals(that);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (<span class="number">41</span> * <span class="keyword">super</span>.hashCode() + color.hashCode());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">canEqual</span><span class="params">(Object other)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> other <span class="keyword">instanceof</span> ColoredPoint;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>上面的Point和ColoredPoint的实现是满足equals的约束的，既满足对称性也满足传递性。把一个Point跟一个ColoredPoint作比较永远都是false。这是显而易见的，<code>p.equals(cp)</code>返回false因为<code>cp.canEqual(p)</code>会返回false。反过来，<code>cp.equals(p)</code>也会返回false，因为p并不是ColoredPoint的实例。</p>
+<p>另一方面，如果Point的其他子类没有重写equals方法，那么这些Point子类间的实例可以是相同的。<br>比如前面提到的p和pAnon的比较结果就是相同的了。举几个例子：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Point p = <span class="keyword">new</span> Point(<span class="number">1</span>, <span class="number">2</span>);</span><br><span class="line">ColoredPoint cp = <span class="keyword">new</span> ColoredPoint(<span class="number">1</span>, <span class="number">2</span>, Color.RED);</span><br><span class="line">Point pAnon = <span class="keyword">new</span> Point(<span class="number">1</span>, <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getY</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">2</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line">HashSet&lt;Point&gt; coll = <span class="keyword">new</span> HashSet&lt;&gt;();</span><br><span class="line">coll.add(p);</span><br><span class="line">System.out.println(coll.contains(p)); <span class="comment">// true</span></span><br><span class="line">System.out.println(coll.contains(cp)); <span class="comment">// false</span></span><br><span class="line">System.out.println(coll.contains(pAnon)); <span class="comment">// true</span></span><br></pre></td></tr></table></figure></p>
+<p>从上面这些例子可以看到，如果父类重写了equals并定义了canEqual，那么在实现它的子类时，是否允许子类的实例等同于父类的实例是由编写子类的程序员来决定的。比如上例中ColoredPoint子类重写了canEqual，所以一个ColoredPoint的实例就永远不可能等于一个Point的实例，而另外的匿名子类没有重写canEqual，所以它的一个实例可以等于一个Point实例。</p>
+<p>canEqual方法有一个潜在的问题，那就是它违反了<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Liskov_substitution_principle"><strong>Liskov Substitution Principle</strong></a>(LSP)。举个例子，equals的实现是通过比较运行时的类型，这就导致了无法允许一个子类的实例等于一个父类的实例，这就违反了LSP。因为LSP声明你应当可以使用一个子类实例来替代父类。然而，在我们之前的例子中，<code>coll.contains(cp)</code>返回的是false，即使cp的x和y值都与集合中保存的p相同。这看起来是违反了LSP的，因为这里期望的类型是Point，但是却不能使用它的子类ColoredPoint。我们不否认这个行为是不对的，但是呢LSP也没有硬性规定子类和父类的行为必须一模一样，只要在某种程度上满足了父类的约定就行。</p>
+<p>其实，在重写的equals方法中使用运行时类型进行比较的主要问题并不是它违反了LSP这一点，而是这样的实现会使得子类的实例永远都不同于父类的实例。</p>
+<hr>
+<p>最后，我们在回顾一下在重写equals时需要避开的坑：</p>
+<ol>
+<li>equals的声明错误，把override变成了overload</li>
+<li>重写了equals却没有重写hashCode</li>
+<li>在equals中用到了mutable的属性，很危险</li>
+<li>实现equals时打破了等价关系</li>
+</ol>
+<p>一丢丢题外话：之所以会看到这篇文章，是在解决issue时用到了一个Java类库<a target="_blank" rel="noopener" href="https://projectlombok.org/"><strong>Lombok</strong></a>，它里面有一个<br>注解<a target="_blank" rel="noopener" href="https://projectlombok.org/features/EqualsAndHashCode"><code>@EqualsAndHashCode</code></a>可以自动生成equals和hashCode方法，在生成的代码里出现了canEqual方法，感觉很神奇，就搜了一下相关内容，里面有link到这篇文章~</p>
+<hr>
+<h1 id="Class-level-access-modifier"><a href="#Class-level-access-modifier" class="headerlink" title="Class-level access modifier"></a>Class-level access modifier</h1><p>除了equals之外，还想提到一个小细节，就是访问修饰符的作用级别。<br>举个例子，在ColoredPoint的equals方法中可以直接访问<code>that.color</code>：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object other)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">boolean</span> result = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (other <span class="keyword">instanceof</span> ColoredPoint) &#123;</span><br><span class="line">        ColoredPoint that = (ColoredPoint)other;</span><br><span class="line">        result = that.canEqual(<span class="keyword">this</span>) &amp;&amp; <span class="keyword">this</span>.color.equals(that.color) &amp;&amp; <span class="keyword">super</span>.equals(that);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br><code>color</code>不是ColoredPoint的私有属性吗？为什么that在这里可以直接访问呢？最开始看到这里是有点疑惑的。<br>原因在于修饰符的作用是class-level而不是object-level的，为什么要封装在类而不是更进一步到对象级别呢？我在Stack Overflow上找到了一段个人认为很有说服力的解释：</p>
+<blockquote>
+<p>It seems that object level access modifier would enforce the Encapsulation principle even further.<br>But actually it’s the other way around. Let’s take an example. Suppose you want to deep copy an object in a constructor, if you cannot access the private members of that object. Then the only possible way is to add some public accessors to all of the private members. This will make your objects naked to all other parts of the system.<br>So encapsulation doesn’t mean being closed to all of the rest of the world. It means being selective about whom you want to be open to.</p>
+</blockquote>
+<p>出处：<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/17027139/access-private-field-of-another-object-in-same-class">Access private field of another object in same class</a></p>
+<hr>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://www.artima.com/lejava/articles/equality.html">How to Write an Equality Method in Java</a></li>
+<li>Core Java Volume I - Fundamentals</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Java/" rel="tag"># Java</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/08/maximum-subarray-problem/" rel="next" title="Maximum Subarray Problem & Kadane's Algorithm">
+                <i class="fa fa-chevron-left"></i> Maximum Subarray Problem & Kadane's Algorithm
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/08/18/kth-largest-in-an-array/" rel="prev" title="Kth Largest Element in an Array">
+                Kth Largest Element in an Array <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Object-equals"><span class="nav-number">1.</span> <span class="nav-text">Object.equals</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%82%A3%E4%B9%88%E5%A6%82%E4%BD%95%E5%9C%A8Java%E4%B8%AD%E5%A6%82%E4%BD%95%E9%87%8D%E5%86%99equals%E5%91%A2%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">那么如何在Java中如何重写equals呢？</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Pitfall-1-Defining-equals-with-wrong-signature"><span class="nav-number">2.1.</span> <span class="nav-text">Pitfall #1: Defining equals with wrong signature.</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Pitfall-2%EF%BC%9AChanging-equals-without-also-changing-hashCode"><span class="nav-number">2.2.</span> <span class="nav-text">Pitfall #2：Changing equals without also changing hashCode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Pitfall-3-Defining-equals-in-terms-of-mutable-fields"><span class="nav-number">2.3.</span> <span class="nav-text">Pitfall #3: Defining equals in terms of mutable fields.</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Pitfall-4-Failing-to-define-equals-as-an-equivalence-relation"><span class="nav-number">2.4.</span> <span class="nav-text">Pitfall #4: Failing to define equals as an equivalence relation</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8A%8A%E7%9B%B8%E7%AD%89%E5%85%B3%E7%B3%BB%E5%AE%9A%E4%B9%89%E5%BE%97%E6%9B%B4%E5%AE%BD%E6%B3%9B"><span class="nav-number">2.4.1.</span> <span class="nav-text">把相等关系定义得更宽泛</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8A%8A%E7%9B%B8%E7%AD%89%E5%85%B3%E7%B3%BB%E5%AE%9A%E4%B9%89%E5%BE%97%E6%9B%B4%E4%B8%A5%E6%A0%BC"><span class="nav-number">2.4.2.</span> <span class="nav-text">把相等关系定义得更严格</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#The-canEqual-Method"><span class="nav-number">2.4.3.</span> <span class="nav-text">The canEqual Method</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Class-level-access-modifier"><span class="nav-number">3.</span> <span class="nav-text">Class-level access modifier</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">4.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

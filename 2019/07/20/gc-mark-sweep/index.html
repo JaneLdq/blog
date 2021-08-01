@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="GC," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="在介绍JVM中提供的垃圾收集器之前，我觉得有必要先补充一下关于垃圾回收（以下简称 GC）的理论知识 —— 垃圾回收算法（以下简称 GC 算法）。 GC 算法的基本类型并不多，概括起来大概就以下三种：  标记-清除算法 (Mark-Sweep) - 由 John McCarthy 1960 年在论文 Recursive functions of symbolic expressions and th">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GC算法笔记（一）标记-清除算法">
+<meta property="og:url" content="http://liaodanqi.xyz/2019/07/20/gc-mark-sweep/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="在介绍JVM中提供的垃圾收集器之前，我觉得有必要先补充一下关于垃圾回收（以下简称 GC）的理论知识 —— 垃圾回收算法（以下简称 GC 算法）。 GC 算法的基本类型并不多，概括起来大概就以下三种：  标记-清除算法 (Mark-Sweep) - 由 John McCarthy 1960 年在论文 Recursive functions of symbolic expressions and th">
+<meta property="og:locale">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/reachability-analysis.svg">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/mark-sweep-memory.svg">
+<meta property="article:published_time" content="2019-07-20T07:36:14.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.539Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="GC">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/reachability-analysis.svg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2019/07/20/gc-mark-sweep/"/>
+
+
+
+
+
+  <title>GC算法笔记（一）标记-清除算法 | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2019/07/20/gc-mark-sweep/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">GC算法笔记（一）标记-清除算法</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-20T15:36:14+08:00">
+                2019-07-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在介绍JVM中提供的垃圾收集器之前，我觉得有必要先补充一下关于垃圾回收（以下简称 GC）的理论知识 —— 垃圾回收算法（以下简称 GC 算法）。</p>
+<p>GC 算法的基本类型并不多，概括起来大概就以下三种：</p>
+<ul>
+<li><strong>标记-清除算法</strong> (Mark-Sweep) - 由 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/John_McCarthy_(computer_scientist)">John McCarthy</a> 1960 年在论文 <em>Recursive functions of symbolic expressions and their computation by machine</em> 中提出的标记-清除算法。</li>
+<li><strong>引用计数法</strong> (Reference Counting) - 由 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/George_E._Collins">George E. Collins</a> 1960 年在论文 <em>A method for overlapping and erasure of lists</em> 提出的引用计数法。</li>
+<li><strong>复制算法</strong> (Copying) - 由 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Marvin_Minsky">Marwin L.Minsky</a> 1963 年在论文 <em>A Lisp garbage collector algorithm using serial secondary storage</em> 中提出的复制算法。</li>
+</ul>
+<p>在这之后还出现了各种各样的 GC 算法，但究其根本都可以归纳为以上三种算法的组合和应用。<br><span id="more"></span></p>
+<hr>
+<h1 id="GC-算法的评价标准"><a href="#GC-算法的评价标准" class="headerlink" title="GC 算法的评价标准"></a>GC 算法的评价标准</h1><p>聊算法总免不了要进行一番性能比较，既然要比较，就需要一些能够度量的标准。<br>以下列举了一些常见度量：</p>
+<ul>
+<li><strong>吞吐量 (Throughput)</strong> - 在一段较长的时间内， 非 GC 运行时间所占总运行时间的百分比。</li>
+<li><strong>GC 开销 (Garbage collection overhead)</strong> - 与吞吐量相反，即 GC 时间占总时间的百分比。</li>
+<li><strong>暂停时间 (Pause time)</strong> - 在整个程序执行过程中程序为了进行 GC 而停下来的时间。关于暂停时间的度量包括最大暂停时间、平均暂停时间和暂停时间的分布等。</li>
+<li><strong>收集频率 (Frequency of collectoin)</strong></li>
+<li><strong>堆利用效率</strong> - 不同的算法会引入不等的空间开销：<ul>
+<li>per-object 空间开销，比如引用计数法要求每个对象多加一块保存引用计数的空间，或者还有的算法需要标记位。</li>
+<li>per-heap 空间开销，比如复制算法只能利用一半的堆空间。</li>
+<li>额外的数据结构，比如跟踪式 GC 算法 (Tracing Garbarge Collection) 可能需要使用栈来跟踪遍历，或者要使用单独的bitmap来保存标记等。</li>
+</ul>
+</li>
+<li><strong>可扩展性和可移植性 (Scalability and Portability)</strong> - 随着硬件（多核、并行能力）的提升和扩展、内存空间的扩展，GC 算法是否能有效利用硬件。</li>
+</ul>
+<p>在选择 GC 算法时，要考虑到程序的应用场景，举几个例子：</p>
+<ul>
+<li><strong>交互式</strong> (interactive) 应用可能要求 GC 暂停时间要短，这样对用户操作才更友好。</li>
+<li><strong>非交互式</strong> (non-interactive) 应用，比如运行在后台的程序，对整个 GC 运行的时间的要求所占权重就更高。</li>
+<li><strong>实时</strong> (real-time) 应用则可能对 GC 暂停时间和 GC 总时间的占比上限都更低。</li>
+<li>运行在有限内存空间上的<strong>嵌入式</strong>应用可能对堆使用效率要求更高。</li>
+<li>…</li>
+</ul>
+<hr>
+<p>在进入本文的正题之前，还有一个问题要解决：<strong>哪些对象是需要回收的呢？</strong><br>这就涉及到一个判定方法 —— 可达性分析。</p>
+<h1 id="可达性分析"><a href="#可达性分析" class="headerlink" title="可达性分析"></a>可达性分析</h1><p>可达性分析 (Reachability Analysis) 是现在主流商用程序语言 (Java、C#等）的实现中用于判断对象是否存活的一种算法。<br>它的基本思想就是通过一组被称为 <strong>“GC Root”</strong> 的对象作为起始点，从这些节点开始遍历，所经过的路径被称为 <strong>“引用链”</strong>，当一个对象没有存在于任何一个 <strong>“GC Root”</strong> 的引用链上时，就证明此对象是<strong>不可达的</strong>。这些不可达的对象就是要回收的对象。</p>
+<p>举个例子，如下图所示，对象 object 6、object 7、object 8 都是GC Roots 不可达的，所以它们会被判定为可回收对象。<br><img src="/uploads/images/reachability-analysis.svg" alt="reachability analysis example"></p>
+<p>那么哪些对象属于 <strong>“GC Root”</strong> 呢？通常包括如下几类：</p>
+<ul>
+<li><strong>寄存器中的数据 (registers)</strong></li>
+<li><strong>栈中的数据 (stack)</strong></li>
+<li><strong>全局静态数据 (global static data)</strong></li>
+</ul>
+<p>一切就绪，我们终于可以揭开标记-清楚算法的神秘面纱了~</p>
+<hr>
+<h1 id="标记-清除算法"><a href="#标记-清除算法" class="headerlink" title="标记-清除算法"></a>标记-清除算法</h1><p>顾名思义，标记-清除 (Mark-Sweep) 算法分为两个阶段：</p>
+<ul>
+<li><strong>标记阶段</strong> - 先标记出所有需要回收的对象</li>
+<li><strong>清除阶段</strong> - 统一回收所有被标记的对象</li>
+</ul>
+<h2 id="标记阶段"><a href="#标记阶段" class="headerlink" title="标记阶段"></a>标记阶段</h2><p>标记阶段的主要工作就是利用可达性分析将需要回收的对象标记出来。<br>伪码如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">mark_phase () &#123;</span><br><span class="line">    <span class="comment">// 挨个遍历所有的 GC Roots</span></span><br><span class="line">    <span class="keyword">for</span> (r: roots) &#123;</span><br><span class="line">        mark(r)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">mark (obj) &#123;</span><br><span class="line">    <span class="keyword">if</span> (obj.mark == FALSE) &#123;</span><br><span class="line">        obj.mark = TRUE</span><br><span class="line">        <span class="comment">// 遍历子节点</span></span><br><span class="line">        <span class="keyword">for</span> (child: obj.children) &#123;</span><br><span class="line">            mark(child)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>考虑到深度优先遍历比广度优先遍历内存使用量要小一些，在标记阶段常用深度优先遍历</li>
+<li>标记阶段会标记所有的活动对象，由此可知，<strong>标记时间与活动对象的总数成正比</strong></li>
+</ul>
+<hr>
+<h2 id="清除阶段"><a href="#清除阶段" class="headerlink" title="清除阶段"></a>清除阶段</h2><p>在清除阶段，GC会遍历整个堆，回收未被标记的对象（即垃圾们）。<br>伪码如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">sweep_phase () &#123;</span><br><span class="line">    cursor = $heap_start; <span class="comment">// $heap_start表示堆首地址</span></span><br><span class="line">    <span class="keyword">while</span> (cursor &lt; $head_end) &#123;</span><br><span class="line">        <span class="keyword">if</span> (cursor.mark == TRUE) &#123;</span><br><span class="line">            cursor.mark = FALSE <span class="comment">// 重置标记状态，准备下一次的 GC</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 将当前对象空间释放，连接到空闲链表头部</span></span><br><span class="line">            cursor.next = $free_list</span><br><span class="line">            $free_list = cursor</span><br><span class="line">        &#125;</span><br><span class="line">        cursor += cursor.size <span class="comment">// 跳过当前对象所占空间，指向下一个对象</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>在清除阶段，GC 会遍历整个堆，也就是说，<strong>清除时间与堆大小成正比</strong></li>
+</ul>
+<p>我们可以通过一张图来看看堆中的空间在垃圾回收前后状态的变化：<br><img src="/uploads/images/mark-sweep-memory.svg" alt="mark-sweep memory"></p>
+<p>不难看出，经过多轮空间分配和垃圾回收后，堆从一整片完整的空间被划分为了很多不连续的碎片。空闲链表中的每个节点就都指向这样一个大小不一的分块。</p>
+<hr>
+<h3 id="合并"><a href="#合并" class="headerlink" title="合并"></a>合并</h3><p>如果在清除垃圾时发现前后两个分块是连续的，则可以考虑把小分块连在一起形成一个大分块。<br>这种<strong>连接连续分块</strong>的操作就叫做<strong>合并</strong>。</p>
+<p>合并在清除阶段进行，后续我们将看到的 Mark-Sweep-Compact 算法其实可以看作是对合并的进一步优化。</p>
+<hr>
+<h3 id="空间分配策略"><a href="#空间分配策略" class="headerlink" title="空间分配策略"></a>空间分配策略</h3><p>空间被回收后的分配策略又应该是怎样的呢？</p>
+<p>有三种分配策略可供选择：</p>
+<ul>
+<li><strong>First-Fit</strong> - 选择找到的<strong>首个</strong>大于等于所需要空间大小的分块。</li>
+<li><strong>Best-Fit</strong> - 选择找到的大于等于所需要空间的<strong>最小</strong>分块。</li>
+<li><strong>Worst-Fit</strong> - 找到空闲链表中<strong>最大</strong>的分块，将其分割为申请的大小和剩余的大小。目的是将分割后的分块最大化，但这样做很容易产生大量的小分块，<strong>不推荐使用</strong>。</li>
+</ul>
+<hr>
+<h1 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h1><p>优点很显然，<strong>实现简单</strong>。<br>什么，就这一条？<br>大道至简，这还不够优秀吗？</p>
+<hr>
+<h2 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h2><p>缺点那可得好好说说了。</p>
+<h3 id="碎片化-ragmentation"><a href="#碎片化-ragmentation" class="headerlink" title="碎片化 ragmentation)"></a>碎片化 ragmentation)</h3><p>上文也提到了，标记-清除算法在使用过程中会产生逐步被细化的分块。</p>
+<ul>
+<li>如果碎片化严重，即使堆中分块的总大小够用，也会<strong>因为每个分块太小而不能执行分配</strong>。</li>
+<li><p>一般在将数据从内存读取到缓存中时，考虑到“<strong>访问的局部性</strong>”效应，会将其附近的数据读取到缓存中。如果能把具有引用关系的对象安排在邻近位置则能提高在缓存中读取到想利用的数据的概率。而碎片化很可能导致对象相隔太远，<strong>降低高速缓存命中率</strong>。</p>
+<p>  <strong>「Note」</strong> 程序在运行时可能表现出良好的时间局部性或空间局部性，而高速缓存可以利用这样的局部性提升程序的性能。</p>
+<ul>
+<li><strong>时间局部性 (temporal locality)</strong> - 一旦程序访问了某个内存地址，则很可能在不久之后再次访问该地址，因此值得将它的值缓存。</li>
+<li><strong>空间局部性 (space locality)</strong> - 一旦程序访问了某个内存地址，则很可能在不久之后访问该地址附近的数据。<br>现代硬件可以从两方面利用程序的局部性，一方面，高速缓存与更低级别内存之间不会进行单个字节的数据传输，而是以固定字节数的最小传输单元，通常为 32 - 128 字节；另一方面，处理器可能会使用硬件预取 (prefetch) 技术，例如探测有规律的内存访问操作，从而提前读取数据流。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="分配速度受限"><a href="#分配速度受限" class="headerlink" title="分配速度受限"></a>分配速度受限</h3><p>由于分块不是连续的，每次分配都必须遍历空闲链表，找到足够大的分块。最坏的情况下，每次进行分配都会要遍历整个空闲链表。</p>
+<hr>
+<h3 id="与写时复制技术不兼容"><a href="#与写时复制技术不兼容" class="headerlink" title="与写时复制技术不兼容"></a>与写时复制技术不兼容</h3><p>写时复制技术 (Copy-on-write) 是指在复制进程时（比如执行fork()函数)只是装作复制了内存空间，实际上是将内存空间共享了。如果只是从内存空间上读数据，访问共享内存并没有问题。但是如果要进行写入操作，就不能直接重写共享内存，而需要复制自己私有空间的数据，对这个私有空间进行重写，复制后只访问这个私有空间而不再访问共享内存。也就是说，这么技术是<strong>在写入时才进行复制</strong>，因而被称为<strong>写时复制技术</strong>。</p>
+<p>正因为这种特性，标记-清除算法每次进行标记时都要对对象执行写入操作，从而触发<strong>写时复制</strong>，这样会导致频繁发生本不应该的发生的复制。</p>
+<hr>
+<h1 id="优化"><a href="#优化" class="headerlink" title="优化"></a>优化</h1><p>针对上文指出的缺点，我们可以针对性的采取一些优化措施。</p>
+<h2 id="多个空闲链表"><a href="#多个空闲链表" class="headerlink" title="多个空闲链表"></a>多个空闲链表</h2><p>由于空间的不连续性，每次都有可能要遍历整个链表来找到合适大小的分块。针对这一情况，我们可以按照分块大小创建多个空闲链表。比如创建一个分块大小全是 2 个字长的空闲链表，一个分块大小全是 3 个字长的空闲链表，…，一个分块大小全是 N 个字长的空闲链表。</p>
+<p>问题是，创建多少个空闲链表才好呢？总不能无止尽的建下去吧。</p>
+<p>一般来说，很少会申请非常大的分块，所以我们可以设定一个上限，如果分块大小大于等于这个大小，就都交给一个空闲链表处理。反正这种情况是极少数，效率低一点对整体的影响不大。</p>
+<hr>
+<h2 id="BiBOP"><a href="#BiBOP" class="headerlink" title="BiBOP"></a>BiBOP</h2><p>发生碎片化的原因之一就是堆上散布着大小各异的对象。而BiBOP (Big Bag of Pages) 的意思就是<strong>把堆分割成固定大小的块，每一块的大小可以不同，但一个特定大小的块只能配置同样大小的对象。</strong><br>这样做的目的原本是为了消除碎片化，但效果并不一定好。比如如果在全部用于 2 个字长的块中只有一个两个活动对象，其实大多数的 2 个字长的分块仍然是分散且未能利用的碎片。</p>
+<hr>
+<h2 id="位图标记"><a href="#位图标记" class="headerlink" title="位图标记"></a>位图标记</h2><p>前面提到的标记是直接作用在对象上，另一种标记方式则是将对象的标志位单独拎出来，与对象分开管理。通常我们称这组标志位的集合为<strong>位图表格 (bitmap table)</strong>。利用这个表进行标记的行为就被称为<strong>位图标记</strong>。<br>位图表格的实现方式有很多，数组、散列表、树形结构等都行，只要能保证每一位能与堆中的对象一一对应即可。一般来说，堆中的 1 个字会分配到 1 个位。</p>
+<p>位图标记比直接在对象上标记实现复杂，但这样做有两个好处：</p>
+<ul>
+<li><strong>与写时复制技术兼容</strong> - 使用位图标记就不需要对堆上的对象执行写入操作了，可以避免多余的对象复制。虽然对位图表的重写还是会触发对位图的复制，但位图表非常小，所以代价不那么大。</li>
+<li><strong>清除操作更高效</strong> - 利用位图表格的清除操作把对象的标志位集中到一起，可以快速重置标志位。</li>
+</ul>
+<p>「Note」如果有多个堆，一般会为每个堆准备一个位图表格。</p>
+<hr>
+<h2 id="延迟清除"><a href="#延迟清除" class="headerlink" title="延迟清除"></a>延迟清除</h2><p>上文有提到清除操作花费的时间与堆的大小成正比，处理的堆越大，清除需要的时间就越长。</p>
+<p>但是不是清除阶段的开销就时整个标记-清除过程的主要部分呢？这可不一定。这是因为标记阶段追踪指针过程中的内存访问模式是不可预测的，而清除阶段的可预测性要高得多，同时清除一个对象的开销也比追踪的开销小得多。因此，优化清除阶段高速缓存行为的一种方案是使用对象预取。</p>
+<p>除此之外，我们还可以考虑进一步降低清除阶段的暂停时间。分析可知，对象及其标记位具备两个特征：</p>
+<ul>
+<li>一旦某个对象成为垃圾，它将一直是垃圾，不能再被赋值器访问或复活；</li>
+<li>赋值器永远不会访问对象的标记位。</li>
+</ul>
+<p>由此，我们可以在赋值器工作的同时启动多个清除线程并发工作。</p>
+<p>当然啦，还有更简单的方案，那就是 —— 延迟清除 (Lazy Sweep) 。</p>
+<p>延迟清除是针对缩减清除操作所用时间的优化。主要改进就是<strong>在标记结束后，不一定立马进行清除操作，而是延迟到下一次为新对象分配空间时，将寻找可用空间加清除垃圾的任务放到分配空间的过程中</strong>。</p>
+<p>延迟清除采用一个全局变量来记录上一次清理后返回的分块结束的位置：</p>
+<ol>
+<li>当要申请新空间时，先检当前这个对象的标志位，如果被标记了则检查下一个；</li>
+<li>如果没被标记，则检查当前这个分块的大小够不够用，如果够用就直接返回分块并停止清除；</li>
+<li>如果不够，就继续找下一个</li>
+<li>如果没找到，就申请空间失败</li>
+</ol>
+<p>延迟清除不是一下遍历整个堆，而是只在分配时执行必要的遍历，从而缩短了清除操作导致的暂停时间。</p>
+<p><strong>「Note」延迟清除的效果是不均衡的。</strong></p>
+<ul>
+<li>如果可回收对象是连续的一片空间，形成了邻接状态，那么延迟清除能很快获得合适的分块</li>
+<li>如果延迟清除的指针进入了大批活动对象所处的范围，则很可能一直查询失败，直到遍历完所有的活动对象才找到合适的空闲分块</li>
+</ul>
+<hr>
+<p>很久以前看 Node 的时候也有概括过标记-清除算法，不过没有这么详细。<br>别看标记-清除的缺点不少，但它的主要思想真的是GC算法最最基本的始祖。那关于标记-清除算法的笔记到这里就差不多啦。</p>
+<p>7/21 17:26<br>熬夜加失眠使我现在脑子不太清醒，有点晕乎乎的，今天先这样吧。先去回个血，回见～</p>
+<p><strong>参考资料</strong></p>
+<ul>
+<li><em>垃圾回收的算法与实现</em></li>
+<li><em>垃圾回收算法手册：自动内存管理的艺术</em></li>
+<li><em>深入理解 Java 虚拟机（第二版）</em></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/GC/" rel="tag"># GC</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/07/13/java-memory-areas-and-oom/" rel="next" title="Java内存管理之运行时数据区">
+                <i class="fa fa-chevron-left"></i> Java内存管理之运行时数据区
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/07/28/gc-reference-counting/" rel="prev" title="GC算法笔记（二）引用计数法">
+                GC算法笔记（二）引用计数法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#GC-%E7%AE%97%E6%B3%95%E7%9A%84%E8%AF%84%E4%BB%B7%E6%A0%87%E5%87%86"><span class="nav-number">1.</span> <span class="nav-text">GC 算法的评价标准</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%AF%E8%BE%BE%E6%80%A7%E5%88%86%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">可达性分析</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A0%87%E8%AE%B0-%E6%B8%85%E9%99%A4%E7%AE%97%E6%B3%95"><span class="nav-number">3.</span> <span class="nav-text">标记-清除算法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%87%E8%AE%B0%E9%98%B6%E6%AE%B5"><span class="nav-number">3.1.</span> <span class="nav-text">标记阶段</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B8%85%E9%99%A4%E9%98%B6%E6%AE%B5"><span class="nav-number">3.2.</span> <span class="nav-text">清除阶段</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%88%E5%B9%B6"><span class="nav-number">3.2.1.</span> <span class="nav-text">合并</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A9%BA%E9%97%B4%E5%88%86%E9%85%8D%E7%AD%96%E7%95%A5"><span class="nav-number">3.2.2.</span> <span class="nav-text">空间分配策略</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-number">4.</span> <span class="nav-text">优缺点</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%BA%E7%82%B9"><span class="nav-number">4.1.</span> <span class="nav-text">缺点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A2%8E%E7%89%87%E5%8C%96-ragmentation"><span class="nav-number">4.1.1.</span> <span class="nav-text">碎片化 ragmentation)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E9%85%8D%E9%80%9F%E5%BA%A6%E5%8F%97%E9%99%90"><span class="nav-number">4.1.2.</span> <span class="nav-text">分配速度受限</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8E%E5%86%99%E6%97%B6%E5%A4%8D%E5%88%B6%E6%8A%80%E6%9C%AF%E4%B8%8D%E5%85%BC%E5%AE%B9"><span class="nav-number">4.1.3.</span> <span class="nav-text">与写时复制技术不兼容</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BC%98%E5%8C%96"><span class="nav-number">5.</span> <span class="nav-text">优化</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%9A%E4%B8%AA%E7%A9%BA%E9%97%B2%E9%93%BE%E8%A1%A8"><span class="nav-number">5.1.</span> <span class="nav-text">多个空闲链表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BiBOP"><span class="nav-number">5.2.</span> <span class="nav-text">BiBOP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%8D%E5%9B%BE%E6%A0%87%E8%AE%B0"><span class="nav-number">5.3.</span> <span class="nav-text">位图标记</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%B6%E8%BF%9F%E6%B8%85%E9%99%A4"><span class="nav-number">5.4.</span> <span class="nav-text">延迟清除</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

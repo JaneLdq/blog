@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Java,Servlet," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="从读书到工作，用 Java 写过一些 Web 应用，由于大多项目都是基于 Spring 开始，而 Spring 作为一个非常成熟的开发框架，为开发者隐去了很多底层细节，导致自己现在对于 Java Web 的基本运作原理的理解远不够深刻。为了弄明白 Java Web 到底是怎么一回事，我决定从 Tomcat 入手，好好捋一捋。 为什么是 Tomcat 呢？我们来看看 Tomcat 的官方介绍：  T">
+<meta property="og:type" content="article">
+<meta property="og:title" content="「认识 Tomcat」先导篇之 Servlet 是什么?">
+<meta property="og:url" content="http://liaodanqi.xyz/2020/08/12/java-servlet/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="从读书到工作，用 Java 写过一些 Web 应用，由于大多项目都是基于 Spring 开始，而 Spring 作为一个非常成熟的开发框架，为开发者隐去了很多底层细节，导致自己现在对于 Java Web 的基本运作原理的理解远不够深刻。为了弄明白 Java Web 到底是怎么一回事，我决定从 Tomcat 入手，好好捋一捋。 为什么是 Tomcat 呢？我们来看看 Tomcat 的官方介绍：  T">
+<meta property="og:locale">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/java-servlet.svg">
+<meta property="article:published_time" content="2020-08-12T12:13:25.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.545Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="Servlet">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/java-servlet.svg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2020/08/12/java-servlet/"/>
+
+
+
+
+
+  <title>「认识 Tomcat」先导篇之 Servlet 是什么? | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2020/08/12/java-servlet/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">「认识 Tomcat」先导篇之 Servlet 是什么?</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-08-12T20:13:25+08:00">
+                2020-08-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>从读书到工作，用 Java 写过一些 Web 应用，由于大多项目都是基于 Spring 开始，而 Spring 作为一个非常成熟的开发框架，为开发者隐去了很多底层细节，导致自己现在对于 Java Web 的基本运作原理的理解远不够深刻。为了弄明白 Java Web 到底是怎么一回事，我决定从 Tomcat 入手，好好捋一捋。</p>
+<p>为什么是 Tomcat 呢？我们来看看 Tomcat 的官方介绍：</p>
+<blockquote>
+<p>The Apache Tomcat® software is an open source implementation of the Java Servlet, JavaServer Pages, Java Expression Language and Java WebSocket technologies.</p>
+</blockquote>
+<p>还有什么能比 Tomcat 更合适用来学习 Java Web 相关的知识吗？</p>
+<p>那么，在我们深入了解 Tomcat 之前，先来认识一下 Java Web 中最基础的内容 —— Servlet。<br><span id="more"></span></p>
+<hr>
+<h1 id="Servlet-与-Servlet-Container"><a href="#Servlet-与-Servlet-Container" class="headerlink" title="Servlet 与 Servlet Container"></a>Servlet 与 Servlet Container</h1><p><strong>Servlet</strong> 这个单词看起来有点别扭，但知道它从何而来就很好理解了：<br><strong>Servlet 即 “Server Applet”</strong>， 意思就是<strong>运行在 Web Server 上的小程序 (Applet)</strong>，这些小程序接收并响应来自 Web 客户端的请求。</p>
+<p><strong>Servlet Container</strong>, 顾名思义，是装载这些 Servlet 的容器，并负责管理 Servlet 的生命周期。Tomcat 就是一款非常成熟的 Servlet Container，本系列笔记后续的内容将围绕 Tomcat 是如何实现 Servlet Container 的功能展开。在此之前，我们还是再聊聊 Servlet 吧。</p>
+<p>在 Java 中，Servlet 声明为接口，主要定义如下，非常简洁：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> javax.servlet;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Servlet</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">(ServletConfig config)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">service</span><span class="params">(ServletRequest req, ServletResponse res)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">destroy</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">String <span class="title">getServletInfo</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">ServletConfig <span class="title">getServletConfig</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>最重要的 <code>init()</code>, <code>service()</code> 和 <code>destroy()</code> 三个方法也体现了 Servlet 的生命周期：</p>
+<ol>
+<li><strong>初始化</strong></li>
+<li><strong>处理请求，返回响应</strong></li>
+<li><strong>被销毁</strong></li>
+</ol>
+<p>下面我们稍微展开介绍一下这段代码中涉及到的另外三个接口 <code>ServletConfig</code>, <code>ServletRequest</code> 和 <code>ServletResponse</code>。</p>
+<hr>
+<h1 id="ServletConfig-与-ServletContext"><a href="#ServletConfig-与-ServletContext" class="headerlink" title="ServletConfig 与 ServletContext"></a>ServletConfig 与 ServletContext</h1><p>在 Servlet 初始化时 Servlet Container 会传入一个 <code>ServletConfig</code> 对象，提供一些初始化参数和一个 <code>ServletContext</code> 对象。<br>下面是 <code>ServletConfig</code> 接口的声明，也很简洁：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ServletConfig</span> </span>&#123;</span><br><span class="line">    <span class="function">ServletContext <span class="title">getServletContext</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">String <span class="title">getServletName</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">String <span class="title">getInitParameter</span><span class="params">(String name)</span></span>;</span><br><span class="line">    <span class="function">Enumeration&lt;String&gt; <span class="title">getInitParameterNames</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><code>ServletContext</code> 是一个非常重要的接口，Container 提供者负责提供该接口的实现。Servlet 通过 <code>ServletContext</code> 与 Servlet Container 通信。通过 <code>ServletContext</code>，Servlet 可以记录日志、获取资源的URL、与同一个 context 下的其他 Servlet 共享属性等。</p>
+<p>下面是 <code>ServletContext</code> 声明的部分接口：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ServletContext</span> </span>&#123;</span><br><span class="line">    <span class="function">String <span class="title">getContextPath</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">// 记日志</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">log</span><span class="params">(String msg)</span></span>;</span><br><span class="line">    <span class="comment">// 获取资源</span></span><br><span class="line">    <span class="function">URL <span class="title">getResource</span><span class="params">(String path)</span></span>;</span><br><span class="line">    <span class="function">InputStream <span class="title">getResourceAsStream</span><span class="params">(String path)</span></span>;</span><br><span class="line">    <span class="comment">// 获取和配置初始化参数</span></span><br><span class="line">    <span class="function">String <span class="title">getInitParameter</span><span class="params">(String name)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">setInitParameter</span><span class="params">(String name, String value)</span></span>;</span><br><span class="line">    <span class="comment">// 获取和配置 Attributes</span></span><br><span class="line">    <span class="function">Object <span class="title">getAttribute</span><span class="params">(String name)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setAttribute</span><span class="params">(String name, Object object)</span></span>;</span><br><span class="line">    <span class="comment">// 添加和配置 Servlets</span></span><br><span class="line">    ServletRegistration.<span class="function">Dynamic <span class="title">addServlet</span><span class="params">(String servletName, String className)</span></span>;</span><br><span class="line">    <span class="comment">// 添加和配置 Filters</span></span><br><span class="line">    FilterRegistration.<span class="function">Dynamic <span class="title">addFilter</span><span class="params">(String filterName, String className)</span></span>;</span><br><span class="line">    <span class="comment">// 添加和配置 Listeners</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">addListener</span><span class="params">(String className)</span></span>;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>Web 服务器上的每一个 Web 应用都关联了一个 <code>ServletContext</code> 实例。</p>
+<hr>
+<h1 id="ServletRequest-与-ServletResponse"><a href="#ServletRequest-与-ServletResponse" class="headerlink" title="ServletRequest 与 ServletResponse"></a>ServletRequest 与 ServletResponse</h1><p><code>ServletRequest</code> 包含了客户端请求的所有信息。Servlet Container 在收到客户端请求后，负责将其封装成 <code>ServletRequest</code> 实例作为入参传递给 Servlet 的 <code>service</code> 方法。特定的协议请求可以继承该接口并扩展提供协议相关的数据。<code>javax.servlet.http.HttpServletRequest</code> 就继承了该接口并封装了 HTTP 协议特定的数据，比如 HTTP Header，HTTP Session 等。</p>
+<p><code>ServletResponse</code> 定义了一组接口用于 Servlet 响应请求。<code>ServletResponse</code> 的创建也有 Servlet Container 负责，并在调用 Servlet 的 <code>service</code> 方法时作为入参传入。</p>
+<p>下面是一张简单概括 Servlet, ServletConfig 和 ServletContext 关系的 UML 图：<br><img src="/uploads/images/java-servlet.svg" alt="Java Servlet"></p>
+<hr>
+<p><strong>参考资料</strong></p>
+<ul>
+<li>Java Servlet Specification 4.0</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Java/" rel="tag"># Java</a>
+          
+            <a href="/tags/Servlet/" rel="tag"># Servlet</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/05/05/java-singleton/" rel="next" title="在 Java 中实现单例模式">
+                <i class="fa fa-chevron-left"></i> 在 Java 中实现单例模式
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/01/20/csapp-bomb-lab/" rel="prev" title="CSAPP - Bomb Lab 笔记">
+                CSAPP - Bomb Lab 笔记 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Servlet-%E4%B8%8E-Servlet-Container"><span class="nav-number">1.</span> <span class="nav-text">Servlet 与 Servlet Container</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ServletConfig-%E4%B8%8E-ServletContext"><span class="nav-number">2.</span> <span class="nav-text">ServletConfig 与 ServletContext</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ServletRequest-%E4%B8%8E-ServletResponse"><span class="nav-number">3.</span> <span class="nav-text">ServletRequest 与 ServletResponse</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

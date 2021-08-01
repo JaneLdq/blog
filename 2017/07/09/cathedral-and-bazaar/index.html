@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="在前辈的介绍下阅读了The Cathedral and The Bazaar（《大教堂与集市》）这本书。本书的作者Eric S. Raymond（埃里克·斯蒂芬·雷蒙），被称作是”an open-source software advocate”，也是开放源代码促进会（Open Source Initiative）的主要创办人之一。《大教堂与集市》这本书1999年出版，在2017年来看已经是相当古">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《大教堂与集市》笔记与读后感">
+<meta property="og:url" content="http://liaodanqi.xyz/2017/07/09/cathedral-and-bazaar/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="在前辈的介绍下阅读了The Cathedral and The Bazaar（《大教堂与集市》）这本书。本书的作者Eric S. Raymond（埃里克·斯蒂芬·雷蒙），被称作是”an open-source software advocate”，也是开放源代码促进会（Open Source Initiative）的主要创办人之一。《大教堂与集市》这本书1999年出版，在2017年来看已经是相当古">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-07-09T15:19:42.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.533Z">
+<meta property="article:author" content="Jane Liao">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2017/07/09/cathedral-and-bazaar/"/>
+
+
+
+
+
+  <title>《大教堂与集市》笔记与读后感 | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2017/07/09/cathedral-and-bazaar/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">《大教堂与集市》笔记与读后感</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-09T23:19:42+08:00">
+                2017-07-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">读书笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在前辈的介绍下阅读了The Cathedral and The Bazaar（《大教堂与集市》）这本书。本书的作者Eric S. Raymond（埃里克·斯蒂芬·雷蒙），被称作是”an open-source software advocate”，也是开放源代码促进会（Open Source Initiative）的主要创办人之一。<br>《大教堂与集市》这本书1999年出版，在2017年来看已经是相当古老了，然而如今Linux开源社区的蓬勃发展恰好证实了书中提出的诸多观点。<br>ESR在书中总结了一些与软件开发相关的经验教训，包括他对开源与闭源软件开发模式的比较，他在开发Fetchmail的过程中对市集模式开发的试验结果等等。</p>
+<span id="more"></span>
+<h2 id="Lessons摘录"><a href="#Lessons摘录" class="headerlink" title="Lessons摘录"></a>Lessons摘录</h2><ol>
+<li>Every good work for software starts by scratching a developer’s personal itch.（每一个好的软件都源于戳到了开发者本人的痛点。）</li>
+<li>Good programmers know what to write. Great ones know what to rewrite(and reuse).（好的程序员知道要写什么，伟大的程序员知道要如何重写（与重用）。）<br> ESR在这里用到了一个词constructive laziness（建设性的懒惰），我觉得很形象。我们常说，聪明人都是会偷懒的人，怎么才能用最少的代价、在现有的资源上获得最大的利益或者是跟进一步的提升。既然已经有巨人的肩膀可以借用，或者即使只有几个台阶，那肯定是要比自己从零开始要简单的。<br> 至于如何获取台阶，怎么跟巨人搞好关系，一方面就跟个人的知识储备十分相关，另一方面也是考验快速获取与过滤信息的能力。</li>
+<li><p>“Plan to throw one away; you will, anyhow.” - Fred Brooks, The Mythical Man-Month （计划扔掉一个；无论如何，你总会扔掉一个的。——《人月神话》）</p>
+<blockquote>
+<p>You often don’t really understand the problem until after the first time you implement a solution. The second time, maybe you know enough to do it right. So if you want to get it right, be ready to start over at least one.</p>
+</blockquote>
+<p> 在读到上面这段时，深以为然。虽然现在比较正式的项目经验基本为零，但在之前的学习过程中，一般写出来的项目代码最后自己都不忍直视，实在是太糟糕了。这就是因为在实际开发过程中，很多问题在真正着手开始设计或实现时需要思考到的细节和深度是在初步设想中无法预料到的，在这一阶段会暴露出很多模糊的点，很可能在逐一弄明白之后发现原来的设计存在很多不合理。由此可得，在问题清晰以及有了初版的实现之后，对项目进行重构几乎是百分百要做的事情。</p>
+</li>
+<li><p>If you have the right attitude, interesting problems will find you.（如果你有正确的态度，有趣的问题自然就来了。）<br> 不知道怎样的态度才算正确能让我遇到有趣的灵魂呀。</p>
+</li>
+<li><p>When you lose interest in a program, your last duty to it is to hand it off to a competent successsor.（如果你对一个项目失去了兴趣，你最后的职责就是把它交给一个称职的继承者。）<br> 虽然你们没有能一起走到白头，但没买不成仁义在，请和平分手。</p>
+</li>
+<li><p>Treating your users as co-developers is your least-hassle route to rapid code improvement and effective debugging.（把用户当做合作者对待是通往快速改进代码和有效调试的最佳路径。）<br> 这一条在开源项目上能体现到代码级别，因为开源项目的用户很多也是对该项目感兴趣的开发者，在有编程背景（而且通常是能力很强的hacker）的用户参与下获取的改进信息通常也是高质量的。<br> 同时我觉得即使是从一般软件的开发过程来看，用户作为软件的最终使用者，与用户的持续合作也是保证产品从宏观的功能上不跑偏的有效措施。<br> ESR在这里提到了“Two-level architecture”和“Two-tier user community”，并以MATLAB为例指出“对于类似架构的产品，产品的开放部分——有一个巨大多样的用户群可以推敲的地方——才是动力、热情和创新的所在”。原文如下：</p>
+<blockquote>
+<p>Software products with a two-level architecture and a two-tier user community that combined a cathedral-mode core and a bazaar-mode toolbox. … Users of MATLAB and other products with a similar structure invariably report that the action, the ferment, the innovation mostly takes place in the open part of the tool where a large and varied community can tinker with it.</p>
+</blockquote>
+</li>
+<li><p>Release early. Release often. And listen to your customers.（早发布。常发布。听取用户意见。）<br> 1999年的观点，发展到2017年，其实已经不需要多说什么。也许完美主义者总是想把所有问题都解决好之后再发布一个产品，这样的变更代价是巨大的。尽早发布一个项目虽然会有很多bug，但是只要产品的核心价值能戳中用户的痛点，使其能忽视其他无伤大雅的bug就不会有问题了；再加上快速迭代，快速更新，认真汲取反馈的好态度，用户就像是到了一个味道超棒的小店，虽然这个餐厅有点小而乱，但美食的诱惑实在太大还是会成为忠实的回头客。</p>
+</li>
+<li><p>Given a large enough beta-tester and co-developer base, almost every problem will be characterized quickly and the fix obvious to someone.（如果beta测试者和合作开发者的群体足够大，几乎每个问题都会快速显形，会有人轻而易举地把它解决。）<br> 这里提炼出了ESR的著名理论Linus’s Law —— “Given enough eyeballs, all bugs are shallow.”。这其中包含了大教堂模式与市集模式的差别，即在市集模式中，有很多合作开发者琢磨分析一个新版本的产品，不同的人有不同的知识技能，从不同的角度看待问题，那么这些bug就很有可能对于一些人而言是非常简单的,从而快速解决问题。相反在大教堂模式下，只有少部分固定的人，可能需要花费很多时间来钻研。<br> Debugging is parallelizable.开源项目在开发上的优势：beta测试者对源码有一定了解，在提交bug发生时运行环境能给出更详细的描述，而不只是停留于表面症状；核心成员少，沟通成本较低（更多的是beta测试者和协助人员，这些外沿开发者通常是平行单独的子项目，彼此交接少）</p>
+</li>
+<li><p>Smart data structures and dumb code works a lot better than the other way around.（优秀的数据结构与简陋的代码组合远比反过来的组合好。）<br> 任何的业务逻辑都是对数据的处理，业务上的信息在收集、处理后在计算机的世界里都将被表现为数据。对数据的优雅存取、转换、处理、分析是十分重要的了，尤其在大数据爆炸的时代。所以要好好学数据结构呀。</p>
+</li>
+<li><p>If you treat your beta-testers as if they’re your most valuable resource, they will respond by becoming your most valuable resource.（如果你以“最有价值的资源”来对待你的beta测试者，他们会以成为“最有价值的资源”来回应）</p>
+</li>
+<li><p>The next best thing to having good ideas is recognizing good ideas from your users. Sometimes the latter is better.（仅次于拥有好主意的就是识别出来自于用户的好主意。有时候后者会更好。）</p>
+</li>
+<li><p>Often, the most striking and innovative solutions come from realizing that your concept of the problem was wrong.（最有突破和创新的方案常常来自于意识到你把问题的概念弄错了。）<br>这一点和第三条有点相似，在不断的深入分析问题的过程中，可能会出现顿悟的情况，茅塞顿开，突然意识到方向跑偏了。那么，也存在开发过程中遇到死胡同，死活找不到解决方案时，就需要想一想“问题”本身是对的吗？或许问题要需要重新定义哦。</p>
+</li>
+<li><p>“Perfection(in design) is achieved not when there is nothing more to add, but rather when there is nothing more to take away.” by Antoine de Saint-Exupéry（设计达到完美的时候，不是增加得不能再增加了，而是减少得不能再减少了。——圣埃克苏佩里，《小王子》作者）<br>在产品功能定位，软件设计包括后期的开发、迭代过程中，一直持有这个意识非常重要。很多时候，我们都觉得能够尽量多的为用户提供各种各样功能会增加用户友好度，仿佛提供了便捷。但更多的选择意味着更高的决策成本，更复杂的上手过程。<br>想起这句话，Less is more， by Ludwig Mies Van der Rohe，德国建筑师。</p>
+</li>
+<li><p>Any tool should be useful in the expected way, but a truly great tool lends itself to uses you never expected.（任何一个工具都应该达到预期的用处，但是一个真正棒的工具会带来你从未预想过的用处。）</p>
+</li>
+<li><p>When writing gateway software of any kind, take pains to disturb the data stream as little as possible - and never throw away information unless the recipient forces you to!（在写任何关口软件的时候，花点功夫尽可能不要干扰数据流——除非用户强迫你，永远不要扔掉任何信息。）</p>
+</li>
+<li><p>When your language is nowhere near Turing-complete, syntactic sugar can be your friend.（当你的语言离图灵穷尽还差得远的时候，给语法加点风味可以有所帮助。）<br>在计算资源昂贵的时期，程序员习惯选择更简洁无冗余的控制语法来编写程序，但是发展到今天，资源成本大大降低，软件的规模有可能会很大，那么代码的可读性、可维护性都要被纳入考虑。在成熟的开发过程中，不同的团队或者公司都会制定各自的代码风格或编码规范。</p>
+</li>
+<li><p>A security system is only as secure as its secret. Beware of pseudo-secrets.（一个安全系统的安全性取决于它保守的秘密的安全性。小心伪秘密。）<br>其实我没有很理解这一条，大概就是要注意区别一些看似提高了安全性的方法在实质上是否真的能做到这一点，是不是多此一举，暂时没有想出很好的例子。</p>
+</li>
+<li><p>To solve an interesting problem, start by finding a problem that is interesting to you.（要解决一个有意思的问题，首先找到一个你觉得有意思的问题。）<br>兴趣是最好的老师啦。</p>
+</li>
+<li><p>Provided the development coordinator has a communication medium at least as good as the Internet, and knows how to lead without coercion, many heads are inevitably better than one.（如果开发的协调者有一个至少和互联网一样好的通讯媒介，并且懂得如何不通过强迫来领导，多个头脑一定是由于单个头脑的）</p>
+</li>
+</ol>
+<h2 id="新的开始"><a href="#新的开始" class="headerlink" title="新的开始"></a>新的开始</h2><p>在阅读过程中，会觉得有些观点是显而易见的，有一些又是当看到作者提出来的后会觉得是能够在开发过程中以此作为新的切入点来思考问题的，在摘录时也加上了一些自己的理解，不管是浅陋还是深刻，希望从此培养起写读书笔记的习惯。:)<br>2017-07-09</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/03/24/js-singleton/" rel="next" title="JavaScript 中的单例模式">
+                <i class="fa fa-chevron-left"></i> JavaScript 中的单例模式
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/07/30/hacker-and-painter/" rel="prev" title="Hacker? Painter?">
+                Hacker? Painter? <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Lessons%E6%91%98%E5%BD%95"><span class="nav-number">1.</span> <span class="nav-text">Lessons摘录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B0%E7%9A%84%E5%BC%80%E5%A7%8B"><span class="nav-number">2.</span> <span class="nav-text">新的开始</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

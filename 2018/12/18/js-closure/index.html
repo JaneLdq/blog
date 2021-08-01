@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="JavaScript," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="上周正好在跟同事一起看了一个跟闭包有一点点相关的小问题，忘性太大，赶紧温习一波。记得最开始听到”闭包“这个词的时候觉得好高深，但是看英文原词”Closure“就感觉还好诶ˊ_&gt;ˋ  不过在认识闭包之前，我们先要弄清楚两个概念：执行环境(execution context)和作用域(scope)。 执行环境与作用域是什么？一个变量或函数（在js中，函数的本质也是一个变量）的执行环境定义了它当前">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JavaScript中的闭包是什么？">
+<meta property="og:url" content="http://liaodanqi.xyz/2018/12/18/js-closure/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="上周正好在跟同事一起看了一个跟闭包有一点点相关的小问题，忘性太大，赶紧温习一波。记得最开始听到”闭包“这个词的时候觉得好高深，但是看英文原词”Closure“就感觉还好诶ˊ_&gt;ˋ  不过在认识闭包之前，我们先要弄清楚两个概念：执行环境(execution context)和作用域(scope)。 执行环境与作用域是什么？一个变量或函数（在js中，函数的本质也是一个变量）的执行环境定义了它当前">
+<meta property="og:locale">
+<meta property="og:image" content="http://static.zybuluo.com/JaneL/ubs2fqmhn2tr4px5w2pogukr/image.png">
+<meta property="article:published_time" content="2018-12-18T11:43:32.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.548Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="JavaScript">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://static.zybuluo.com/JaneL/ubs2fqmhn2tr4px5w2pogukr/image.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2018/12/18/js-closure/"/>
+
+
+
+
+
+  <title>JavaScript中的闭包是什么？ | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2018/12/18/js-closure/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">JavaScript中的闭包是什么？</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-18T19:43:32+08:00">
+                2018-12-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>上周正好在跟同事一起看了一个跟闭包有一点点相关的小问题，忘性太大，赶紧温习一波。<br>记得最开始听到”闭包“这个词的时候觉得好高深，但是看英文原词”Closure“就感觉还好诶ˊ_&gt;ˋ</p>
+<hr>
+<p>不过在认识闭包之前，我们先要弄清楚两个概念：<strong>执行环境(execution context)</strong>和<strong>作用域(scope)</strong>。</p>
+<h1 id="执行环境与作用域是什么？"><a href="#执行环境与作用域是什么？" class="headerlink" title="执行环境与作用域是什么？"></a>执行环境与作用域是什么？</h1><p>一个变量或函数（在js中，函数的本质也是一个变量）的执行环境<strong>定义了它当前可以访问的数据（可以读到什么）和它应有的行为（可以做些什么操作）</strong>。每个执行环境都关联了一个<strong>变量对象</strong>(variable object)，环境中定义的所有变量和函数都保存在这个对象中。</p>
+<p>全局环境是指最外层的一个执行环境，根据ECMAScript实现的宿主环境不同，表示全局环境的变量对象也不同。在Web浏览器中，window对象都代表了全局执行环境，所有的全局变量和函数都被创建为window对象的属性和方法。<br><span id="more"></span></p>
+<p>每个函数都有自己的执行环境，当进入一个函数时，这个函数的执行环境被压入一个专门管理执行环境的栈中，当这个函数执行完成后，这个函数的执行环境从栈中弹出，控制权交还给外层函数的执行环境。</p>
+<p>当代码在某个执行环境中时，会为这个环境的变量对象创建一个<strong>作用域链(scope chain)</strong>。既然是个<strong>链</strong>，也就表示它是<strong>有序的</strong>。作用域链的目的就是<strong>保证对执行环境有权访问的所有变量和函数的有序访问</strong>。当前执行的代码所处的执行环境最优先，由内而外直到全局环境。</p>
+<p>函数运行时对标识符的解析就是沿着作用域链进行搜索哒。</p>
+<p>举个例子：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 最外层一个匿名函数，它的执行环境里面定义了一个变量outerColor和一个函数changeColor</span></span><br><span class="line">(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> outerColor = <span class="string">&quot;blue&quot;</span>;</span><br><span class="line">    <span class="comment">// 内层函数changeColor，它的执行环境里定义了一个变量innerColor和一个函数swapColors</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">changeColor</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">var</span> innerColor = <span class="string">&quot;red&quot;</span>;</span><br><span class="line">        <span class="comment">// 最内层函数swapColor，它的执行环境里又定义了一个变量tempColor</span></span><br><span class="line">        <span class="function"><span class="keyword">function</span> <span class="title">swapColors</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">            <span class="keyword">var</span> tempColor = innerColor;</span><br><span class="line">            innerColor = outerColor;</span><br><span class="line">            outerColor = tempColor;</span><br><span class="line">        &#125;</span><br><span class="line">        swapColors();</span><br><span class="line">    &#125;</span><br><span class="line">    changeColor();</span><br><span class="line">&#125;)();</span><br></pre></td></tr></table></figure></p>
+<p>下图为swapColors函数的作用域链结构，可以看到scope中有四个对象，第一个Local表示当前执行环境的变量对象，第二个是changeColor，第三个是外层匿名函数，最后一个是Global：<br><img src="http://static.zybuluo.com/JaneL/ubs2fqmhn2tr4px5w2pogukr/image.png" alt="scope chain example"></p>
+<p>在本例中，当执行到swapColor函数内部时：</p>
+<ol>
+<li>先从作用域链的首端（即它自己的执行环境）开始找innerColor，找不到，于是从作用域链的下一个执行环境（即往外一层）中找，即changeColor的执行环境，找到了，执行下一条语句；</li>
+<li>又开始从作用域链首端查询outerColor，又没找到，跳到外一层执行环境，还是没有，再往外走一层，在匿名函数的执行环境中找到了outerColor，执行下一条语句；</li>
+<li>执行完毕后，当前执行环境从栈中弹出，回到changeColor的执行环境。依次类推，直到代码执行完毕。</li>
+</ol>
+<p><strong>「Note」</strong> 一个函数的执行环境由它的活动对象（activation object）表示。每个活动对象初始时都只包含一个arguments对象。</p>
+<hr>
+<h1 id="闭包又是什么？"><a href="#闭包又是什么？" class="headerlink" title="闭包又是什么？"></a>闭包又是什么？</h1><p>了解了上面两个概念，闭包的定义就比较好懂了。<strong>闭包是指有权访问到另一个函数作用域中的变量的函数。</strong></p>
+<blockquote>
+<p>Closures are functions that have access to variables from another function’s scope.<br>from <em>Professional JavaScript for Web Developers</em></p>
+</blockquote>
+<p>创建闭包的常见方式就是在一个函数内部创建另一个函数。</p>
+<p>举个例子：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createCompareFunc</span>(<span class="params">propertyName</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 返回一个匿名函数，这个函数可以访问包含函数的参数propertyName</span></span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params">obj1, obj2</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">var</span> val1 = obj1[propertyName];</span><br><span class="line">        <span class="keyword">var</span> val2 = obj2[propertyName];</span><br><span class="line">        <span class="keyword">if</span> (val1 &lt; val2 ) &#123;</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (val1 &gt; val2) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> compareNames = createCompareFunc(<span class="string">&quot;name&quot;</span>);</span><br><span class="line"><span class="keyword">var</span> result = compareNames(&#123;<span class="attr">name</span>: <span class="string">&quot;Tom&quot;</span>&#125;, &#123;<span class="attr">name</span>: <span class="string">&quot;Jerry&quot;</span>&#125;);</span><br></pre></td></tr></table></figure></p>
+<p>一般当某个函数执行完毕后，这个函数的局部活动对象会被销毁。然而闭包的情况却不太一样。</p>
+<p>在上例中，调用createCompareFunc返回了一个匿名函数，这个匿名函数的作用域链中包含了createCompareFunc函数的活动对象和全局变量对象。因此createCompareFunc函数在执行完毕后，它的执行环境的作用域链被销毁了，但是它的活动对象并不会被销毁，因为匿名函数的作用域链中还保留对它的引用。直到匿名函数也被销毁后，createCompareFunc的活动对象才被销毁。</p>
+<p>比如我们在获得result之后，解除对匿名函数的引用，以便释放内存：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> compareNames = createCompareFunc(<span class="string">&quot;name&quot;</span>); <span class="comment">// 创建</span></span><br><span class="line"><span class="keyword">var</span> result = compareNames(&#123;<span class="attr">name</span>: <span class="string">&quot;Tom&quot;</span>&#125;, &#123;<span class="attr">name</span>: <span class="string">&quot;Jerry&quot;</span>&#125;); <span class="comment">// 调用</span></span><br><span class="line">compareNames = <span class="literal">null</span>; <span class="comment">// 释放</span></span><br></pre></td></tr></table></figure></p>
+<p><strong>「Note」</strong> 由于闭包会携带包含它的函数的作用域，所以会比一般函数占用更多的内存。所以<strong>不要过度使用闭包</strong>哦～最好<strong>只在必要时使用</strong>～</p>
+<hr>
+<h2 id="聊聊循环中的setTimeout"><a href="#聊聊循环中的setTimeout" class="headerlink" title="聊聊循环中的setTimeout"></a>聊聊循环中的setTimeout</h2><p>几乎只要是javascript笔面试，就会看到一道经典的setTimeout题目：<br>问下面这段代码控制台里会打印出来什么呢？会是0，1，2，3，4吗？<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">    <span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> <span class="built_in">console</span>.log(i), <span class="number">1000</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>当然并不会了，你只会看到5，5，5，5，5～</p>
+<p>为什么会这样呢？认真想一下，在setTimeout中创建的每个匿名函数在读取i的值时，会去它的作用域链中查询，最终它们都会在全局变量对象找到i，也就是说它们引用的都是同一个变量。而闭包只能取得包含函数中任何变量的最后一个值。所以，打印出来的都是5啦～</p>
+<p>那么怎么才能使得代码达到预期效果呢？我们可以通过再创建一个立即执行的匿名函数，由于参数是值传递的，所以每次调用会将i的当前值传给参数num，然后这个匿名函数的内部再创建一个访问num的闭包，这样就能达到预期了。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">    (<span class="function">(<span class="params">num</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> <span class="built_in">console</span>.log(num), <span class="number">1000</span>);</span><br><span class="line">    &#125;)(i);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>上面这个做法相当于使用匿名函数仿造了一个块级作用域。将函数声明包含在一对圆括号中，其后紧跟一对圆括号，以立即调用这个函数。这种函数也被成为<a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Glossary/IIFE">IIFE</a>(Immediately Invoked Function Expression)。：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 这里就是块级作用域</span></span><br><span class="line">&#125;)();</span><br></pre></td></tr></table></figure></p>
+<p>当然了，这些操作es6之前的做法啦，在ES6之后，有支持块级作用域的let，这个问题就很好解决了，只需要把var换成let就好啦～<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">    <span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> <span class="built_in">console</span>.log(i), <span class="number">1000</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<hr>
+<ul>
+<li><strong>参考资料</strong></li>
+<li><em>Professional JavaScript for Web Developers, 3rd</em></li>
+<li><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures">MDN - Closures</a></li>
+<li><a target="_blank" rel="noopener" href="https://medium.com/javascript-scene/master-the-javascript-interview-what-is-a-closure-b2f0d2152b36">What is a Closure?</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/JavaScript/" rel="tag"># JavaScript</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/09/jdbc-resultset/" rel="next" title="JDBC二三事之ResultSet">
+                <i class="fa fa-chevron-left"></i> JDBC二三事之ResultSet
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/12/19/js-recursion/" rel="prev" title="JS中的递归函数怎么写？">
+                JS中的递归函数怎么写？ <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C%E7%8E%AF%E5%A2%83%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">执行环境与作用域是什么？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AD%E5%8C%85%E5%8F%88%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">闭包又是什么？</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%81%8A%E8%81%8A%E5%BE%AA%E7%8E%AF%E4%B8%AD%E7%9A%84setTimeout"><span class="nav-number">2.1.</span> <span class="nav-text">聊聊循环中的setTimeout</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

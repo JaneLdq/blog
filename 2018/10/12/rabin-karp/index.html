@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="字符串搜索,Rabin-Karp," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前面介绍的KMP和Boyer-Moore算法都是基于最基本的字符比较来搜索字符串，这里要介绍的第三种经典算法，其思路与前者完全不同，它就是——Rabin-Karp算法，一个基于Hashing进行字符串搜索的算法。 Rabin-Karp算法主要由两位大师在1987年提出，一位是以色列的Michael O. Rabin，一位是美国的Richard M. Karp。因为其内部哈希函数的实现多采用Rabi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="字符串搜索玩耍指南（三）- Rabin-Karp算法">
+<meta property="og:url" content="http://liaodanqi.xyz/2018/10/12/rabin-karp/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="前面介绍的KMP和Boyer-Moore算法都是基于最基本的字符比较来搜索字符串，这里要介绍的第三种经典算法，其思路与前者完全不同，它就是——Rabin-Karp算法，一个基于Hashing进行字符串搜索的算法。 Rabin-Karp算法主要由两位大师在1987年提出，一位是以色列的Michael O. Rabin，一位是美国的Richard M. Karp。因为其内部哈希函数的实现多采用Rabi">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-10-12T12:13:08.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.557Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="字符串搜索">
+<meta property="article:tag" content="Rabin-Karp">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2018/10/12/rabin-karp/"/>
+
+
+
+
+
+  <title>字符串搜索玩耍指南（三）- Rabin-Karp算法 | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2018/10/12/rabin-karp/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">字符串搜索玩耍指南（三）- Rabin-Karp算法</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-12T20:13:08+08:00">
+                2018-10-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index">
+                    <span itemprop="name">算法</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>前面介绍的KMP和Boyer-Moore算法都是基于最基本的字符比较来搜索字符串，这里要介绍的第三种经典算法，其思路与前者完全不同，它就是——Rabin-Karp算法，一个<strong>基于Hashing进行字符串搜索的算法</strong>。</p>
+<p><em>Rabin-Karp算法主要由两位大师在1987年提出，一位是以色列的<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Michael_O._Rabin">Michael O. Rabin</a>，一位是美国的<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Richard_M._Karp">Richard M. Karp</a>。因为其内部哈希函数的实现多采用Rabin提出的<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Rabin_fingerprint">Rabin fingerprint</a>算法。Rabin-Karp算法又被称为”the Fingerprint Method”。</em></p>
+<p><strong>基于Hashing搜索字符串</strong>，这么简单的一句话，就涵盖了Rabin-Karp算法的主要思想。</p>
+<p>给定长度为M的目标字符串pattern和长度为<code>N</code>的文本<code>text</code>，采用<strong>某种Hash函数</strong>计算出<code>pattern</code>的<code>Hash</code>值<code>P</code>，然后遍历<code>text</code>，计算每段长度为<code>M</code>的子串的Hash值<code>Q</code>，如果<code>P等于Q</code>，那么就匹配成功。</p>
+<p>这里面最重要的问题就是如何选择Hash函数：</p>
+<ol>
+<li>如果Hash函数本身的计算成本太高，也会降低效率；</li>
+<li>如果Hash函数的冲突率太高，那么对于两个Hash值相同的字符串我们并不敢相信它们是相同的，最纵横还是会需要挨个进行字符比较，Hash值也就失去其意义所在，最差的情况下时间复杂度会达到O(MN)，甚至比暴力解决更慢（因为计算Hash值也要时间）。</li>
+</ol>
+<span id="more"></span>
+<hr>
+<h2 id="Hashing效率是关键"><a href="#Hashing效率是关键" class="headerlink" title="Hashing效率是关键"></a>Hashing效率是关键</h2><p>我们可以将长度为<code>M</code>的字符串<code>pattern</code>映射为一个<code>M</code>位的以<code>R</code>为底(M-digit base-R number)的数值<code>X</code>，那么一种最基本的取其Hash值的方式就是选取一个素数<code>Q</code>，然后取<code>X mod Q</code>为<code>pattern</code>的Hash值。</p>
+<p>代码如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">hash</span><span class="params">(String key, <span class="keyword">int</span> M)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> h = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; M; i++) &#123;</span><br><span class="line">        <span class="comment">// M-digit base-R number的值，可能非常大，所以这里应用了一个小技巧</span></span><br><span class="line">        <span class="comment">// 借用霍纳规则和余数的特性</span></span><br><span class="line">        h = (R * h + key.charAt(i)) % Q;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> h;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>显然，上面这个Hash函数函数是关键<br>一般想到求字符串的Hash值，大多要用到字符串的每个字符，对于长度为M的字符串而言，这就需要O(M)的时间开销。在最坏的情况下，字符串搜索会消耗O(MN)的时间。</p>
+<p>这显然不是我们想要的。</p>
+<hr>
+<p>Rabin-Karp算法之所以被称之为Rabin-karp，正式因为Rabin和Karp找到了一种只需常数时间开销的Hash函数，使得搜索能在线性时间内完成。</p>
+<p>这个算法的思路看懂之后也是真的很精简，就两个公式。</p>
+<p>我们假设 <strong>t<sub>i</sub></strong> 表示<code>text.charAt(i)</code>，那么从<code>text</code>的位置<code>i</code>开始长度为<code>M</code>的字符串对应的以<code>R</code>为底的数值可以用如下公式表示：</p>
+<blockquote>
+<p><strong><em>x</em><sub>i</sub> = <em>t</em><sub>i</sub><em>R</em><sup>M-1</sup> + <em>t</em><sub>i+1</sub><em>R</em><sup>M-2</sup> + … + <em>t</em><sub>i+M-1</sub><em>R</em><sup>0</sup></strong></p>
+</blockquote>
+<p>那将<code>i</code>向前挪一步，可得：</p>
+<blockquote>
+<p><strong><em>x</em><sub>i+1</sub> = (<em>x</em><sub>i</sub> - <em>t</em><sub>i</sub><em>R</em><sup>M-1</sup>)<em>R</em> + <em>t</em><sub>i+M</sub><em>R</em><sup>0</sup></strong></p>
+</blockquote>
+<p>定义<strong>x<sub>i</sub></strong>的Hash值：</p>
+<blockquote>
+<p><strong>h(<em>x</em><sub>i</sub>) = <em>x</em><sub>i</sub> mod <em>Q</em></strong></p>
+</blockquote>
+<p>那么，利用取余的几个等价关系，我们并不需要保留这些值(x<sub>i</sub> for i = 0, 1, …)，只保留h(x<sub>i</sub>)就可以了。（记不清余数定理可以看<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Modulo_operation#Equivalencies">Wiki - Modulo Operation Equivalencies</a>回顾一下。）</p>
+<hr>
+<h2 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h2><p>如果觉得还差了点直观感受，可以看看下面的实现代码，加深一下理解。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RabinKarp</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> R = <span class="number">256</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String pattern;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">long</span> patternHash;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> M;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">long</span> Q;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> RM; <span class="comment">// R^(M-1) % Q</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">RabinKarp</span><span class="params">(String pattern)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.pattern = pattern;</span><br><span class="line">        M = pattern.length();</span><br><span class="line">        Q = longRandomPrime();</span><br><span class="line">        RM = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= M - <span class="number">1</span>; i++) &#123;</span><br><span class="line">            RM = (R * RM) % Q;</span><br><span class="line">        &#125;</span><br><span class="line">        patternHash = hash(pattern, M);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">search</span><span class="params">(String txt)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> n = txt.length();</span><br><span class="line">        <span class="keyword">long</span> txtHash = hash(txt, M);</span><br><span class="line">        <span class="keyword">if</span> (patternHash == txtHash) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = M; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="comment">// 向前移动一位，先移除前一位字符</span></span><br><span class="line">            txtHash = (txtHash + Q - RM * txt.charAt(i - M) % Q) % Q;</span><br><span class="line">            <span class="comment">// 加上最后新增的的一位字符</span></span><br><span class="line">            txtHash = (txtHash * R + txt.charAt(i)) % Q;</span><br><span class="line">            <span class="comment">// check for match</span></span><br><span class="line">            <span class="keyword">if</span> (patternHash == txtHash) &#123;</span><br><span class="line">                <span class="keyword">if</span> (check(txt, i - M + <span class="number">1</span>)) <span class="keyword">return</span> i - M + <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> n;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Monte Carlo version - 允许一定的误差，不做进一步的字符串比较</span></span><br><span class="line"><span class="comment">     * Las Vegas version - 在Hash值相同的情况下，进行挨个字符的比较</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">check</span><span class="params">(String txt, <span class="keyword">int</span> i)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// Las Vegas</span></span><br><span class="line">        <span class="comment">// for (int j = 0; j &lt; M; j++) &#123;</span></span><br><span class="line">        <span class="comment">//   if (pattern.charAt(j) != txt.charAt(i + j)) return false;</span></span><br><span class="line">        <span class="comment">// &#125;</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;  <span class="comment">// Monte Carlo Version</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">long</span> <span class="title">hash</span><span class="params">(String key, <span class="keyword">int</span> M)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">long</span> h = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; M; j++) &#123;</span><br><span class="line">            h = (R * h + key.charAt(j)) % Q;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> h;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">long</span> <span class="title">longRandomPrime</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        BigInteger prime = BigInteger.probablePrime(<span class="number">31</span>, <span class="keyword">new</span> Random());</span><br><span class="line">        <span class="keyword">return</span> prime.longValue();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="Monte-Carlo-v-s-Las-Vegas"><a href="#Monte-Carlo-v-s-Las-Vegas" class="headerlink" title="Monte Carlo v.s. Las Vegas"></a>Monte Carlo v.s. Las Vegas</h3><p>认真开代码的朋友会发现，代码中提供了一个<code>check</code>方法，注释里提到了两个版本<strong>Monte Carlo</strong>和<strong>Las Vegas</strong>。这两个赌城的名字在这里分别代表了两种随机算法：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Monte_Carlo_algorithm">Monte Carlo Alogrithms</a>：尽量找到好的，但不保证是最好的</li>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Las_Vegas_algorithm">Las Vegas Algorithms</a>：尽量找到最好的，但不保证能找到</li>
+</ul>
+<p>对于上面的实现来说，如果我们选择的Q的值非常大，比如10<sup>20</sup>，这就表示在Hash值相等时出现冲突的概率为10<sup>-20</sup>，如果你能接受这个误差，那么就可以选择Monte Carlo版本，以保证线性时间复杂度。如果这是应用在一个要求非常严谨的程序中，那么你就可以选择Las Vegas版本，牺牲时间来确保正确。</p>
+<p>PS：对这两个名字感到好奇，上网查了一下，挺有意思：</p>
+<blockquote>
+<p><em>“这两个名字来源于两个著名的赌城，因为不完全采样的随机算法，就是在赌自己能在有限的采样次数内命中最优解或者足够接近最优解的解。”</em></p>
+</blockquote>
+<hr>
+<p>关于字符串搜索的系列到这里就暂时告一段落啦，太多细枝末节的东西也没有深究，还是加上“入门”两个字比较合适～</p>
+<hr>
+<p>参考资料：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Rabin%E2%80%93Karp_algorithm">Wikipedia - Rabin-Karp Alogrithm</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/20254139">蒙特卡罗算法是什么？</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%90%9C%E7%B4%A2/" rel="tag"># 字符串搜索</a>
+          
+            <a href="/tags/Rabin-Karp/" rel="tag"># Rabin-Karp</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/10/08/boyer-moore/" rel="next" title="字符串搜索玩耍指南（二）- Boyer-Moore算法">
+                <i class="fa fa-chevron-left"></i> 字符串搜索玩耍指南（二）- Boyer-Moore算法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/16/web-authentication-intro/" rel="prev" title="Web认证那些事儿（一）从用户体验感受认证流程">
+                Web认证那些事儿（一）从用户体验感受认证流程 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Hashing%E6%95%88%E7%8E%87%E6%98%AF%E5%85%B3%E9%94%AE"><span class="nav-number">1.</span> <span class="nav-text">Hashing效率是关键</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.</span> <span class="nav-text">代码实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Monte-Carlo-v-s-Las-Vegas"><span class="nav-number">2.1.</span> <span class="nav-text">Monte Carlo v.s. Las Vegas</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

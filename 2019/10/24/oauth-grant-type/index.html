@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="网络安全,OAuth,认证与授权," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="在上一篇笔记中，我们了解了一些 OAuth 2.0 中的概念，其中最重要的就是 OAuth 2.0 的四个角色：资源拥有者（用户）、客户端、授权服务器和资源服务器。在本篇笔记里，我们将介绍 OAuth 2.0 中的授权类型。 针对不同的授权场景，OAuth 2.0 定义了 4 种授权类型：  Authorization Code Implicit Resource Owner Password C">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浅谈 OAuth 2.0 (二) - 授权类型">
+<meta property="og:url" content="http://liaodanqi.xyz/2019/10/24/oauth-grant-type/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="在上一篇笔记中，我们了解了一些 OAuth 2.0 中的概念，其中最重要的就是 OAuth 2.0 的四个角色：资源拥有者（用户）、客户端、授权服务器和资源服务器。在本篇笔记里，我们将介绍 OAuth 2.0 中的授权类型。 针对不同的授权场景，OAuth 2.0 定义了 4 种授权类型：  Authorization Code Implicit Resource Owner Password C">
+<meta property="og:locale">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/oauth2-code-grant.png">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/oauth2-implicit-grant.png">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/oauth2-resource-owner-credentials-grant.png">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/oauth2-client-credentials-grant.png">
+<meta property="article:published_time" content="2019-10-24T02:27:06.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.555Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="网络安全">
+<meta property="article:tag" content="OAuth">
+<meta property="article:tag" content="认证与授权">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/oauth2-code-grant.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2019/10/24/oauth-grant-type/"/>
+
+
+
+
+
+  <title>浅谈 OAuth 2.0 (二) - 授权类型 | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2019/10/24/oauth-grant-type/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">浅谈 OAuth 2.0 (二) - 授权类型</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-24T10:27:06+08:00">
+                2019-10-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在上一篇笔记中，我们了解了一些 OAuth 2.0 中的概念，其中最重要的就是 OAuth 2.0 的四个角色：<strong>资源拥有者（用户）</strong>、<strong>客户端</strong>、<strong>授权服务器</strong>和<strong>资源服务器</strong>。在本篇笔记里，我们将介绍 OAuth 2.0 中的授权类型。</p>
+<p>针对不同的授权场景，OAuth 2.0 定义了 4 种授权类型：</p>
+<ul>
+<li><strong>Authorization Code</strong></li>
+<li><strong>Implicit</strong></li>
+<li><strong>Resource Owner Password Credentials</strong></li>
+<li><strong>Client Credentials</strong></li>
+</ul>
+<p>这里的应用场景主要指的是客户端的类型，一方面指 public 或 confidential，另一方面指具体种类，比如web 应用、native 移动应用、不包含浏览器的设备，又或者是客户端也是一个 server。根据不同的情况，客户端获取 Access Token 的过程也不尽相同。</p>
+<p>除此之外，OAuth 2.0 还支持自定义扩展授权类型。</p>
+<p>下面我们就分别来看看这四种授权类型的详细定义吧。</p>
+<span id="more"></span>
+<hr>
+<h2 id="Authorization-Code"><a href="#Authorization-Code" class="headerlink" title="Authorization Code"></a>Authorization Code</h2><p>Authorization Code（授权码）这一授权类型基于重定向的过程，因此在整个授权过程中，有多个步骤要求 User Agent（通常指浏览器，这一组件在上图中没有体现）的参与。它既可以用来获取 Access Token，也可以用来获取 Refresh Token。</p>
+<p>先看图：<br><img src="/uploads/images/oauth2-code-grant.png" alt="Authorization Code Grant"></p>
+<ol>
+<li>客户端通过 User Agent 向授权服务器发起获取授权码的请求，在请求中会带上 <code>client_id</code>, <code>scope</code>, <code>state</code> 和一个在获取授权码后要跳转到的 <code>redirect_uri</code>（请记住这个URL，我们还会再见到它好几次）。</li>
+<li>授权服务器将 User Agent 重定向到用户认证页面，对用户进行认证，并授权给客户端，然后授权服务器将 User Agent 重定向到刚刚客户端在请求中指定的那个 <code>redirect_uri</code>，并附加上授权码和客户端在请求中带上的<code>state</code>。（用户也可以在这一步拒绝授权，那么在这一步将返回 Error Response）。</li>
+<li>客户端带着<code>code</code>，<code>redirect_uri</code> 和 <code>client_id</code> 向授权服务器请求 Access Token，在这一步，如果客户端之前注册时有生成 Client Credential，那么授权服务器会对客户端进行认证，并且还要校验这个请求中的 <code>redirect_uri</code> 和获取授权码的请求中的 <code>redirect_uri</code> 是否一致。</li>
+<li>如果客户端认证成功，其他校验也都通过了，那么授权服务器就会返回一个 Access Token，有可能还附带一个 Refresh Token。</li>
+<li>客户端拿着 Access Token 向资源服务器请求受保护的资源。</li>
+</ol>
+<p>在这一授权类型中，<strong>授权服务器充当了客户端和用户之间的媒介，在整个过程中，用户只与授权服务器交互完成认证，因此用户的认证信息不需要与客户端共享。</strong></p>
+<hr>
+<h2 id="Implicit"><a href="#Implicit" class="headerlink" title="Implicit"></a>Implicit</h2><p>一种为浏览器客户端应用简化的授权流程。注意，这里的浏览器客户端是指指类似与运行在浏览器中的 Javascript 应用，而非通过浏览器访问、实际部署在远程服务器上的应用。<br>在 Implicit 这类授权中，客户端使用脚本语言直接请求授权，跳过了“获取授权码”这个步骤，Access Token 将作为 <code>redirect_uri</code> 的一部分返回给客户端。</p>
+<p>Implicit 授权过程如图所示：<br><img src="/uploads/images/oauth2-implicit-grant.png" alt="Impilicit Grant"></p>
+<ol>
+<li>客户端向授权服务器发送授权请求。</li>
+<li>授权服务器重定向到用户认证界面，用户通过认证并同意授权。</li>
+<li>授权服务器将生成的 Access Token 放到客户端的 <code>redirect_uri</code> 的 fragment 中，并重定向到该 URL。</li>
+<li>客户端使用从重定向 URL 中获得的 Access Token 向资源服务器请求资源。</li>
+</ol>
+<p>Implicit 授权的过程比授权码类型简单，但简单的流程也暴露了更多的安全隐患：</p>
+<ul>
+<li>因为在 Implicit 授权中，Access Token 直接暴露在 URL 中，这意味着重定向到包含着 Access Token 的 URL 时，这个携带者 Access Token 的 URL 会被记录到浏览器的浏览历史中，相当于暴露给了浏览器。如果有心人企图利用浏览器历史获取 Access Token，那么就会对受保护的资源造成威胁。因此，一般授权服务器给同构 Implicit 方式获取的 Access Token 的设定的有效期都比较短。</li>
+</ul>
+<p>Implicit 的安全性没有授权码类型强，那么为什么 OAuth 2.0 中还要定义这一类型呢？</p>
+<h3 id="为什么会有-Implicit-类型？"><a href="#为什么会有-Implicit-类型？" class="headerlink" title="为什么会有 Implicit 类型？"></a>为什么会有 Implicit 类型？</h3><p>Implicit 类型主要用于授权服务器不支持 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cross-origin_resource_sharing"><strong>CORS - 跨域资源共享</strong></a> 的情况。因为在授权码授权类型中，客户端需要向授权服务器发送一个POST请求，如果授权服务器不支持 CORS，那么这个请求就会被拒绝，在这种情况下，授权码类型不再适用。</p>
+<p>时至今日，在绝大多数服务器都支持 CORS，并且浏览器能自动在 HTTP 请求中添加 CORS 首部的情况下，我们要尽量避免使用 Implicit 授权类型。</p>
+<p>📹 <strong>相关视频</strong><br><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=CHzERullHe8">What’s going on with the OAuth 2.0 Implicit flow?</a>（这个视频对 Implicit 授权的介绍还挺全面的，值得一看）</p>
+<hr>
+<h2 id="Resource-Owner-Password-Credentials"><a href="#Resource-Owner-Password-Credentials" class="headerlink" title="Resource Owner Password Credentials"></a>Resource Owner Password Credentials</h2><p>Resource Owner Password Credentials（用户密码认证）授权，即客户端直接使用用户的用户名密码进行认证获得 Access Token，这种方式要求客户端能够获取用户的用户名密码。</p>
+<p>这种授权类型只应该在高度信任客户端的情况下使用，比如当客户端是操作系统的一部分，或者其他认证类型不可行的时候。</p>
+<p>授权过程如图所示：<br><img src="/uploads/images/oauth2-resource-owner-credentials-grant.png" alt="Resource Owner Password Credentials Grant"></p>
+<ol>
+<li>用户向客户端提供用户名和密码。</li>
+<li>客户端利用用户的用户密码向授权服务器请求授权。</li>
+<li>授权服务器验证通过后返回 Access Token。</li>
+</ol>
+<p>即使这种情况用到了用户的用户密码，也应该只是在第一次请求时用于获取 Access Token 和 Refresh Token， 并将 Token 设定为长生命周期的 Token 以便于后续操作，这样可以避免在客户端保存用户密码。</p>
+<p>通常，这一类型是用来将使用直接认证的客户端（比如使用 HTTP Basic 或 Digest 认证）迁移到 OAuth 服务器，也就是说原来这些客户端要保存用户名密码，现在转为保存 Token。</p>
+<hr>
+<h2 id="Client-Credentials"><a href="#Client-Credentials" class="headerlink" title="Client Credentials"></a>Client Credentials</h2><p>在这一类型中客户端以自己的名义，而不是以用户的名义向资源服务器请求资源，因此在获取 Access Token 时客户端直接采用自己的认证信息进行认证就可以了。这一模式从本质上来讲，客户端自身就是“资源拥有者”，因此并不存在是授权问题。</p>
+<p>授权过程如下图所示：<br><img src="/uploads/images/oauth2-client-credentials-grant.png" alt="Client Credentials Grant"></p>
+<ol>
+<li>客户端向授权服务器进行认证。在上一篇笔记中我们有提到 OAuth 没有规定要如何认证客户端，关于客户端的认证见另一个基于 OAuth 发展的协议 OpenID Connect。</li>
+<li>客户端认证通过后，授权服务器向客户端发送 Access Token。</li>
+</ol>
+<hr>
+<h2 id="协议端点（Endpoints）"><a href="#协议端点（Endpoints）" class="headerlink" title="协议端点（Endpoints）"></a>协议端点（Endpoints）</h2><p>通过分析以上四种授权过程，主要用到了如下端点（Endpoints）：</p>
+<p>两个授权服务器端点：</p>
+<ul>
+<li><strong>Authorization endpoin</strong> - 用于从用户那儿获取授权。</li>
+<li><strong>Token endpoint</strong> - 客户端使用此端点来获取 Access Token。所有拥有 credentials 的客户端在调用此端点时都要先经过授权服务器的认证。</li>
+</ul>
+<p>一个客户端端点：</p>
+<ul>
+<li><strong>Redirection endpoint</strong> - 获取用户的授权后，授权服务器通过此端点将授权返回给客户端。这个重定向端点一般在客户端注册时提供给授权服务器，也可以在发送授权请求时使用 <code>redirect_uri</code> 参数指明。</li>
+</ul>
+<hr>
+<p>到目前为止，关于 OAuth 2.0 基本的理论知识已经说了很多，虽然在那些 RFC 文档里还有很多细节和扩展内容，但作为「浅析」系列，我想我们还是先把这些抽象的概念转换为能跑起来的简单例子，实际感受一下 OAuth 2.0 中这几个角色的交互过程会比较有意思。</p>
+<p>So，我计划用 Spring Security OAuth 来实现一个 OAuth 2.0 授权场景。<br>下文见～</p>
+<p><strong>参考资料</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc6749">RFC6749 - The OAuth 2.0 Authorization Framework</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.okta.com/blog/2019/05/01/is-the-oauth-implicit-flow-dead">Is the OAuth 2.0 Implicit Flow Dead?</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" rel="tag"># 网络安全</a>
+          
+            <a href="/tags/OAuth/" rel="tag"># OAuth</a>
+          
+            <a href="/tags/%E8%AE%A4%E8%AF%81%E4%B8%8E%E6%8E%88%E6%9D%83/" rel="tag"># 认证与授权</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/10/21/oauth-intro/" rel="next" title="浅谈 OAuth 2.0 (一) - 基本概念">
+                <i class="fa fa-chevron-left"></i> 浅谈 OAuth 2.0 (一) - 基本概念
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/10/29/oauth-spring-demo/" rel="prev" title="OAuth 2 实战（一）- 使用 Spring Security 实现资源服务器和授权服务器">
+                OAuth 2 实战（一）- 使用 Spring Security 实现资源服务器和授权服务器 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Authorization-Code"><span class="nav-number">1.</span> <span class="nav-text">Authorization Code</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Implicit"><span class="nav-number">2.</span> <span class="nav-text">Implicit</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E6%9C%89-Implicit-%E7%B1%BB%E5%9E%8B%EF%BC%9F"><span class="nav-number">2.1.</span> <span class="nav-text">为什么会有 Implicit 类型？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Resource-Owner-Password-Credentials"><span class="nav-number">3.</span> <span class="nav-text">Resource Owner Password Credentials</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Client-Credentials"><span class="nav-number">4.</span> <span class="nav-text">Client Credentials</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%8F%E8%AE%AE%E7%AB%AF%E7%82%B9%EF%BC%88Endpoints%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">协议端点（Endpoints）</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

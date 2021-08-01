@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="网络安全,认证与授权," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="我们就从用户名密码认证说起。 认证过程很简单：当客户端访问受保护的API时，需要提供用户名和密码，服务端验证通过后返回请求的资源，否则拒绝访问。 HTTP协议本身就提供了两种基本认证方式。这两种认证方式的基本流程是一个质询过程：  客户端发送一个HTTP请求给服务器 服务器并不会立即响应请求，而是“认证质询”响应，要求对方提供认证信息 客户端再次发起请求并附上认证信息（比如用户名密码） 如果认证成">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Web认证那些事儿（二）用户名密码认证">
+<meta property="og:url" content="http://liaodanqi.xyz/2018/10/18/username-password-authentication/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="我们就从用户名密码认证说起。 认证过程很简单：当客户端访问受保护的API时，需要提供用户名和密码，服务端验证通过后返回请求的资源，否则拒绝访问。 HTTP协议本身就提供了两种基本认证方式。这两种认证方式的基本流程是一个质询过程：  客户端发送一个HTTP请求给服务器 服务器并不会立即响应请求，而是“认证质询”响应，要求对方提供认证信息 客户端再次发起请求并附上认证信息（比如用户名密码） 如果认证成">
+<meta property="og:locale">
+<meta property="og:image" content="http://static.zybuluo.com/JaneL/o8n479smuovgl2sak11xr2uk/HTTP%20Authentication.png">
+<meta property="article:published_time" content="2018-10-18T12:58:43.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.561Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="网络安全">
+<meta property="article:tag" content="认证与授权">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://static.zybuluo.com/JaneL/o8n479smuovgl2sak11xr2uk/HTTP%20Authentication.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2018/10/18/username-password-authentication/"/>
+
+
+
+
+
+  <title>Web认证那些事儿（二）用户名密码认证 | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2018/10/18/username-password-authentication/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Web认证那些事儿（二）用户名密码认证</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-18T20:58:43+08:00">
+                2018-10-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>我们就从用户名密码认证说起。</p>
+<p>认证过程很简单：当客户端访问受保护的API时，需要提供用户名和密码，服务端验证通过后返回请求的资源，否则拒绝访问。</p>
+<p>HTTP协议本身就提供了两种基本认证方式。<br>这两种认证方式的基本流程是一个质询过程：</p>
+<ol>
+<li>客户端发送一个HTTP请求给服务器</li>
+<li>服务器并不会立即响应请求，而是“认证质询”响应，要求对方提供认证信息</li>
+<li>客户端再次发起请求并附上认证信息（比如用户名密码）</li>
+<li>如果认证成功，则服务器正常响应，否则再次质询或返回错误</li>
+</ol>
+<span id="more"></span>
+<p>就像下面这样：<br><img src="http://static.zybuluo.com/JaneL/o8n479smuovgl2sak11xr2uk/HTTP%20Authentication.png" alt="HTTP Authentication"><br>下文介绍的基本认证和摘要认证的差别主要发生在(2)(3)步。</p>
+<h1 id="HTTP基本认证-HTTP-Basic-Authentication"><a href="#HTTP基本认证-HTTP-Basic-Authentication" class="headerlink" title="HTTP基本认证 - HTTP Basic Authentication"></a>HTTP基本认证 - HTTP Basic Authentication</h1><p>Basic认证遵循如上质询流程，当服务器返回401响应后，客户端的请求需要带上用户认证信息：将用户名和密码以<code>:</code>接起来，然后用Base64编码得到一串字符。然后在HTTP请求中添加一个<code>Authorization</code>首部，格式为<code>Basic YourEncodededBase64String</code>。</p>
+<p>举个例子，假设用户名为test，密码为123456，<code>/auth</code>API使用HTTP Basic认证，那么我们访问这个API的HTTP请求如下：<br><figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/auth</span> <span class="meta">HTTP/1.1</span></span><br><span class="line"><span class="attribute">Authorization</span><span class="punctuation">: </span>Basic dGVzdDoxMjM0NTY=</span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>localhost:8080</span><br></pre></td></tr></table></figure><br>上面的<code>dGVzdDoxMjM0NTY=</code>这串字符就等于<code>test:123456</code>使用Base64编码的结果。</p>
+<ul>
+<li>HTTP基本认证的安全问题<ul>
+<li>Base64实际上并没有对用户名密码做任何加密操作，实际数据等同于“明文”</li>
+<li>即使密码是以更难解码的方式加密的，第三方用户仍然可以捕获被修改过的用户名和密码，并且重复使用这个密码进行重放攻击</li>
+<li>如果用户大量使用相同密码，很容易被交叉盗用</li>
+<li>没有提供任何针对代理和中间节点如man-in-the-middle攻击的防护措施，它们可能在没有修改认证首部的前提下篡改报文的其他部分</li>
+</ul>
+</li>
+</ul>
+<p>因此，如果选择使用基本认证，一般都会与加密数据传输（HTTPS）配合使用。</p>
+<hr>
+<h1 id="HTTP摘要认证-HTTP-Digest-Authentication"><a href="#HTTP摘要认证-HTTP-Digest-Authentication" class="headerlink" title="HTTP摘要认证 - HTTP Digest Authentication"></a>HTTP摘要认证 - HTTP Digest Authentication</h1><p>HTTP摘要认证也遵循质询过程，当比基本认证更为安全。不同于基本认证直接传输密码，摘要认证的宗旨是“绝不传输密码”。<br>不传输密码那传输什么？“摘要”咯。<br>何为摘要？摘要就是对用户名密码和一些其他信息进行MD5转换后得到的值，就好比把食物吃进肚子里经过一番消化得到的产物。</p>
+<p>虽然不传输密码，但是对于黑客而言，只要截取了密码“摘要”根本不用管密码是什么，直接拿来用就好了。为了避免这样的情况发生，在摘要认证中，服务器在返回401质询响应时，除了会带上realm值（这个值是什么呢请自行查询）外，还会带上一个特殊的值——<strong>nonce</strong>。客户端在生成摘要时带上nonce，这个值会经常发生变化（可能是每毫秒，或者是每次认证都变化），以此避免重放攻击。</p>
+<blockquote>
+<p>The word nonce means “the present occasion” or “the time being.” In a computer-security sense, the nonce captures a particular point in time and figures that into the security calculations.</p>
+</blockquote>
+<p>简单放一个客户端应答质询的请求例子：<br><figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/dir/index.html</span> <span class="meta">HTTP/1.0</span></span><br><span class="line"><span class="attribute">Host</span><span class="punctuation">: </span>localhost</span><br><span class="line"><span class="attribute">Authorization</span><span class="punctuation">: </span>Digest username=&quot;Mufasa&quot;,</span><br><span class="line">                     realm=&quot;testrealm@host.com&quot;,</span><br><span class="line">                     nonce=&quot;dcd98b7102dd2f0e8b11d0f600bfb0c093&quot;,</span><br><span class="line">                     uri=&quot;/dir/index.html&quot;,</span><br><span class="line">                     qop=auth,</span><br><span class="line">                     nc=00000001,</span><br><span class="line">                     cnonce=&quot;0a4f113b&quot;,</span><br><span class="line">                     response=&quot;6629fae49393a05397450978507c4ef1&quot;,</span><br><span class="line">                     opaque=&quot;5ccc069c403ebaf9f0171e9517f40e41&quot;</span><br></pre></td></tr></table></figure></p>
+<p>在这个请求里，可以看到<code>Authorization</code>首部后跟的“Digest …”，然后接了参数，这些参数的具体含义这里就不过多介绍了，关于更完整的例子，可以戳这里<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Digest_access_authentication#Example_with_explanation">Digest Authentication Example With Explanation</a></p>
+<p>虽然摘要认证比基本认证稍微安全一点，但也只是一点点而已，缺陷还是很多的，比如：</p>
+<ul>
+<li>面对Man-in-the-Middle攻击十分脆弱。比如攻击者可以中途质询响应，要求客户端使用基本认证，从而窃取密码。</li>
+<li>HTTP的多重认证机制，由于没有要求客户端选择最强的认证机制，所以很难保证认证效果。</li>
+<li>使用摘要认证的客户端会用服务器提供的nonce来生成响应。但如果中间有一个被入侵的或恶意的代理在拦截流量（或者有个恶意的原始服务器），就可以很容易地为客户端的响应计算提供nonce。在这种情况下，使用已知密钥（入侵者提供的nonce）来计算响应可以简化密码分析过程。</li>
+</ul>
+<hr>
+<h1 id="Form-based认证"><a href="#Form-based认证" class="headerlink" title="Form-based认证"></a>Form-based认证</h1><p>虽然HTTP协议中定义了两种标准的认证方式，但是由于其局限性和不安全性，在日常开发中，最常见的是被称之为Form-based的认证方式，它并没有一个规范的标准定义，所以也没有标准实现。因为其主要实现方式是基于HTML的表单，因此被通称为Form-based认证。</p>
+<p>下面就是一个使用表单实现的非常简单的HTML登录页面了：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!doctype <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">form</span> <span class="attr">method</span>=<span class="string">&quot;post&quot;</span> <span class="attr">action</span>=<span class="string">&quot;/login&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">label</span>&gt;</span>Username<span class="tag">&lt;/<span class="name">label</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;text&quot;</span> <span class="attr">name</span>=<span class="string">&quot;username&quot;</span> <span class="attr">required</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">label</span>&gt;</span>Password<span class="tag">&lt;/<span class="name">label</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;password&quot;</span> <span class="attr">name</span>=<span class="string">&quot;password&quot;</span> <span class="attr">required</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;submit&quot;</span> <span class="attr">value</span>=<span class="string">&quot;Login&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>Form-based认证的基本流程如下：</p>
+<ol>
+<li>用户请求访问某个受保护的资源</li>
+<li>服务器发现用户尚未认证，返回一个包含需填写认证信息的表单的HTML页面</li>
+<li>用户填写用户名和密码并提交给服务器</li>
+<li>服务器验证用户信息，如若成功则为当前用户创建一个“Session”，并将session id放到cookie中，之后这个用户的所有请求都会带上这个cookie，这样服务器就可以拿到cookie中的session id将其与服务器端保存在内存里的session id比较进行认证。</li>
+<li>当用户退出登录时，Session被销毁，服务器端保存的session id被移除。之后的请求需要重新进行验证。</li>
+</ol>
+<p>使用HTTP的Form-based认证中所有的认证信息也都是明文传输的，在这一点上Form-based的安全性并不比Basic认证高，仍然需要与加密传输（比如HTTPS）配合使用。Form-based认证的优势主要在于认证成功后服务器端维护了与用户之间的会话信息，无论是用户主动退出登录还是一定时间后服务器可认为会话超时，在“登出”操作上Form-based认证会比HTTP Basic认证处理得更安全。</p>
+<p>说到底，Form-based只是表明这种认证方式使用了HTML的表单作为其实现中的一环，至于整个认证过程的安全性是与整个认证机制的实现息息相关的，比如是否使用HTTPS传输，服务器如何验证，Session的管理等等。</p>
+<p>到此为止，我们介绍了三种使用用户名密码进行认证的方式，其中两种是HTTP协议定义的标准认证方式——HTTP基本认证和HTTP摘要认证，第三种是非标准但更加常见的Form-based认证。</p>
+<hr>
+<p>在Form-based认证流程中，我们提到认证成功后，服务器会通过Session来维持会话的状态。这一类用户认证又被称之为<strong>基于Session的认证</strong>。</p>
+<h1 id="基于Session的认证"><a href="#基于Session的认证" class="headerlink" title="基于Session的认证"></a>基于Session的认证</h1><p>Session的信息一般是存储在服务器的内存数据库中的，这种管理方式在可扩展性或者说分布式环境中具有一定的局限性。一个需要处理大量用户请求的服务会有很多服务器同时运转，如果一个用户的第一个请求发给了服务器A，并且通过了服务器A的认证，那么当前这个session就被保存在服务器A的内存中；过了几分钟，用户发送了第二个请求，由于有负载均衡管理等机制，这个请求可能被分给了另一台服务器B，而服务器B中并没有用户的认证信息，这是用户又会被要求重新登录。这种操作显然很不科学。</p>
+<p>另一方面，现在微服务应用广泛，很多服务都以REST API的形式开放出来，REST请求都是无状态的（Stateless），如果用session实现没什么意义，用户每调用一个API都会被要求认证，非常不友好。</p>
+<p>那么，针对这些应用场景，有一种更合适的认证方式，那就是——<strong>基于Token的认证</strong>。不过本片笔记就到这里收尾啦，下一篇我们再详细介绍基于Token的认证方式。</p>
+<p>未完待续~</p>
+<hr>
+<p>本期日常：为什么病娇不是生病了之后会变得特别娇气的意思呢？嘤。</p>
+<hr>
+<p><strong>参考资料</strong></p>
+<ul>
+<li>《HTTP权威指南》</li>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Digest_access_authentication">Digest Access Authentication - Wikipedia</a></li>
+<li><a target="_blank" rel="noopener" href="https://medium.com/@sherryhsu/session-vs-token-based-authentication-11a6c5ac45e4">Session vs Token Based Authentication</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" rel="tag"># 网络安全</a>
+          
+            <a href="/tags/%E8%AE%A4%E8%AF%81%E4%B8%8E%E6%8E%88%E6%9D%83/" rel="tag"># 认证与授权</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/10/16/web-authentication-intro/" rel="next" title="Web认证那些事儿（一）从用户体验感受认证流程">
+                <i class="fa fa-chevron-left"></i> Web认证那些事儿（一）从用户体验感受认证流程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/23/token-authentication/" rel="prev" title="Web认证那些事儿（三）Token-based认证">
+                Web认证那些事儿（三）Token-based认证 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#HTTP%E5%9F%BA%E6%9C%AC%E8%AE%A4%E8%AF%81-HTTP-Basic-Authentication"><span class="nav-number">1.</span> <span class="nav-text">HTTP基本认证 - HTTP Basic Authentication</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#HTTP%E6%91%98%E8%A6%81%E8%AE%A4%E8%AF%81-HTTP-Digest-Authentication"><span class="nav-number">2.</span> <span class="nav-text">HTTP摘要认证 - HTTP Digest Authentication</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Form-based%E8%AE%A4%E8%AF%81"><span class="nav-number">3.</span> <span class="nav-text">Form-based认证</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8ESession%E7%9A%84%E8%AE%A4%E8%AF%81"><span class="nav-number">4.</span> <span class="nav-text">基于Session的认证</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

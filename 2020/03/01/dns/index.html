@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="网络,DNS," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="喜迎 2020 第一篇笔记！突然觉得没有赶在四年一遇的 2 月 29 日写，有点遗憾呢。 最近这几个月摸了不少鱼，也挖了一点点坑，总想着把一个主题全部过一遍再回顾写笔记，结果就是永远都没有开始，因为不会的实在是太多了，怎么都学不完呀，所以，还是边看边整理吧～  当初在搭这个博客时，少不了要为域名配置 DNS，按着教程在 DNSPod 上注册了个账号，配了几条记录。至于为什么要做这些，倒真是一直没有">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DNS 两三事">
+<meta property="og:url" content="http://liaodanqi.xyz/2020/03/01/dns/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="喜迎 2020 第一篇笔记！突然觉得没有赶在四年一遇的 2 月 29 日写，有点遗憾呢。 最近这几个月摸了不少鱼，也挖了一点点坑，总想着把一个主题全部过一遍再回顾写笔记，结果就是永远都没有开始，因为不会的实在是太多了，怎么都学不完呀，所以，还是边看边整理吧～  当初在搭这个博客时，少不了要为域名配置 DNS，按着教程在 DNSPod 上注册了个账号，配了几条记录。至于为什么要做这些，倒真是一直没有">
+<meta property="og:locale">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/domain-name-space.jpg">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/dns-root-server.png">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/dns-tld-server.png">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/dns-auth-server.png">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/dns-ip.png">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/dns-resolution.svg">
+<meta property="article:published_time" content="2020-03-01T02:40:30.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.536Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="网络">
+<meta property="article:tag" content="DNS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/domain-name-space.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2020/03/01/dns/"/>
+
+
+
+
+
+  <title>DNS 两三事 | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2020/03/01/dns/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">DNS 两三事</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-01T10:40:30+08:00">
+                2020-03-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>喜迎 2020 第一篇笔记！突然觉得没有赶在四年一遇的 2 月 29 日写，有点遗憾呢。</p>
+<p>最近这几个月摸了不少鱼，也挖了一点点坑，总想着把一个主题全部过一遍再回顾写笔记，结果就是永远都没有开始，因为不会的实在是太多了，怎么都学不完呀，所以，还是边看边整理吧～</p>
+<hr>
+<p>当初在搭这个博客时，少不了要为域名配置 DNS，按着教程在 DNSPod 上注册了个账号，配了几条记录。至于为什么要做这些，倒真是一直没有深究过。<br>最近在重新学习网络相关的内容，就拿 <strong>DNS - Domian Name System</strong> 开头吧。</p>
+<h2 id="为什么需要-DNS"><a href="#为什么需要-DNS" class="headerlink" title="为什么需要 DNS"></a>为什么需要 DNS</h2><p>理论上，任何程序通过 IP 地址就可以访问网络资源，然而这类地址实在是不便于人类记忆。因此，机智的人类引入了可读性更好、更易于记忆的<strong>主机名 (hostname)</strong> 。主机名不仅解决了可读性的问题，它将机器名字与机器地址分离，这样即使更换了机器地址发生了变化，也不会影响用户通过主机名访问资源。</p>
+<p>由于网络本身只认识 IP 地址，所以就需要某种机制<strong>将主机名映射为 IP 地址</strong>，由此 DNS 应运而生。</p>
+<span id="more"></span>
+<h2 id="什么是-DNS"><a href="#什么是-DNS" class="headerlink" title="什么是 DNS"></a>什么是 DNS</h2><p>DNS (Domain Name System) 域名系统，本质上 DNS 定义了一种层次化的、基于域的命名方案，并采用一个分布式数据库系统加以实现。<br>其主要用途就是将<strong>主机名映射成 IP 地址</strong>。</p>
+<p>DNS主要由三大部分组成：</p>
+<ul>
+<li><strong>The Domain Name Space and Resource Records - 域名空间和资源记录</strong></li>
+<li><strong>Name server - 域名服务器</strong></li>
+<li><strong>Resolver - 解析器</strong></li>
+</ul>
+<hr>
+<h2 id="域名空间与资源记录"><a href="#域名空间与资源记录" class="headerlink" title="域名空间与资源记录"></a>域名空间与资源记录</h2><h3 id="域名空间"><a href="#域名空间" class="headerlink" title="域名空间"></a>域名空间</h3><p>DNS 域名空间可以表示为一棵树，从根节点开始，依次是顶级域名、二级域名、三级域名依次类推。树的叶子代表没有子域的域，一个叶节点域可能包含一个主机，也可能包含多个主机。</p>
+<p><img src="/uploads/images/domain-name-space.jpg" alt="domain-name-space"></p>
+<p><strong>顶级域名</strong>由ICANN（Internet Corporation fro Assigned Name and Numbers，Internet名字与数字地址分配机构)专门管理。<br>每个域可以自己控制如何分配它下面的子域。为了创建一个新域，创建者必须得到包含该新域的上级域的许可。</p>
+<hr>
+<h3 id="域名资源记录"><a href="#域名资源记录" class="headerlink" title="域名资源记录"></a>域名资源记录</h3><p>每个域都有一组与它相关的资源记录(Resource Record, RR)，这些记录组成了DNS数据库。DNS 的基本功能就是将域名映射为资源记录。</p>
+<p>每条资源记录都是一个五元组<code>(Domain_Name, TTL, Class, Type, Value)</code></p>
+<ul>
+<li><strong>DomainName</strong> - 域名，指出这条记录适用于哪个域，通常每个域有多条记录</li>
+<li><strong>TTL</strong> (Time-to-live) - 生存期，指明这条记录的稳定程度，与缓存机制相关</li>
+<li><strong>Class</strong> - 类别，对于Internet信息，它总是IN</li>
+<li><strong>Type</strong> - 类型，DNS有很多类型</li>
+<li><strong>Value</strong> - 值，类型决定了值的内容</li>
+</ul>
+<p>一台主机最常见的资源记录即它的 IP 地址，除此之外还有其他类型的资源记录。</p>
+<h4 id="常见资源记录类型"><a href="#常见资源记录类型" class="headerlink" title="常见资源记录类型"></a>常见资源记录类型</h4><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>示例<br>(Domain name, TTL, Class, Type, Value)</th>
+<th>值的含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>(liaodanqi.me., 600, IN, A, <code>185.199.111.153</code>)</td>
+<td>该域名对应的主机 IPv4 地址</td>
+</tr>
+<tr>
+<td>AAAA</td>
+<td>(google.com., 300, IN, AAAA, <code>2404:6800:4003:c03::65</code>)</td>
+<td>该域名对应的主机 IPv6 地址</td>
+</tr>
+<tr>
+<td>NS</td>
+<td>(liaodanqi.me., 86400, IN, NS, <code>f1g1ns1.dnspod.net.</code>)</td>
+<td>该域名及其子域对应的域名服务器</td>
+</tr>
+<tr>
+<td>CNAME</td>
+<td>(news.sina.com.cn., 60, IN, CNAME, <code>spool.grid.sinaedge.com.</code>)</td>
+<td>该别名对应的规范名（canonical name)</td>
+</tr>
+<tr>
+<td>MX</td>
+<td>(sina.com., 60, IN, MX, <code>10 freemx2.sinamail.sina.com.cn.</code>)</td>
+<td>用于接受该特定域名的电子邮件的主机名</td>
+</tr>
+</tbody>
+</table>
+<p>除此之外，随着 DNS 协议的扩充和完善，还有很多其他类型的 DNS 资源记录，完整列表可见 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/List_of_DNS_record_types">List of DNS record types</a></p>
+<hr>
+<h2 id="域名服务器"><a href="#域名服务器" class="headerlink" title="域名服务器"></a>域名服务器</h2><p>在上一小节我们提到 DNS的域名空间是一棵层级结构的树，为了更好的提供服务，整个命名空间被划分为多个不重叠的区域 (Zones) ，每个区域有一个或多个域名服务器关联，这些服务器是持有该区域数据库的主机。通常情况下，通常一个区域有一个<strong>主域名服务器</strong>和多个<strong>辅域名服务器</strong>：</p>
+<ul>
+<li>主服务器：从自己的磁盘文件读入有关域名信息</li>
+<li>辅服务器：从主服务器获取域名信息</li>
+</ul>
+<p>按照服务器所覆盖的区域，可将其分为三类：</p>
+<ul>
+<li><p><strong>Root Servers 根域名服务器</strong> - 负责返回顶级域 (TLD) 的权威域名服务器的相关信息。</p>
+<ul>
+<li>为了能访问到根域名服务器，每个域名服务器必须有一个或多个根域名服务器的信息，这个信息通常放在某个配置文件中（包含了根服务器的 NS 和 A 记录），在 DNS 服务器启动时加载到 DNS 缓存。</li>
+<li>根域名服务器一共有13个，命名相当随意，从 <code>a.root-servers.net</code> 到 <code>m.root-servers.net</code>。值得强调的一点是，这里的“13个”是指逻辑上的，由于整个Internet的运作都依赖于根服务器，每个根服务器都对应多个物理机器，它们分布在世界各地（比如上海就有一个），以提供强大的域名解析服务。关于根服务器的信息可以在<a target="_blank" rel="noopener" href="https://root-servers.org/">root-servers.org</a>查到，截止到 2020 年 3 月 1 日，一共有 1091 个由 12 家独立的组织运营的根域名服务器。</li>
+</ul>
+</li>
+<li><p><strong>Top-Level Domain (TLD) Servers 顶级域服务器</strong> - 负责返回对应顶级域下的权威域名服务器的相关信息。</p>
+</li>
+<li><p><strong>Authoritative DNS Servers 权威 DNS 服务器</strong> - 每个对外提供公共访问的主机（例如Web服务器和邮件服务器）的机构 (Organizations)，都必须提供相应的主机名到IP地址的映射，即 DNS 资源记录。这些机构的权威 DNS 服务器保存这些 DNS 记录。每个机构可以选择实施自己的权威 DNS 服务器，也可以付费将这些记录在某个服务提供商的权威 DNS 服务器中。</p>
+</li>
+</ul>
+<p>还有一类特殊的 DNS 服务器，即<strong>Local DNS Servers - 本地 DNS 服务器</strong>。本地 DNS 服务器并不严格属于服务器的层次结构.每个ISP（比如Residential ISP /Institutional ISP ）都有本地 DNS 服务器，包括很多大学、公司都有自己的 DNS 服务器。当主机连接到 ISP 时，ISP 为主机提供其一台或多台本地 DNS 服务器的 IP 地址。本地 DNS 服务器离用户较近，一般不超过几个路由器的距离。</p>
+<p>除此之外，现在还有很多平台提供了公共免费的域名解析服务，比如 Google 的 <code>8.8.8.8</code> 和 <code>8.8.4.4</code> 还有 Cloudflare 的 <code>1.1.1.1</code> 等。</p>
+<hr>
+<h3 id="域名解析"><a href="#域名解析" class="headerlink" title="域名解析"></a>域名解析</h3><p>接下来让我们一起来看看在域名解析过程中，这几类域名服务器各自扮演了怎样角色。</p>
+<p>以访问<code>home.sina.com</code>为例，我们可以用 <code>dig</code> 命令，在控制台输入<code>dig home.sina.com +trace</code>，这条命令会将 DNS 解析的过程都打印出来，我们一段段来看。</p>
+<ol>
+<li><p>首先，主机发起放向本地 DNS 服务器发起查询，如果本地 DNS 服务器没有相关记录，则会向根域名服务器发起查询。在下图中，我们可以看到主机的本地 DNS 服务器是127.0.0.1，按照前面提到的，每个 DNS 服务器都有一份根域名服务器的名单。<br><img src="/uploads/images/dns-root-server.png" alt="get root server info"></p>
+</li>
+<li><p>本地 DNS 服务器得到根域名服务器地址后，将查询发给根服务器。在下图中，可以看到本地 DNS 服务器将请求发给了 <code>e.root-servers.net</code> 这个根服务器，并得到了 <code>.com</code> 这个顶级域名的 TLD 服务器的相关信息。<br><img src="/uploads/images/dns-tld-server.png" alt="get tld server info"></p>
+</li>
+<li><p>本地 DNS 服务器拿到 TLD 服务器的地址，再将整个查询发给它，TLD 服务器返回新浪的权威 DNS 服务器信息，如下图所示，本地 DNS 服务器将请求发给了 <code>m.gtld-servers.net</code>，并得到了<code>sina.com</code>这个域名的域名服务器信息：<br><img src="/uploads/images/dns-auth-server.png" alt="get authoritative server info"></p>
+</li>
+<li><p>接下来，本地 DNS 服务器向新浪的某个权威 DNS 服务器发送请求，如果该 DNS 服务器包含了查询域名的 IP 的地址，则返回相关RR；否则该 DNS 服务器将返回更底层的 DNS 服务器地址，本地 DNS 服务器向下一层 DNS 服务器发送查询请求，最终获得域名对应的 IP 地址或者查询失败。<br>在本例中，我们成功得到了 <code>home.sina.com</code> 的IP地址，如下图所示：<br><img src="/uploads/images/dns-ip.png" alt="get ip address"></p>
+</li>
+<li><p>本地 DNS 服务器将查询到的IP地址返回给主机。</p>
+</li>
+</ol>
+<p>至此，域名解析结束，整个过程如下图所示：<br><img src="/uploads/images/dns-resolution.svg" alt="dns resolution"></p>
+<hr>
+<h3 id="查询机制"><a href="#查询机制" class="headerlink" title="查询机制"></a>查询机制</h3><p>我们看到上图图示中标示了两种查询机制，结合这个例子说明如下：</p>
+<ul>
+<li><strong>递归查询</strong> - 主机发送查询请求给本地 DNS 服务器后，由本地 DNS 服务器代替该主机以 DNS 客户端的身份向其他域名服务器发送查询，即本地 DNS 服务器包揽了后续查询，直到得到它所需的结果，这个结果是<strong>完整结果</strong>，即要么是对应的资源记录，要么报错。这个机制被称为递归查询。</li>
+<li><strong>迭代查询</strong> - 本地 DNS 服务器向根域名服务器发送请求后，根域名服务器返回<strong>部分结果</strong>，这个结果可能是报错、也可能是对应的资源记录，还可能只是告诉本地 DNS 服务器下一步该向谁发起查询。然后本地 DNS 服务器要自己继续负责后续查询。这个机制被称为迭代查询。</li>
+</ul>
+<hr>
+<h2 id="解析器"><a href="#解析器" class="headerlink" title="解析器"></a>解析器</h2><p>到目前为止，我们提到域名解析都是以主机为单位，而实际上真正发起 DNS 查询的应该是运行在主机上的用户程序（比如Email, FTP, TELNET）。那么，用户程序究竟如何向域名服务器发起请求呢？这就需要依赖 DNS 的第三大组件 —— <strong>解析器 (Resolver)</strong>。<br>解析器一般以子程序 (Subroutine) 或系统调用 (System call) 的形式作为接口给应用程序调用，应用程序传参给解析器，解析器返回结果，因此用户程序和解析器之间不需要协议。</p>
+<p>解析器必须能够访问至少一个域名服务器并使用该域名服务器的信息直接响应查询或拿到中间结果向其他域名服务器继续查询。</p>
+<p>举个例子，Linux 中的解析程序由一组C库中的系统例程组成，通过 <code>/etc/resolv.conf</code> 配置文件为解析程序提供域名服务器的信息，如果配置文件不存在，那么解析器将向运行在本机上的域名服务器的发起查询。下面这段代码中的 <code>getaddrinfo</code> 是一个可用来解析域名的库函数，将其编译运行，将打印出<code>google.com</code> 的 IP 地址。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;netdb.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">addrinfo</span>* <span class="title">addr</span>;</span></span><br><span class="line">  <span class="keyword">int</span> result = <span class="built_in">getaddrinfo</span>(<span class="string">&quot;google.com&quot;</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>, &amp;addr);</span><br><span class="line">  <span class="keyword">if</span> (result != <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="built_in">printf</span>(stderr, <span class="string">&quot;getaddrinfo: %s\n&quot;</span>, <span class="built_in">gai_strerror</span>(result));</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span>* <span class="title">internet_addr</span> =</span> (struct sockaddr_in*) addr-&gt;ai_addr;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;google.com is at: %s\n&quot;</span>, <span class="built_in">inet_ntoa</span>(internet_addr-&gt;sin_addr));</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>更多关于 <code>getaddrinfo</code> 可见 <a target="_blank" rel="noopener" href="http://man7.org/linux/man-pages/man3/getaddrinfo.3.html">Linux Programmer’s Manual - GETADDRINFO(3)</a>。</p>
+<p>当解析器完成某个请求后，会将收到的结果缓存起来，这样下一次收到同样的请求时，可以直接从本地缓存返回结果，以提高响应速度。当本地缓存中没有结果或者缓存失效时，解析器才会向外部 DNS 服务器发起请求。</p>
+<h3 id="DNS缓存"><a href="#DNS缓存" class="headerlink" title="DNS缓存"></a>DNS缓存</h3><p>缓存是必要的，TTL是服务于缓存的。</p>
+<p><strong>Authoritative Record 权威记录</strong> - 由管理该记录的权威部门提供，因此总是正确的。<br><strong>Cached Record 缓存记录</strong> - 有可能是过时的。</p>
+<p>当缓存记录遇上权威记录，毫无疑问，弃缓存而选权威。</p>
+<hr>
+<h2 id="彩蛋"><a href="#彩蛋" class="headerlink" title="彩蛋"></a>彩蛋</h2><p>最后，安利一个很可爱的网站，<a target="_blank" rel="noopener" href="https://howdns.works/">How DNS Works</a>，以漫画的形式生动形象地介绍了什么是DNS，超级萌！:D</p>
+<!--
+### DNS基于UDP
+DNS采用UDP作为传输层协议，DNS消息通过UDP数据包发送，格式简单，只有查询和响应。
+为了应对服务器关闭或者丢包的情况，如果在很短的时间内没有响应返回，则DNS客户端必须重复查询请求；如果重复一定次数后仍然失败，则尝试域内另一台域名服务器。
+
+每个查询报文都包含16位标识符，这个标识符会被复制到响应中，以便域名服务器将响应与查询匹配。
+-->
+<hr>
+<p><strong>参考资料</strong></p>
+<ul>
+<li>Computer Networking: A Top-Down Approach, 7th Edition</li>
+<li>计算机网络，第五版</li>
+<li><a target="_blank" rel="noopener" href="https://securitytrails.com/blog/dns-root-servers">DNS Root Servers - What are they and Are They Really Only 13?</a></li>
+<li><a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc1034">RFC 1034 - DOMAIN NAMES - CONCEPTS AND FACILITIES</a></li>
+<li><a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc1035">RFC 1035 - DOMAIN NAMES - IMPLEMENTATION AND SPECIFICATION</a></li>
+<li><a target="_blank" rel="noopener" href="https://ns1.com/resources/what-is-dns">What is DNS</a></li>
+<li><a target="_blank" rel="noopener" href="https://jameshfisher.com/2018/02/03/what-does-getaddrinfo-do/">What does getaddrinfo do</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E7%BD%91%E7%BB%9C/" rel="tag"># 网络</a>
+          
+            <a href="/tags/DNS/" rel="tag"># DNS</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/10/29/oauth-spring-demo/" rel="next" title="OAuth 2 实战（一）- 使用 Spring Security 实现资源服务器和授权服务器">
+                <i class="fa fa-chevron-left"></i> OAuth 2 实战（一）- 使用 Spring Security 实现资源服务器和授权服务器
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/03/14/reliable-data-transfer-principles/" rel="prev" title="可靠的数据传输实现指南（一）- 基本机制">
+                可靠的数据传输实现指南（一）- 基本机制 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-DNS"><span class="nav-number">1.</span> <span class="nav-text">为什么需要 DNS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-DNS"><span class="nav-number">2.</span> <span class="nav-text">什么是 DNS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%9F%E5%90%8D%E7%A9%BA%E9%97%B4%E4%B8%8E%E8%B5%84%E6%BA%90%E8%AE%B0%E5%BD%95"><span class="nav-number">3.</span> <span class="nav-text">域名空间与资源记录</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%9F%E5%90%8D%E7%A9%BA%E9%97%B4"><span class="nav-number">3.1.</span> <span class="nav-text">域名空间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%9F%E5%90%8D%E8%B5%84%E6%BA%90%E8%AE%B0%E5%BD%95"><span class="nav-number">3.2.</span> <span class="nav-text">域名资源记录</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E8%B5%84%E6%BA%90%E8%AE%B0%E5%BD%95%E7%B1%BB%E5%9E%8B"><span class="nav-number">3.2.1.</span> <span class="nav-text">常见资源记录类型</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%9F%E5%90%8D%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">4.</span> <span class="nav-text">域名服务器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%9F%E5%90%8D%E8%A7%A3%E6%9E%90"><span class="nav-number">4.1.</span> <span class="nav-text">域名解析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E6%9C%BA%E5%88%B6"><span class="nav-number">4.2.</span> <span class="nav-text">查询机制</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E6%9E%90%E5%99%A8"><span class="nav-number">5.</span> <span class="nav-text">解析器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#DNS%E7%BC%93%E5%AD%98"><span class="nav-number">5.1.</span> <span class="nav-text">DNS缓存</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BD%A9%E8%9B%8B"><span class="nav-number">6.</span> <span class="nav-text">彩蛋</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

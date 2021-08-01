@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Java," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="之前我们聊到了Java泛型的定义和应用，本篇笔记就来介绍一下Java中实现泛型的机制——类型擦除。 类型擦除主要做了以下几件事：  将所有泛型的类型参数替换成它们的bounds，如果是参数是unbounded，那么就替换成Object。这样生成的二进制码中就只有一般的类、接口和方法了 在必要时插入强制类型转换来保证类型安全 生成桥接方法来保证多态性  实际上，通过类型擦除，在编译过后的字节码文件中">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java泛型与类型擦除">
+<meta property="og:url" content="http://liaodanqi.xyz/2019/06/16/java-type-erasure/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="之前我们聊到了Java泛型的定义和应用，本篇笔记就来介绍一下Java中实现泛型的机制——类型擦除。 类型擦除主要做了以下几件事：  将所有泛型的类型参数替换成它们的bounds，如果是参数是unbounded，那么就替换成Object。这样生成的二进制码中就只有一般的类、接口和方法了 在必要时插入强制类型转换来保证类型安全 生成桥接方法来保证多态性  实际上，通过类型擦除，在编译过后的字节码文件中">
+<meta property="og:locale">
+<meta property="article:published_time" content="2019-06-16T00:36:24.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.546Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2019/06/16/java-type-erasure/"/>
+
+
+
+
+
+  <title>Java泛型与类型擦除 | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2019/06/16/java-type-erasure/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Java泛型与类型擦除</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-16T08:36:24+08:00">
+                2019-06-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>之前我们聊到了Java泛型的定义和应用，本篇笔记就来介绍一下Java中实现泛型的机制——类型擦除。</p>
+<p>类型擦除主要做了以下几件事：</p>
+<ul>
+<li>将所有泛型的类型参数替换成它们的bounds，如果是参数是unbounded，那么就替换成Object。这样生成的二进制码中就只有一般的类、接口和方法了</li>
+<li>在必要时插入强制类型转换来保证类型安全</li>
+<li>生成桥接方法来保证多态性</li>
+</ul>
+<p>实际上，通过类型擦除，在编译过后的字节码文件中就不存在泛型类了，它们都被替换为原生类型(Raw Type)，并在相应的地方插入了强制转换。因此，对于Java而言在运行期<code>ArrayList&lt;Integer&gt;</code>和<code>ArrayList&lt;String&gt;</code>就是同一个类。</p>
+<p>可以说，Java中的泛型更像一颗语法糖，而基于类型擦除实现的泛型又被称为“伪泛型”。<br><span id="more"></span></p>
+<hr>
+<h1 id="泛型类和泛型方法中的类型擦除"><a href="#泛型类和泛型方法中的类型擦除" class="headerlink" title="泛型类和泛型方法中的类型擦除"></a>泛型类和泛型方法中的类型擦除</h1><p>下面我们来看一些例子，更直观地感受一下类型擦除吧～<br>首先看个unbounded的例子：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Box</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> T t;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Box</span><span class="params">(T t)</span> </span>&#123;<span class="keyword">this</span>.t = t;&#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> T <span class="title">get</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> t; &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>上面的<code>Box&lt;T&gt;</code>中的T是unbounded的，所以编译器会将<code>Box&lt;T&gt;</code>中的T替换成<code>Object</code>。<br>我们可以调用如下命令来查看反编译字节码文件：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ javap -c Box</span><br></pre></td></tr></table></figure></p>
+<p>得到的反编译结果如下所示，可以看到注释中对应的field的类型都为<code>Object</code>了：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Box</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">Box</span><span class="params">(T)</span></span>;</span><br><span class="line">    Code:</span><br><span class="line">       <span class="number">0</span>: aload_0</span><br><span class="line">       <span class="number">1</span>: invokespecial #<span class="number">1</span>                  <span class="comment">// Method java/lang/Object.&quot;&lt;init&gt;&quot;:()V</span></span><br><span class="line">       <span class="number">4</span>: aload_0</span><br><span class="line">       <span class="number">5</span>: aload_1</span><br><span class="line">       <span class="number">6</span>: putfield      #<span class="number">2</span>                  <span class="comment">// Field t:Ljava/lang/Object;</span></span><br><span class="line">       <span class="number">9</span>: <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> T <span class="title">get</span><span class="params">()</span></span>;</span><br><span class="line">    Code:</span><br><span class="line">       <span class="number">0</span>: aload_0</span><br><span class="line">       <span class="number">1</span>: getfield      #<span class="number">2</span>                  <span class="comment">// Field t:Ljava/lang/Object;</span></span><br><span class="line">       <span class="number">4</span>: areturn</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>再看一个bounded的例子：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Box</span>&lt;<span class="title">T</span> <span class="keyword">extends</span> <span class="title">Comparable</span>&lt;<span class="title">T</span>&gt;&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> T t;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Box</span><span class="params">(T t)</span> </span>&#123;<span class="keyword">this</span>.t = t;&#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> T <span class="title">get</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> t; &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>编译再反编译后就变成了下面这样，原来的<code>&lt;T extends Comparable&gt;</code>就变成了<code>Comparable</code>：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Box</span>&lt;<span class="title">T</span> <span class="keyword">extends</span> <span class="title">java</span>.<span class="title">lang</span>.<span class="title">Comparable</span>&lt;<span class="title">T</span>&gt;&gt; </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">Box</span><span class="params">(T)</span></span>;</span><br><span class="line">    Code:</span><br><span class="line">       <span class="number">0</span>: aload_0</span><br><span class="line">       <span class="number">1</span>: invokespecial #<span class="number">1</span>                  <span class="comment">// Method java/lang/Object.&quot;&lt;init&gt;&quot;:()V</span></span><br><span class="line">       <span class="number">4</span>: aload_0</span><br><span class="line">       <span class="number">5</span>: aload_1</span><br><span class="line">       <span class="number">6</span>: putfield      #<span class="number">2</span>                  <span class="comment">// Field t:Ljava/lang/Comparable;</span></span><br><span class="line">       <span class="number">9</span>: <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> T <span class="title">get</span><span class="params">()</span></span>;</span><br><span class="line">    Code:</span><br><span class="line">       <span class="number">0</span>: aload_0</span><br><span class="line">       <span class="number">1</span>: getfield      #<span class="number">2</span>                  <span class="comment">// Field t:Ljava/lang/Comparable;</span></span><br><span class="line">       <span class="number">4</span>: areturn</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>【Note】如果Bounds有多个，那么类型擦除会将类型参数替换为第一个bound，比如<code>&lt;T extends Comparable &amp; Serializable&gt;</code>在编译过后就会变成<code>Comparable</code>，而后面的bounds编译器会在必要时插入强制转换。因此，因尽量将<code>tagging interface</code>(不包含方法的接口)放在后面。</p>
+<p>对于泛型方法的处理，同理：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Util</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T extends Number&gt; <span class="function"><span class="keyword">int</span> <span class="title">add</span><span class="params">(T a,  T b)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> a.intValue() + b.intValue();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>编译过后：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Util</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">Util</span><span class="params">()</span></span>;</span><br><span class="line">    Code:</span><br><span class="line">       <span class="number">0</span>: aload_0</span><br><span class="line">       <span class="number">1</span>: invokespecial #<span class="number">1</span>                  <span class="comment">// Method java/lang/Object.&quot;&lt;init&gt;&quot;:()V</span></span><br><span class="line">       <span class="number">4</span>: <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> &lt;T extends java.lang.Number&gt; <span class="function"><span class="keyword">int</span> <span class="title">add</span><span class="params">(T, T)</span></span>;</span><br><span class="line">    Code:</span><br><span class="line">       <span class="number">0</span>: aload_0</span><br><span class="line">       <span class="number">1</span>: invokevirtual #<span class="number">2</span>                  <span class="comment">// Method java/lang/Number.intValue:()I</span></span><br><span class="line">       <span class="number">4</span>: aload_1</span><br><span class="line">       <span class="number">5</span>: invokevirtual #<span class="number">2</span>                  <span class="comment">// Method java/lang/Number.intValue:()I</span></span><br><span class="line">       <span class="number">8</span>: iadd</span><br><span class="line">       <span class="number">9</span>: ireturn</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>【Note】<em>值得注意的一点是，我们在反编译字节码的结果中可以看到方法的参数类型并不是原生类型，而是包括了参数化类型的信息。这一点是由Java虚拟机规范中引入的Signature属性决定的，它的作用就是存储一个方法在字节码层面的特征签名。从这一点中，我们也可以看出，所谓类型擦除只是从Code属性的字节码进行擦数，而元数据还是保存了泛型信息。因此，我们还可以通过反射手段取得参数化类型。</em></p>
+<hr>
+<h1 id="类型擦除与方法重载"><a href="#类型擦除与方法重载" class="headerlink" title="类型擦除与方法重载"></a>类型擦除与方法重载</h1><p>由于类型擦除的存在，我们在试图重载包含了泛型类参数的方法时可能会遇到问题。<br>举个例子：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">print</span><span class="params">(List&lt;String&gt; list)</span> </span>&#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;invoke print(List&lt;String&gt; list)&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">print</span><span class="params">(List&lt;Integer&gt; list)</span> </span>&#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;invoke print(List&lt;integer&gt; list)&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>上面的<code>print</code>方法的重载是不是看起来很正常，<code>List&lt;String&gt;</code>和<code>List&lt;Integer&gt;</code>是不同的参数类型。然而，这段代码是不能通过编译的。编译器会告诉你：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Util.java:<span class="number">8</span>: error: name clash: print(List&lt;Integer&gt;) <span class="function">and <span class="title">print</span><span class="params">(List&lt;String&gt;)</span> have the same erasure</span></span><br><span class="line"><span class="function">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">print</span><span class="params">(List&lt;Integer&gt; list)</span> </span>&#123;</span><br><span class="line">                       ^</span><br><span class="line"><span class="number">1</span> error</span><br></pre></td></tr></table></figure><br>因为类型擦除的原因，编译过后<code>List&lt;String&gt;</code>和<code>List&lt;Integer&gt;</code>的类型都变为原生类型<code>List</code>，这时两个方法的Signature就完全长一样了。ˊ_&gt;ˋ</p>
+<hr>
+<h1 id="桥接方法与多态性"><a href="#桥接方法与多态性" class="headerlink" title="桥接方法与多态性"></a>桥接方法与多态性</h1><p>还是看代码说话，给定一个泛型类<code>Node</code>和它的子类<code>IntNode</code>：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> T data;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Node</span><span class="params">(T data)</span> </span>&#123; <span class="keyword">this</span>.data = data; &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setData</span><span class="params">(T data)</span> </span>&#123; <span class="keyword">this</span>.data = data; &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">IntNode</span> <span class="keyword">extends</span> <span class="title">Node</span>&lt;<span class="title">Integer</span>&gt; </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">IntNode</span><span class="params">(Integer data)</span> </span>&#123; <span class="keyword">super</span>(data); &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setData</span><span class="params">(Integer data)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// do something elses</span></span><br><span class="line">        <span class="keyword">super</span>.setData(data);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br><code>Node</code>和<code>IntNode</code>编译之后的结果如下所示：</p>
+<ul>
+<li><code>Node</code>类<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">  <span class="keyword">public</span> T data;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">Node</span><span class="params">(T)</span></span>;</span><br><span class="line">    Code:</span><br><span class="line">       <span class="number">0</span>: aload_0</span><br><span class="line">       <span class="number">1</span>: invokespecial #<span class="number">1</span>                  <span class="comment">// Method java/lang/Object.&quot;&lt;init&gt;&quot;:()V</span></span><br><span class="line">       <span class="number">4</span>: aload_0</span><br><span class="line">       <span class="number">5</span>: aload_1</span><br><span class="line">       <span class="number">6</span>: putfield      #<span class="number">2</span>                  <span class="comment">// Field data:Ljava/lang/Object;</span></span><br><span class="line">       <span class="number">9</span>: <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setData</span><span class="params">(T)</span></span>;</span><br><span class="line">    Code:</span><br><span class="line">       <span class="number">0</span>: getstatic     #<span class="number">3</span>                  <span class="comment">// Field java/lang/System.out:Ljava/io/PrintStream;</span></span><br><span class="line">       <span class="number">3</span>: ldc           #<span class="number">4</span>                  <span class="comment">// String Node.setData</span></span><br><span class="line">       <span class="number">5</span>: invokevirtual #<span class="number">5</span>                  <span class="comment">// Method java/io/PrintStream.println:(Ljava/lang/String;)V</span></span><br><span class="line">       <span class="number">8</span>: aload_0</span><br><span class="line">       <span class="number">9</span>: aload_1</span><br><span class="line">      <span class="number">10</span>: putfield      #<span class="number">2</span>                  <span class="comment">// Field data:Ljava/lang/Object;</span></span><br><span class="line">      <span class="number">13</span>: <span class="keyword">return</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><code>IntNode</code>类：<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">IntNode</span> <span class="keyword">extends</span> <span class="title">Node</span>&lt;<span class="title">java</span>.<span class="title">lang</span>.<span class="title">Integer</span>&gt; </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">IntNode</span><span class="params">(java.lang.Integer)</span></span>;</span><br><span class="line">    Code:</span><br><span class="line">       <span class="number">0</span>: aload_0</span><br><span class="line">       <span class="number">1</span>: aload_1</span><br><span class="line">       <span class="number">2</span>: invokespecial #<span class="number">1</span>                  <span class="comment">// Method Node.&quot;&lt;init&gt;&quot;:(Ljava/lang/Object;)V</span></span><br><span class="line">       <span class="number">5</span>: <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setData</span><span class="params">(java.lang.Integer)</span></span>;</span><br><span class="line">    Code:</span><br><span class="line">       <span class="number">0</span>: getstatic     #<span class="number">2</span>                  <span class="comment">// Field java/lang/System.out:Ljava/io/PrintStream;</span></span><br><span class="line">       <span class="number">3</span>: ldc           #<span class="number">3</span>                  <span class="comment">// String IntNode.setData</span></span><br><span class="line">       <span class="number">5</span>: invokevirtual #<span class="number">4</span>                  <span class="comment">// Method java/io/PrintStream.println:(Ljava/lang/String;)V</span></span><br><span class="line">       <span class="number">8</span>: aload_0</span><br><span class="line">       <span class="number">9</span>: aload_1</span><br><span class="line">      <span class="number">10</span>: invokespecial #<span class="number">5</span>                  <span class="comment">// Method Node.setData:(Ljava/lang/Object;)V</span></span><br><span class="line">      <span class="number">13</span>: <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setData</span><span class="params">(java.lang.Object)</span></span>;</span><br><span class="line">    Code:</span><br><span class="line">       <span class="number">0</span>: aload_0</span><br><span class="line">       <span class="number">1</span>: aload_1</span><br><span class="line">       <span class="number">2</span>: checkcast     #<span class="number">6</span>                  <span class="comment">// class java/lang/Integer</span></span><br><span class="line">       <span class="number">5</span>: invokevirtual #<span class="number">7</span>                  <span class="comment">// Method setData:(Ljava/lang/Integer;)V</span></span><br><span class="line">       <span class="number">8</span>: <span class="keyword">return</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+经过类型擦除后，<code>IntNode.setData(Integer data)</code>和<code>Node.setData(Object data)</code>由于参数不同变成了两个方法，也就是说，父类<code>Node.setData</code>方法并不会被Override，由此失去了多态性，这并不是我们希望看到的结果。<br>因此，为了解决这个问题，编译器会在<code>IntNode</code>中生成一个<strong>桥接方法</strong>。如上所示，在<code>IntNode</code>的反编译结果中包含了两个<code>setData</code>方法，其中有一个是<code>setData(java.lang.Object);</code>，这个方法就是由编译器生成的桥接方法，转换为代码看得更明白一点：<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">IntNode</span> <span class="keyword">extends</span> <span class="title">Node</span>&lt;<span class="title">Integer</span>&gt;</span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="comment">// 由编译器生成的桥接方法</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setData</span><span class="params">(Object data)</span> </span>&#123;</span><br><span class="line">        setData((Integer) data);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>由于编译器实际上是做了类型擦除和添加桥接方法两步，在我们实际运行下面这段代码时，在调用<code>node.setData(&quot;hello&quot;)</code>时就会报异常啦。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IntNode intNode = <span class="keyword">new</span> IntNode(<span class="number">19</span>);</span><br><span class="line">Node node = (IntNode)intNode;</span><br><span class="line">node.setData(<span class="string">&quot;hello&quot;</span>); <span class="comment">// 在这一步就会抛出错误了，java.lang.ClassCastException: java.lang.String cannot be cast to java.lang.Integer</span></span><br></pre></td></tr></table></figure></p>
+<hr>
+<p>PS：关于Java泛型和类型擦除另外还有一些值得注意的点和容易踩的坑，待我消化好了再见～</p>
+<hr>
+<p><strong>参考资料</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/tutorial/java/generics/erasure.html">The Java Tutorial - Generics</a></li>
+<li><em>Core Java Volumn 1 - Fundamentals</em></li>
+<li><em>深入理解Java虚拟机（第二版）</em></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Java/" rel="tag"># Java</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/06/10/java-generics/" rel="next" title="浅析Java泛型">
+                <i class="fa fa-chevron-left"></i> 浅析Java泛型
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/06/22/java-generics-2/" rel="prev" title="Java泛型与数组">
+                Java泛型与数组 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B3%9B%E5%9E%8B%E7%B1%BB%E5%92%8C%E6%B3%9B%E5%9E%8B%E6%96%B9%E6%B3%95%E4%B8%AD%E7%9A%84%E7%B1%BB%E5%9E%8B%E6%93%A6%E9%99%A4"><span class="nav-number">1.</span> <span class="nav-text">泛型类和泛型方法中的类型擦除</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B%E6%93%A6%E9%99%A4%E4%B8%8E%E6%96%B9%E6%B3%95%E9%87%8D%E8%BD%BD"><span class="nav-number">2.</span> <span class="nav-text">类型擦除与方法重载</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A1%A5%E6%8E%A5%E6%96%B9%E6%B3%95%E4%B8%8E%E5%A4%9A%E6%80%81%E6%80%A7"><span class="nav-number">3.</span> <span class="nav-text">桥接方法与多态性</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="GC," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前面我们提到 GC 算法的基本类型无非标记-清除、引用计数和复制算法三类，那么这篇笔记中介绍的标记-整理 (Mark-Compact) 算法就开始将 标记-清除 算法与复制算法结合的产物。不同于复制算法是从一个空间往另一个空间复制，标记-整理算法是在整个堆上原地整理，因此也提高了堆的利用率。 标记-整理算法的思路也很简单，分为两个阶段：  标记阶段 - 与标记-清除算法中的标记阶段一样，遍历堆上的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GC算法笔记（四）标记-整理算法">
+<meta property="og:url" content="http://liaodanqi.xyz/2019/08/06/gc-mark-compact/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="前面我们提到 GC 算法的基本类型无非标记-清除、引用计数和复制算法三类，那么这篇笔记中介绍的标记-整理 (Mark-Compact) 算法就开始将 标记-清除 算法与复制算法结合的产物。不同于复制算法是从一个空间往另一个空间复制，标记-整理算法是在整个堆上原地整理，因此也提高了堆的利用率。 标记-整理算法的思路也很简单，分为两个阶段：  标记阶段 - 与标记-清除算法中的标记阶段一样，遍历堆上的">
+<meta property="og:locale">
+<meta property="article:published_time" content="2019-08-06T11:32:20.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.539Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="GC">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2019/08/06/gc-mark-compact/"/>
+
+
+
+
+
+  <title>GC算法笔记（四）标记-整理算法 | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2019/08/06/gc-mark-compact/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">GC算法笔记（四）标记-整理算法</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-06T19:32:20+08:00">
+                2019-08-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>前面我们提到 GC 算法的基本类型无非<strong>标记-清除</strong>、<strong>引用计数</strong>和<strong>复制</strong>算法三类，那么这篇笔记中介绍的<strong>标记-整理 (Mark-Compact)</strong> 算法就开始将 <strong>标记-清除</strong> 算法与<strong>复制</strong>算法结合的产物。不同于复制算法是从一个空间往另一个空间复制，标记-整理算法是在整个堆上<strong>原地整理</strong>，因此也提高了堆的利用率。</p>
+<p>标记-整理算法的思路也很简单，分为两个阶段：</p>
+<ul>
+<li><strong>标记阶段</strong> - 与标记-清除算法中的标记阶段一样，遍历堆上的对象，标记出活动对象。</li>
+<li><strong>整理阶段</strong> - 移动或复制活动对象，将所有存活的对象都移动到堆的一端（仿佛被压缩），然后直接清理掉端边界以外的内容。</li>
+</ul>
+<p>值得注意的一点是，整理的顺序会影响到程序的局部性。重排堆中对象时所遵循的顺序包括如下三种：<br><span id="more"></span></p>
+<ul>
+<li><strong>任意顺序</strong> - 对象的移动方式与它们的原始排列顺序和引用关系无关。<em>（实现简单且执行速度快，但只能处理单一大小的对象或对不同大小的对象分别整理；可能会把原本相邻的独享分散到不同的高速缓存行或虚拟内存页中，降低空间局部性）</em>。</li>
+<li><strong>线性顺序</strong> - 将具有关联关系的对象排列在一起，如引用关系或同意数据结构中的相邻对象。</li>
+<li><strong>滑动顺序</strong> - 将对象滑动到堆的一端，从而保持对象在堆中原有的分配顺序。<em>（不改变原有对象的相对排列顺序，因此不会改变局部性）</em>。</li>
+</ul>
+<p>大多整理式回收算法都遵循任意顺序或滑动顺序。</p>
+<p>接下来，我们一起来看看几种不同的标记-整理算法吧。</p>
+<hr>
+<h1 id="Lisp2-算法"><a href="#Lisp2-算法" class="headerlink" title="Lisp2 算法"></a>Lisp2 算法</h1><p>Lisp2 算法是由 Donald E. Knuth提出来的。Lisp2 算法属于滑动顺序整理算法。<br>该算法有个前提，即要在对象头里为 forwarding 指针专门留出空间。<br>Lisp2 算法的整理阶段由三次遍历完成：</p>
+<ol>
+<li>第一次遍历，<strong>设定 forwarding 指针</strong></li>
+<li>第二次遍历，<strong>更新指针</strong></li>
+<li>第三次遍历，<strong>移动对象</strong></li>
+</ol>
+<p>下面来看一下代码：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">lisp2_compact</span>() &#123;</span><br><span class="line">    <span class="built_in">set_forwarding_ptr</span>()</span><br><span class="line">    <span class="built_in">adjust_ptr</span>()</span><br><span class="line">    <span class="built_in">move_obj</span>()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">set_forwarding_ptr</span>() &#123;</span><br><span class="line">    <span class="comment">// scan用来遍历堆中的对象，new_address指向对象移动到的新地址</span></span><br><span class="line">    scan = new_address = $heap_start</span><br><span class="line">    <span class="keyword">while</span> (scan &lt; $head_end) &#123;</span><br><span class="line">        <span class="keyword">if</span> (scan.mark == TRUE) &#123;</span><br><span class="line">            scan.forwarding = new_address</span><br><span class="line">            new_address += scan.size</span><br><span class="line">        &#125;</span><br><span class="line">        scan += scan.size</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">adjust_ptr</span>() &#123;</span><br><span class="line">    <span class="comment">// 重写roots的指针</span></span><br><span class="line">    <span class="keyword">for</span> (r: $roots) &#123;</span><br><span class="line">        *r = (*r).forwarding</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    scan = $heap_start</span><br><span class="line">    <span class="keyword">while</span> (scan &lt; $heap_end) &#123;</span><br><span class="line">        <span class="comment">// 第二次遍历堆，重写所有活动对象的指针</span></span><br><span class="line">        <span class="keyword">if</span> (scan.mark == TRUE) &#123;</span><br><span class="line">            <span class="keyword">for</span> (child: <span class="built_in">children</span>(scan)) &#123;</span><br><span class="line">                *child = (*child).forwarding</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        scan += scan.size</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">move_obj</span>() &#123;</span><br><span class="line">    scan = $free = $heap_start</span><br><span class="line">    <span class="keyword">while</span> (scan &lt; $heap_end) &#123;</span><br><span class="line">        <span class="comment">// 第三次遍历堆，找到活动对象并将其移动到forwarding指针指定的地方</span></span><br><span class="line">        <span class="keyword">if</span> (scan.mark == TRUE) &#123;</span><br><span class="line">            new_address = scan.forwarding</span><br><span class="line">            <span class="built_in">copy_data</span>(new_address, scan, scan.size)</span><br><span class="line">            new_address.forwarding = <span class="literal">NULL</span></span><br><span class="line">            new_address.mark = FALSE</span><br><span class="line">            $free += new_address.size</span><br><span class="line">            scan += scan.size</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>值得一提的是，在 GC 复制算法中把对象从 From 空间复制到 To 空间后，可以复用 From 空间中原对象的域来保存 forwarding 指针，但是在 Lisp2 算法中，是在同一个空间中移动对象，因此要事先（即<strong>在移动对象前</strong>）将各个对象的指针全部更新为预计要移动到的地址，如果在移动后将forwarding指针存在原副本的域中，在后续移动时可能出现将其覆盖的情况。</p>
+<hr>
+<h2 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h2><ul>
+<li>可有效利用堆。</li>
+</ul>
+<hr>
+<h2 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h2><ul>
+<li>整理阶段要进行三次遍历，计算成本大。</li>
+<li>每个对象需要额外的空间来记录 forwarding 指针。</li>
+</ul>
+<hr>
+<h1 id="Two-Finger-算法"><a href="#Two-Finger-算法" class="headerlink" title="Two-Finger 算法"></a>Two-Finger 算法</h1><p>Two-Finger 算法属于任意顺序整理算法，且最佳适用场景为固定大小对象的堆。该算法使用两个指针，指针 $free 从堆首向后移动，指针 live 从堆尾向前移动，就像两只手指逐渐靠拢，故得名“Two-Finger”。</p>
+<p>Two-Finger 算法的整理阶段由两次遍历完成：</p>
+<ol>
+<li>第一次遍历，<strong>移动对象</strong></li>
+<li>第二次遍历，<strong>更新指针</strong></li>
+</ol>
+<p>我们来看一下代码，这里假设堆上对象大小固定为 <code>OBJ_SIZE</code>：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">two_finger_compact</span>() &#123;</span><br><span class="line">    <span class="built_in">move_obj</span>()</span><br><span class="line">    <span class="built_in">adjust_ptr</span>()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">move_obj</span>() &#123;</span><br><span class="line">    <span class="comment">// 使用 $free 和 live 从两端向中间遍历，$free 用于查找空闲空间，live 用于查找活动对象</span></span><br><span class="line">    $free = $heap_start</span><br><span class="line">    live = $heap_end - OBJ_SIZE</span><br><span class="line">    <span class="keyword">while</span> (TRUE) &#123;</span><br><span class="line">        <span class="comment">// $free 指针跳过活动对象</span></span><br><span class="line">        <span class="keyword">while</span> ($free.mark == TRUE) &#123;</span><br><span class="line">            $free += OBJ_SIZE</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// live 指针跳过非活动对象</span></span><br><span class="line">        <span class="keyword">while</span> (live.mark == FALSE) &#123;</span><br><span class="line">            live -= OBJ_SIZE</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 此时 $free 指向空闲区域，live 指向活动对象，如果此时两个指针尚未交错，则将活动对象移到前面的空闲区域</span></span><br><span class="line">        <span class="keyword">if</span> ($free &lt; scan) &#123;</span><br><span class="line">            <span class="built_in">copy_data</span>($free, live, OBJ_SIZE)</span><br><span class="line">            <span class="comment">// 将活动对象的forwarding指针指向移动后的对象</span></span><br><span class="line">            live.forwarding = $free</span><br><span class="line">            live.mark = FALSE</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">adjust_ptr</span>() &#123;</span><br><span class="line">    <span class="keyword">for</span> (r: $roots) &#123;</span><br><span class="line">        <span class="comment">// 当移动结束时，$free 指针指向空闲分块的开头</span></span><br><span class="line">        <span class="comment">// 这时 $free 指针右边包含两类对象：非活动对象和移动前的对象</span></span><br><span class="line">        <span class="comment">// 因此，指向 $free 指针右边地址的指针引用的是移动前的对象，所以要更新原来的引用</span></span><br><span class="line">        <span class="keyword">if</span> (*r &gt;= $free) &#123;</span><br><span class="line">            *r = (*r).forwarding</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 移动后，活动对象已经都被压缩到 $heap_start 到 $free 之间了</span></span><br><span class="line">    scan = $heap_start</span><br><span class="line">    <span class="keyword">while</span> (scan &lt; $free) &#123;</span><br><span class="line">        scan.mark = FALSE</span><br><span class="line">        <span class="keyword">for</span> (child: <span class="built_in">children</span>(scan)) &#123;</span><br><span class="line">            <span class="keyword">if</span> ((*child) &gt;= $free) &#123;</span><br><span class="line">                *child = (*child).forwarding</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        scan += OBJ_SIZE</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Two-Finger 算法完成一次 GC 后，$free 指针指向空闲分块的开头，因此之后再为新对象分配空间时可以直接进行分配操作。</p>
+<hr>
+<h2 id="优点-1"><a href="#优点-1" class="headerlink" title="优点"></a>优点</h2><ul>
+<li>简单快速，整理阶段遍历过程只有两次，相对较少。</li>
+<li>无需额外空间来记录 forwarding 指针，因为 forwarding指针是在移动完对象后放在原对象域中的，不需要单独占用空间，也不会导致信息丢失。</li>
+</ul>
+<hr>
+<h2 id="缺点-1"><a href="#缺点-1" class="headerlink" title="缺点"></a>缺点</h2><ul>
+<li>采用任意顺序，不考虑对象间的引用关系，破坏了访问局部性。</li>
+<li>受制于“所有对象大小最好一致”的条件，如果对象大小不一致，在移动过程中还是难以避免产生碎片。</li>
+</ul>
+<hr>
+<h1 id="其他算法"><a href="#其他算法" class="headerlink" title="其他算法"></a>其他算法</h1><p>除了上面提到的 Lisp2 算法和 Two-Finger 算法外，还有很多其他的标记-整理算法，比如：</p>
+<ul>
+<li>表格算法</li>
+<li>Immix GC 算法</li>
+<li>引线算法</li>
+<li>单次遍历算法</li>
+</ul>
+<p>这些算法相对而言更复杂一点，这里就不详细展开了，我自己也只是大概了解了一下。感兴趣的话可以看看《垃圾回收的算法和实现》和《垃圾回收算法手册：自动内存管理的艺术》这两本书。</p>
+<hr>
+<h1 id="标记-整理算法的局限性"><a href="#标记-整理算法的局限性" class="headerlink" title="标记-整理算法的局限性"></a>标记-整理算法的局限性</h1><p>摘取一段《垃圾回收算法手册》的笔记：</p>
+<blockquote>
+<p>Jones [1996] 的第 5 章对许多较老的整理策略进行了较为详尽的描述，这些算法大多都存在一些不良的或者不可接受的缺陷。需要考虑的问题包括转发指针要付出多大的空间开销。某些整理算法对赋值器具有特定限制：双指针（注：Two-Finger）算法等简单整理算法只能处理固定大小的对象，将对象依照大小进行分级当然是可以的，但既已如此又何须进行整理；引线整理要求能够将指针和暂存在指针域中的非指针临时值进行区分，由于引线算法会（临时性地）破坏针域信息，因而不适用于并发回收器；Morris [1978, 1979, 1982] 的引线整理算法对引用可能的指向方向存在限制；最后，除了双指针算法，大多数整理算法都不支持内部指针。</p>
+</blockquote>
+<p>由此可见，关于算法的研究真是永无止境呀~</p>
+<hr>
+<p>关于垃圾回收算法的几个基本类型和典型算法的梳理大概就到这里，之后打算整理个汇总比较。自从发现了《垃圾回收算法手册》这本书宛如打开了新世界的大门，不愧为<strong>手册</strong>，大而全。最新版是 2016 年的，不过中文版好像还是翻译的 2012 年的原版。不过算法嘛，时效性不是那么重要啦，毕竟经典的算法都是好几十年前的啦。</p>
+<p>日常吐槽：就是最近一个月都在学习和整理垃圾回收的内容，感觉有点疲劳了 _(:з」∠)_</p>
+<hr>
+<p><strong>参考资料</strong></p>
+<ul>
+<li><em>垃圾回收的算法与实现</em></li>
+<li><em>垃圾回收算法手册：自动内存管理的艺术</em></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/GC/" rel="tag"># GC</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/07/31/gc-copying/" rel="next" title="GC算法笔记（三）复制算法">
+                <i class="fa fa-chevron-left"></i> GC算法笔记（三）复制算法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/08/09/gc-algorithms-compare/" rel="prev" title="GC算法笔记（五）概括与比较">
+                GC算法笔记（五）概括与比较 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Lisp2-%E7%AE%97%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">Lisp2 算法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%98%E7%82%B9"><span class="nav-number">1.1.</span> <span class="nav-text">优点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%BA%E7%82%B9"><span class="nav-number">1.2.</span> <span class="nav-text">缺点</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Two-Finger-%E7%AE%97%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">Two-Finger 算法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%98%E7%82%B9-1"><span class="nav-number">2.1.</span> <span class="nav-text">优点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%BA%E7%82%B9-1"><span class="nav-number">2.2.</span> <span class="nav-text">缺点</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E7%AE%97%E6%B3%95"><span class="nav-number">3.</span> <span class="nav-text">其他算法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A0%87%E8%AE%B0-%E6%95%B4%E7%90%86%E7%AE%97%E6%B3%95%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7"><span class="nav-number">4.</span> <span class="nav-text">标记-整理算法的局限性</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Boyer-Moore,字符串搜索," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本期日常：浪完了逛吃躺吃的中秋国庆小长假，我肥来了！肥归工作的第一天元气满满，决定填坑一篇～  “众里寻他千百度，蓦然回首，那人却在、灯火阑珊处。”“那人”是不是在难说，不过今天我们要聊的字符串搜索之Boyer-Moore算法确是能借助回溯寻到“那串字符”。  来自Boyer-Moore的回眸Boyer-Moore是Robert S. Boyer和J Strother Moore在1977年发明的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="字符串搜索玩耍指南（二）- Boyer-Moore算法">
+<meta property="og:url" content="http://liaodanqi.xyz/2018/10/08/boyer-moore/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="本期日常：浪完了逛吃躺吃的中秋国庆小长假，我肥来了！肥归工作的第一天元气满满，决定填坑一篇～  “众里寻他千百度，蓦然回首，那人却在、灯火阑珊处。”“那人”是不是在难说，不过今天我们要聊的字符串搜索之Boyer-Moore算法确是能借助回溯寻到“那串字符”。  来自Boyer-Moore的回眸Boyer-Moore是Robert S. Boyer和J Strother Moore在1977年发明的">
+<meta property="og:locale">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/boyermoore.png">
+<meta property="article:published_time" content="2018-10-08T12:42:09.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.532Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="Boyer-Moore">
+<meta property="article:tag" content="字符串搜索">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/boyermoore.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2018/10/08/boyer-moore/"/>
+
+
+
+
+
+  <title>字符串搜索玩耍指南（二）- Boyer-Moore算法 | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2018/10/08/boyer-moore/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">字符串搜索玩耍指南（二）- Boyer-Moore算法</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-08T20:42:09+08:00">
+                2018-10-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index">
+                    <span itemprop="name">算法</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本期日常：浪完了逛吃躺吃的中秋国庆小长假，我肥来了！肥归工作的第一天元气满满，决定填坑一篇～</p>
+<hr>
+<p><strong>“众里寻他千百度，蓦然回首，那人却在、灯火阑珊处。”</strong><br>“那人”是不是在难说，不过今天我们要聊的字符串搜索之<strong>Boyer-Moore算法</strong>确是能借助回溯寻到<strong>“那串字符”</strong>。</p>
+<hr>
+<h1 id="来自Boyer-Moore的回眸"><a href="#来自Boyer-Moore的回眸" class="headerlink" title="来自Boyer-Moore的回眸"></a>来自Boyer-Moore的回眸</h1><p>Boyer-Moore是<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Robert_S._Boyer">Robert S. Boyer</a>和<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/J_Strother_Moore">J Strother Moore</a>在1977年发明的算法。前文介绍的KMP是从前往后一次遍历文本（Text）进行搜索，并且采用了DFA来避免回溯操作。换个角度，若是每次使用目标字符串（Pattern）从后往前比较，我们反而能更快排除不符合的情况，及时止损，提高效率。</p>
+<span id="more"></span>
+<p>举个例子，如果我们要从<code>BAAABAAABBAA</code>中搜索<code>BAAABB</code>，如果从前往后比较，我们至少要进行5次比较才能在第5个字符<del> <em>(嗯，你没看错，要从0开始计数哦)</em></del> 发现前面的工作都白费了；而如果一开始从后往前比较，就能直接发现目标字符串的最后一个字符<code>B</code>与文本当前位置的<code>A</code>匹配失败，这个时候，我们就需要移动目标字符串。</p>
+<p>移到哪里合适呢？分两种情况讨论：</p>
+<ol>
+<li>当前文本指针指的字符不在目标字符串中：<br> 那么可以直接将字符串指针移动到当前文本指针的后面一个位置。</li>
+<li>当前文本指针指的字符在目标字符串中出现：<br> 为了避免错过可能的匹配，则应该将目标字符串中该字符出现的最后位置与文本指针对齐。</li>
+</ol>
+<p>下图以上例比较了两种操作可能造成的不同结果：<br><img src="/uploads/images/boyermoore.png" alt="Boyermoore Example"></p>
+<hr>
+<h2 id="定义移动规则"><a href="#定义移动规则" class="headerlink" title="定义移动规则"></a>定义移动规则</h2><p>虽然Boyer-Moore算法和KMP算法的主要思路截然相反，但是在具体操作步骤中却有一定的相似性。比如，Boyer-Moore算法中最重要的一步，也是要构建一组遇到不同字符时的移动规则。<br>不过这个操作，相较于DFA的构建，可就简单多啦：<br>初始化一个<code>right[]</code>数组，存储给定字符集中每个字符在目标字符串中出现的最后位置，如果不在目标字符串中，则设为-1。<br>代码如下，非常简单：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span>[] right = <span class="keyword">new</span> <span class="keyword">int</span>[R];</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> c = <span class="number">0</span>; c &lt; R; c++) &#123;</span><br><span class="line">    right[c] = -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; M; j++) &#123;</span><br><span class="line">    <span class="comment">// rightmost position for chars in pattern</span></span><br><span class="line">    right[pattern.charAt(j)] = j;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="使用规则进行字符串搜索"><a href="#使用规则进行字符串搜索" class="headerlink" title="使用规则进行字符串搜索"></a>使用规则进行字符串搜索</h2><p>有了移动规则，字符串搜索就是按章办事了。<br>我们还是用两个指针完成搜索，<code>i</code>作为文本指针（text）从前往后移动，<code>j</code>作为长度为M的目标字符串（pattern）指针从后往前进行比较。如果遍历pattern，即j的取值为0到M，都有<code>text.charAt(i + j)</code>等于<code>pattern.charAt(j)</code>，那么匹配成功。否则，如果其中某个字符匹配失败，我们还是按两种情况处理：</p>
+<ol>
+<li>匹配失败的字符不在pattern中：把pattern向前移动<code>j + 1</code>个位置</li>
+<li>匹配失败的字符在pattern中：使用提前定义好的<code>right[]</code>数组将pattern中对应字符出现的最后位置与当前文本字符位置对齐。这一步可以通过公式<code>i += j - right[text.charAt(i+j)]</code>来更新<code>i</code>的值。<br> 如果<code>j - right[c]</code>是个小于等于0的值，也就是说这个时候重新对齐反而会把pattern往回推，这时我们需要丢弃这个值，选择直接加1，以此保证i永远是前进的。</li>
+</ol>
+<p>举个例子，下面这种情况，j = 3, right[‘E’] =  5, 所以如果按照<code>i += j - right[&#39;E&#39;]</code>来算，i又跑回去2个字符了。遇到这种情况时，就直接<code>i += 1</code>就好了。<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">        i    i+j</span><br><span class="line">. . . . . . . E L E . . . . .</span><br><span class="line">        N E E D L E</span><br><span class="line">              j</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h2><p>下面是Boyer-Moore算法的基本实现：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BoyerMoore</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span>[] right;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> String pattern;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// pattern的长度</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> M;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 这里使用的Extended ASCII字符集，用于构建right[]</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> R = <span class="number">256</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">BoyerMoore</span><span class="params">(String pattern)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.pattern = pattern;</span><br><span class="line">        M = pattern.length();</span><br><span class="line">        <span class="comment">// right[] tells how far to skip if mismatch is detected</span></span><br><span class="line">        right = <span class="keyword">new</span> <span class="keyword">int</span>[R];</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> c = <span class="number">0</span>; c &lt; R; c++) &#123;</span><br><span class="line">            right[c] = -<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; M; j++) &#123;</span><br><span class="line">            right[pattern.charAt(j)] = j; <span class="comment">// rightmost position for chars in pattern</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">search</span><span class="params">(String txt)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> n = txt.length();</span><br><span class="line">        <span class="keyword">int</span> skip;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt;= n - M; i += skip) &#123;</span><br><span class="line">            skip = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = M - <span class="number">1</span>; j &gt;=<span class="number">0</span>; j--) &#123;</span><br><span class="line">                <span class="keyword">if</span> (pattern.charAt(j) != txt.charAt(i + j)) &#123;</span><br><span class="line">                    <span class="comment">// 对于不在pattern中字符，其right[c]的值为-1，</span></span><br><span class="line">                    <span class="comment">// 那么 i+= skip其实就跳到了i + j + 1的位置，</span></span><br><span class="line">                    <span class="comment">// 这样将两种情况统一处理了</span></span><br><span class="line">                    skip = j - right[txt.charAt(i + j)];</span><br><span class="line">                    <span class="keyword">if</span> (skip &lt; <span class="number">1</span>) skip = <span class="number">1</span>;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (skip == <span class="number">0</span>) <span class="keyword">return</span> i;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> n;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="进一步优化"><a href="#进一步优化" class="headerlink" title="进一步优化"></a>进一步优化</h2><p>在匹配失败发生时，对于<code>text[i + j, i + M - 1]</code>这部分的字符我们是已知的，即<code>pattern[j, M - 1]</code>部分的字符，结合KMP的思想，如果也有一个类似DFA的表，那么我们其实能更准确的移动<code>i</code>的位置。<br>完整的Boyer-Moore算法是包括了这部分优化的，这里我就没有更深入研究了，感兴趣的可以去看看原作~</p>
+<p>对于一些典型的输入，那么Boyer-Moore算法在长度为<code>N</code>的文本中搜索长度为<code>M</code>的字符串时，只需要使用大约<code>N/M</code>次字符串比较就搞定了，还是非常高效的。</p>
+<hr>
+<p>逐渐会发现很多算法都是从最原始的解法逐步优化，逐渐完善，博采众长或是独辟蹊径。</p>
+<p>下一篇再介绍一个思路清奇的算法~未完待续~</p>
+<hr>
+<p>参考资料</p>
+<ul>
+<li><em>Algorithms, 4th Edition</em> by Robert Sedgewick and Kevin Wayne</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Boyer-Moore/" rel="tag"># Boyer-Moore</a>
+          
+            <a href="/tags/%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%90%9C%E7%B4%A2/" rel="tag"># 字符串搜索</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/19/kmp/" rel="next" title="字符串搜索玩耍指南（一）- KMP算法">
+                <i class="fa fa-chevron-left"></i> 字符串搜索玩耍指南（一）- KMP算法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/12/rabin-karp/" rel="prev" title="字符串搜索玩耍指南（三）- Rabin-Karp算法">
+                字符串搜索玩耍指南（三）- Rabin-Karp算法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9D%A5%E8%87%AABoyer-Moore%E7%9A%84%E5%9B%9E%E7%9C%B8"><span class="nav-number">1.</span> <span class="nav-text">来自Boyer-Moore的回眸</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89%E7%A7%BB%E5%8A%A8%E8%A7%84%E5%88%99"><span class="nav-number">1.1.</span> <span class="nav-text">定义移动规则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E8%A7%84%E5%88%99%E8%BF%9B%E8%A1%8C%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%90%9C%E7%B4%A2"><span class="nav-number">1.2.</span> <span class="nav-text">使用规则进行字符串搜索</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.3.</span> <span class="nav-text">代码实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%9B%E4%B8%80%E6%AD%A5%E4%BC%98%E5%8C%96"><span class="nav-number">1.4.</span> <span class="nav-text">进一步优化</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

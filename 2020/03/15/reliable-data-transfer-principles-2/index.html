@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="网络,可靠数据传输," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="在上篇笔记中我们综合了诸多技术搭建了一个可靠的数据传输协议——位交替协议。然而，作为停等协议，位交替协议的效率实在太低。 举个例子，假设主机 A 和主机 B 之间的往返时延为 30 ms，二者之间连接的信道的传输率 R 为 1 Gbps，一个 packet 的大小 L 为 1000 bytes，那么一个 packet 从主机传输到信道上所花的时间为$$d_{trans}&#x3D;\frac{L}{R}&#x3D;\">
+<meta property="og:type" content="article">
+<meta property="og:title" content="可靠的数据传输实现指南（二）- 管道化">
+<meta property="og:url" content="http://liaodanqi.xyz/2020/03/15/reliable-data-transfer-principles-2/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="在上篇笔记中我们综合了诸多技术搭建了一个可靠的数据传输协议——位交替协议。然而，作为停等协议，位交替协议的效率实在太低。 举个例子，假设主机 A 和主机 B 之间的往返时延为 30 ms，二者之间连接的信道的传输率 R 为 1 Gbps，一个 packet 的大小 L 为 1000 bytes，那么一个 packet 从主机传输到信道上所花的时间为$$d_{trans}&#x3D;\frac{L}{R}&#x3D;\">
+<meta property="og:locale">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/gbn-sender.png">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/sr-sender-receiver.png">
+<meta property="article:published_time" content="2020-03-15T01:31:40.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.559Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="网络">
+<meta property="article:tag" content="可靠数据传输">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/gbn-sender.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2020/03/15/reliable-data-transfer-principles-2/"/>
+
+
+
+
+
+  <title>可靠的数据传输实现指南（二）- 管道化 | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2020/03/15/reliable-data-transfer-principles-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">可靠的数据传输实现指南（二）- 管道化</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-15T09:31:40+08:00">
+                2020-03-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在上篇笔记中我们综合了诸多技术搭建了一个可靠的数据传输协议——位交替协议。然而，作为停等协议，位交替协议的效率实在太低。</p>
+<p>举个例子，假设主机 A 和主机 B 之间的往返时延为 <code>30 ms</code>，二者之间连接的信道的传输率 <code>R</code> 为 <code>1 Gbps</code>，一个 packet 的大小 <code>L</code> 为 <code>1000 bytes</code>，那么一个 packet 从主机传输到信道上所花的时间为<br>$$d_{trans}=\frac{L}{R}=\frac {1000 \times 8 \: bit}{1 \times 10^{9}\,  bps}=8 \times 10^{-6}s$$<br>然而，当 A 给 B 发送了一个packet之后，要等上 <code>30ms + 0.008ms = 30.008 ms</code> 才收到 ACK，然后 A 才能发送下一个 packet。发送方的实际利用率为：<br>$$U_{sender}=\frac{\frac{L}{R}}{RTT +\frac{L}{R}}=\frac{0.008\, ms}{30\, ms + 0.008\, ms}\approx 0.00027=0.027\%$$<br>也就是说在 <code>30.008ms</code> 里实际上只传输了 <code>1000</code> 个字节，实际吞吐量为 <code>276kbps</code>，大大的浪费啊~</p>
+<p>这个性能问题的解决思路很简单：<strong>允许在之前发送地 packet 没有收到确认的情况下继续发送新的 packet</strong>。就像是水流源源不断地流经管道，因此这种模式又被称为<strong>管道化 (Pipeling)</strong>。<br><span id="more"></span><br>管道化是个好方案，但是，我们还得先解决管道化带来的新的问题：</p>
+<ul>
+<li><strong>如果数据流中的某个 packet 出错（损坏或丢失），这时后续的 packets 已经发出甚至已经到达接收方，发送方和接收方分别应采取什么措施从错误中恢复呢？</strong></li>
+</ul>
+<p>有两种基本方法用于处理管道化传输中出现的错误，它们分别是：</p>
+<ul>
+<li><strong>回退 N (Go-Back-N)</strong> 协议</li>
+<li><strong>选择重传 (Selective Repeat)</strong> 协议</li>
+</ul>
+<p>这两种协议都属于<strong>滑动窗口</strong>协议。滑动窗口协议的本质是在任何时刻发送方总是维持着一组序号对应了允许它发送的 packets，这组序号被称为<strong>发送窗口 (sending window)</strong>。类似地接收方也为维持着一个<strong>接收窗口 (receiving window)</strong>对应一组允许它接收的 packets。</p>
+<hr>
+<h1 id="回退-N-协议"><a href="#回退-N-协议" class="headerlink" title="回退 N 协议"></a>回退 N 协议</h1><p>在回退 N 协议（以下简称 GBN）中，发送方允许有尚未确认的 packets 情况下继续发送新的 packet，但尚未被确认的 packets 的数量不能超过 <strong>N</strong>，即发送窗口的大小为 N。<br>下图（取自《计算机网络：自顶向下方法》）显示了在发送窗口为 N 的大小下，GBN 协议发送方维护的序号集合：<br><img src="/uploads/images/gbn-sender.png" alt="GBN Sender&#39;s view of sequence numbers"></p>
+<p>在上图中，<code>base</code> 表示当前尚未被确认的 packet 中最早发送的一个，<code>nextseqnum</code> 表示最小的可用于下一个待发送 packet 的序号，发送窗口大小为 N，由此可得：</p>
+<ul>
+<li><code>[0, base-1]</code> - 已经发送且被确认的 packets 的序号</li>
+<li><code>[base, nextseqnum-1]</code> - 已经发送尚未被确认的 packets 的序号</li>
+<li><code>[nextseqnum, base+N-1]</code> - 可用于那些要被立即发送的分组</li>
+<li><code>[base+N, ...]</code> - 不可用的序号</li>
+</ul>
+<h2 id="GBN-发送方行为"><a href="#GBN-发送方行为" class="headerlink" title="GBN 发送方行为"></a>GBN 发送方行为</h2><p>GBN 发送方维护着 <code>base</code>, <code>nextseqnum</code> 和 <code>N</code> 三个值，以便在三种事件发生时做出正确的响应：</p>
+<ul>
+<li><strong>上层调用</strong> - 检查当前发送窗口是否已满 (<code>nextseqnum = base + N</code>)，这时可以有三种处理方式：<ul>
+<li>直接拒绝上层的调用</li>
+<li>将数据放到缓冲区</li>
+<li>从根源上杜绝这种情况，采用同步机制，使得上层的调用只能在有可用窗口时发生</li>
+</ul>
+</li>
+<li><strong>收到 ACK</strong> - GBN 协议采用<strong>累计确认 (cumulative acknowledgement)</strong> 的方式，也就是指 <code>ACK n</code> 意味着序号 <code>n</code> 以前（包括 <code>n</code>）的所有 packet 都确认收到。</li>
+<li><strong>超时事件</strong> - GBN <strong>只使用一个计时器</strong>，这个计时器可看作是最早的已被发送但尚未被确认的 packet 的定时器（也就是序号为 <code>base</code> 的 packet 的定时器啦）。当超时发生时，发送方将重传之前已经发送但尚未确认的所有 packets。如果收到一个 ACK，但仍然有已发送未确认的 packet，那么定时器会重新启动，否则定时器会被终止。</li>
+</ul>
+<h2 id="GBN-接收方行为"><a href="#GBN-接收方行为" class="headerlink" title="GBN 接收方行为"></a>GBN 接收方行为</h2><p>GBN 接收方的行为很简单，如果一个序号为 <code>n</code> 的 packet 是按照正确顺序（即上一个正确接收的 packet 序号为 <code>n-1</code>）到达且没有出错，那么就交付给上层。其他情况，则丢弃这个 packet，并且为最近一个按序接收的 packet 重传 ACK。<br>也就是说，对于乱序到达的 packet，接收方一律丢弃，虽然有点浪费，但是却是最简便的做法，不需要额外的缓存来存放这些提前到达的 packet，也不要额外的逻辑来处理它们之间的关系。</p>
+<p>如果传输过程中错误很少发生，那么 GBN 可以工作得很好，但如果信道差错率较大，那么 GBN 的重传机制将浪费大量带宽。这种情况下，我们可以选择另一种协议——选择重传。</p>
+<hr>
+<h1 id="选择重传协议"><a href="#选择重传协议" class="headerlink" title="选择重传协议"></a>选择重传协议</h1><p>选择重传 (Selective Repeat, 简称 SR) 协议，顾名思义，就是有选择地重传 —— <strong>仅重传那些发送方怀疑在接收方出错（损坏或丢失）的 packet</strong>。<br>下图（取自《计算机网络：自顶向下方法》）显示了 SR 中发送方和接收方各自维护的滑动窗口：<br><img src="/uploads/images/sr-sender-receiver.png" alt="SR Sender &amp; Receiver views of sequence number space"></p>
+<p>在上图中，我们可以看到在发送窗口中包含了一部分被确认的 packet，说明这部分乱序到达接收方的 packet 已经被接收方正确接收了。那么双方具体是如何协调工作的呢？</p>
+<h2 id="SR-发送方行为"><a href="#SR-发送方行为" class="headerlink" title="SR 发送方行为"></a>SR 发送方行为</h2><p>SR 的发送方同样也要对如下三种事件做出响应：</p>
+<ul>
+<li><strong>上层的调用</strong> - 与 GBN 一样，检查发送窗口是否已满，若仍有可用序号，则发送数据，否则拒绝请求或先缓存起来。</li>
+<li><strong>收到 ACK</strong> - 当收到某个 packet 的 ACK 时，如果它位于发送窗口中，那么发送方会将其标记为已确认。如果这个 packet 的序号刚好等于 <code>send_base</code>，那么就移动发送窗口到当前未被确认的最小序号，如果移动窗口后有序号落在窗口内的尚未发送的 packet，则发送这些 packet。</li>
+<li><strong>超时事件</strong> - 与 GBN 不同，SR 为每一个 packet 设定单独的定时器，当超时发生则重传这个定时器对应的 packet。</li>
+</ul>
+<h2 id="SR-接收方行为"><a href="#SR-接收方行为" class="headerlink" title="SR 接收方行为"></a>SR 接收方行为</h2><p>相比于 GNB 接收方简单粗暴的处理，SR 的接收方要多做不少工作：</p>
+<ul>
+<li>只要收到的 packet 是正确的，接收方就会返回 ACK，而不管是否按序；</li>
+<li>非按序到达的 packet 会被缓存起来，直到所有缺失的 packet （即序号更小的那些）都被收到，这时接收方会将这一批连续的 packets 一起交付给上层；</li>
+<li><strong>对于收到的序号小于 <code>rcv_base</code> 的 packet，接收方也会返回 ACK</strong>。举个例子，假设最初 <code>send_base</code> 和 <code>rcv_base</code> 都为 1，当接收方确认收到序号为 1 的 packet 后返回了 ACK，接收窗口向前移动，<code>rcv_base</code> 变为 2；结果遇上了 ACK 丢包，触发了发送方的超时事件，这时发送方会重传序号为 1 的 packet，如果接收方不对应答该 packet，发送方就会陷入重传 packet 1 的死循环，发送窗口永远都不会向前移动。</li>
+</ul>
+<p>从上图可以看到，发送窗口与接收窗口并不总是一致的。不一致的成因就与刚刚举的例子有关，对于哪些分组已被正确接收，哪些没有，发送方和接收方看到的结果不一定相同。</p>
+<p>二者之间的不同步还会带来一个严重的问题：由于现实中用来表示序号的字段是有限长度的，所以序号不可无限增长，而是有限范围。当序号增长到最大值后便会从头开始计数。这可能会导致接收方无法分辨一个 packet 是重传的还是新的，什么时候会发生这种情况呢？（偷个懒就不描述了，在这里先卖个关子~）<br>总之，为了避免这个问题，SR 要求<strong>滑动窗口的大小要小于或等于 sequence 最大值的一半</strong>。</p>
+<hr>
+<h1 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h1><p>到此为止，我们提到了多种用于实现可靠数据传输的机制，包括了<strong>校验和</strong>、<strong>确认机制（肯定/否定确认）</strong>、<strong>序号的应用</strong>、<strong>计时器</strong>，<strong>重传</strong>以及<strong>滑动窗口和管道化</strong>。</p>
+<p>那么，作为可靠数据传输协议中最为重要的一员，TCP 可谓是将这些机制的集大成者，等我摸透了再来跟大家聊一聊TCP究竟是个怎么用实践检验真理的~</p>
+<hr>
+<p><strong>参考资料</strong></p>
+<ul>
+<li>Computer Networking: A Top-Down Approach, 7th Edition</li>
+<li>计算机网络，第五版</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E7%BD%91%E7%BB%9C/" rel="tag"># 网络</a>
+          
+            <a href="/tags/%E5%8F%AF%E9%9D%A0%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93/" rel="tag"># 可靠数据传输</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/03/14/reliable-data-transfer-principles/" rel="next" title="可靠的数据传输实现指南（一）- 基本机制">
+                <i class="fa fa-chevron-left"></i> 可靠的数据传输实现指南（一）- 基本机制
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/03/16/congestion-control-1/" rel="prev" title="网络拥塞控制指北（一）- 网络层篇">
+                网络拥塞控制指北（一）- 网络层篇 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9B%9E%E9%80%80-N-%E5%8D%8F%E8%AE%AE"><span class="nav-number">1.</span> <span class="nav-text">回退 N 协议</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#GBN-%E5%8F%91%E9%80%81%E6%96%B9%E8%A1%8C%E4%B8%BA"><span class="nav-number">1.1.</span> <span class="nav-text">GBN 发送方行为</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GBN-%E6%8E%A5%E6%94%B6%E6%96%B9%E8%A1%8C%E4%B8%BA"><span class="nav-number">1.2.</span> <span class="nav-text">GBN 接收方行为</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%80%89%E6%8B%A9%E9%87%8D%E4%BC%A0%E5%8D%8F%E8%AE%AE"><span class="nav-number">2.</span> <span class="nav-text">选择重传协议</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#SR-%E5%8F%91%E9%80%81%E6%96%B9%E8%A1%8C%E4%B8%BA"><span class="nav-number">2.1.</span> <span class="nav-text">SR 发送方行为</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SR-%E6%8E%A5%E6%94%B6%E6%96%B9%E8%A1%8C%E4%B8%BA"><span class="nav-number">2.2.</span> <span class="nav-text">SR 接收方行为</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">小结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="正则表达式," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="在第一篇正则表达式的笔记中提到了很多元字符及其使用举例。细心一点的话，会发现不同语言或工具下正则表达式的写法和用法都有很大的不同。 在某种特定的编程语言或工具软件中使用正则表达式时，需要注意以下3个问题：  支持的元字符，以及这些元字符的意义。 正则表达式与语言或者工具的“交互”方式。比如如何进行正则表达式的操作，容许进行哪些操作，以及这些操作的目标文本类型。 正则表达式引擎如何将表达式应用到文本">
+<meta property="og:type" content="article">
+<meta property="og:title" content="正则表达式学习（二） - 正则的处理">
+<meta property="og:url" content="http://liaodanqi.xyz/2017/10/05/regularexpression-2/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="在第一篇正则表达式的笔记中提到了很多元字符及其使用举例。细心一点的话，会发现不同语言或工具下正则表达式的写法和用法都有很大的不同。 在某种特定的编程语言或工具软件中使用正则表达式时，需要注意以下3个问题：  支持的元字符，以及这些元字符的意义。 正则表达式与语言或者工具的“交互”方式。比如如何进行正则表达式的操作，容许进行哪些操作，以及这些操作的目标文本类型。 正则表达式引擎如何将表达式应用到文本">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-10-05T05:44:09.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.558Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="正则表达式">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2017/10/05/regularexpression-2/"/>
+
+
+
+
+
+  <title>正则表达式学习（二） - 正则的处理 | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2017/10/05/regularexpression-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">正则表达式学习（二） - 正则的处理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-10-05T13:44:09+08:00">
+                2017-10-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在第一篇正则表达式的笔记中提到了很多元字符及其使用举例。细心一点的话，会发现不同语言或工具下正则表达式的写法和用法都有很大的不同。</p>
+<p>在某种特定的编程语言或工具软件中使用正则表达式时，需要注意以下3个问题：</p>
+<ol>
+<li>支持的元字符，以及这些元字符的意义。</li>
+<li>正则表达式与语言或者工具的“交互”方式。比如如何进行正则表达式的操作，容许进行哪些操作，以及这些操作的目标文本类型。</li>
+<li>正则表达式引擎如何将表达式应用到文本。语言或工具的设计者实现正则表达式的方法对正则表达式能够取得的结果有重要的影响。</li>
+</ol>
+<p>上一篇介绍了正则表达式最常用的部分元字符，本篇将正则表达式与语言或工具的几种常见“交互方式”。</p>
+<span id="more"></span>
+<hr>
+<h2 id="处理方式"><a href="#处理方式" class="headerlink" title="处理方式"></a>处理方式</h2><p>首先，从整体的角度来看看不用编程语言或工具对正则表达式的处理大致有哪些方式，再通过举例了解一下Java和Perl中具体的实现。</p>
+<p>编程语言对于正则表达式的处理方式主要有三种：集成式(integrated)、程序式(procedural)和面向对象式(object-oriented)。</p>
+<h3 id="集成式处理"><a href="#集成式处理" class="headerlink" title="集成式处理"></a>集成式处理</h3><p>在集成式处理方式中，正则表达式是直接内建在语言之中的，通过使用语言内建的操作符就可使用，例如Perl。集成式的处理减轻了程序员的负担，它隐藏了诸如正则表达式的预处理、准备匹配、应用正则表达式、返回结果等更细节的工作。</p>
+<p>举个栗子：</p>
+<figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ($line =~ <span class="regexp">m/^Subject: (.*)/i</span>) &#123;</span><br><span class="line">    $subject = $1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上段代码为例，在Perl中，<code>m/···/</code>就表示尝试进行 <strong>正则表达式匹配</strong> 。<code>=~</code>用来连接正则表达式<code>m/···/</code>和与搜索的字符串，在本例中保存在变量<code>$line</code>中，<code>$1</code>中保存了捕获的第一组字符。</p>
+<hr>
+<h3 id="程序式处理和面向对象式处理"><a href="#程序式处理和面向对象式处理" class="headerlink" title="程序式处理和面向对象式处理"></a>程序式处理和面向对象式处理</h3><p>程序式处理和面向对象式处理差别不大，这两种处理方式不是由内建的操作符提供，而是由普通函数（编程式）或构造函数及方法（面向对象式）来提供。也就是说，并没有专属于正则表达式的操作符，只有一般的字符串，普通函数、构造函数及方法把这些字符串作为正则表达式来处理。</p>
+<p>举个咖啡味的栗子（本栗取自<a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/tutorial/essentàial/regex/matcher.html">Java Tutorials - Methods of the Matcher Class</a>）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.regex.Pattern;</span><br><span class="line"><span class="keyword">import</span> java.util.regex.Matcher;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MatcherDemo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String REGEX =</span><br><span class="line">        <span class="string">&quot;\\bdog\\b&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String INPUT =</span><br><span class="line">        <span class="string">&quot;dog dog dog Doggie dogg&quot;</span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">       Pattern p = Pattern.compile(REGEX, Pattern.CASE_INSENSITIVE);</span><br><span class="line">       Matcher m = p.matcher(INPUT);</span><br><span class="line">       <span class="keyword">int</span> count = <span class="number">0</span>;</span><br><span class="line">       <span class="keyword">while</span>(m.find()) &#123;</span><br><span class="line">           count++;</span><br><span class="line">           System.out.println(<span class="string">&quot;Match number &quot;</span>+ count);</span><br><span class="line">           System.out.println(<span class="string">&quot;start(): &quot;</span> + m.start());</span><br><span class="line">           System.out.println(<span class="string">&quot;end(): &quot;</span> + m.end());</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>上面的代码展示了Java中以面向对象式处理正则表达式的方式。可以看到在Java中正则表达式的类型就是个普通字符串String类型。上例中的 <strong>Pattern</strong> 和 <strong>Matcher</strong> 是由java.util.regex提供的专门用于处理正则表达式的两个类。</p>
+<p>Pattern和Matcher提供了一系列操作用于处理正则表达式。在上例中就包括：</p>
+<ul>
+<li>Pattern.compile —— 检查正则表达式字符串并将其编译为不区分大小写的内部形式，获得一个Pattern对象</li>
+<li>p.matcher —— 获得一个与待匹配文本相关联的Matcher对象</li>
+<li>m.find —— 检查是否存在匹配</li>
+<li>m.start/m.end —— 获取匹配的起始结束为止</li>
+</ul>
+<p>使用任何正则表达式的语言都要进行这些操作，在Java中它选择暴露具体的细节，需要程序员显式地调用，而在Perl中则隐藏了大多数细节。</p>
+<p>下面我们再来看看编程式处理方式，就以Java为例。Java除了提供了创建Pattern对象来处理的方式，还提供了一些便捷函数来节省工作量，在这些静态函数中提供了临时对象，执行完成后，这些对象就会被自动抛弃。</p>
+<p>举个栗子：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!Pattern.matches(<span class="string">&quot;\\s*&quot;</span>, line)) &#123;</span><br><span class="line">    <span class="comment">// do something</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>参考Java API官方文档由如下说明：</p>
+<blockquote>
+<p>An invocation of this convenience method of the form <code>Pattern.matches(regex, input);</code> behaves in exactly the same way as the expression <code>Pattern.compile(regex).matcher(input).matches();</code></p>
+</blockquote>
+<p>综上，程序式处理和面向对象式处理的差别主要在于以下三点：</p>
+<ul>
+<li>便捷程度 - 程序式完成简单任务时更容易，但处理复杂任务很麻烦</li>
+<li>功能 - 程序式比面向对象式要少</li>
+<li>效率 - 要根据具体使用场景分析</li>
+</ul>
+<hr>
+<h2 id="匹配模式"><a href="#匹配模式" class="headerlink" title="匹配模式"></a>匹配模式</h2><p>匹配模式规定了正则表达式应该如何解释和应用。不同的语言和工具对模式的设置方式也不同，一般采取修饰符或者配置选项来决定。</p>
+<p>例如Perl中的<code>/i</code>修饰符代表不区分大小写，<code>/x</code>容许自有空格和注释；而Java中则采用标志位如<em>Patter.CASE_INSENSITIVE</em>来设置。</p>
+<p>下面列举比较常见的几种模式：</p>
+<ul>
+<li><p><strong>不区分大小写的模式</strong> - 在匹配过程中忽略字母大小写。</p>
+</li>
+<li><p><strong>宽松排列和注释模式</strong> - 忽略字符组外部的所有空白字符，字符组内部的空白字符仍然有效（java.util.regex比较特殊）, <code>#</code>和换行符之间的内容视为注释。</p>
+</li>
+<li><p><strong>点号通配模式(dot-match-all，又称单行文本模式)</strong> - 通常情况下点号是不能匹配换行符的，但在此模式下，点号不受限制，可以匹配任何字符。</p>
+</li>
+<li><p><strong>增强的行锚点模式(Enhanced line-anchor，又称多行文本模式)</strong> - 此模式会影响<code>^</code>和<code>$</code>的匹配。通常情况下，<code>^</code>不能匹配字符串内部的换行符，只能匹配目标字符串的起始位置。但在此模式下，它能够匹配字符串中内嵌的文本行的开头位置。<code>$</code>类似。在支持此模式的程序中，一般还会提供<code>\A</code>和<code>\Z</code>，它们的作用于普通<code>^</code>和<code>$</code>一样，并且不会发生改变。如果<code>\Z</code>也被影响的话，一般还会有个<code>\z</code>用于唯一匹配整个字符串的结尾位置。</p>
+</li>
+<li><p><strong>文字文本模式</strong> - 不能识别任何正则表达式元字符，等同于简单字符串搜索。</p>
+</li>
+</ul>
+<hr>
+<h2 id="字符编码"><a href="#字符编码" class="headerlink" title="字符编码"></a>字符编码</h2><p>字符编码规定不同数值的字节应该如何解释。不同的字符编码，对于同一数值的字节的解释，不一定相同。</p>
+<p>那么，在使用正则表达式时，需要格外关注一些问题，例如</p>
+<ul>
+<li>是否支持多字节字符？</li>
+<li><code>\w</code>,<code>\b</code>,<code>\s</code>等元字符是否能识别编码中的所有字符？</li>
+<li>忽略大小写模式是否对所有字符有效？（是否需要考虑一个大写对应多个小写，单独的标题格式等等特殊情况）</li>
+</ul>
+<hr>
+<h3 id="Unicode"><a href="#Unicode" class="headerlink" title="Unicode"></a>Unicode</h3><h4 id="代码点"><a href="#代码点" class="headerlink" title="代码点"></a>代码点</h4><p>Unicode中的一个数值通常被称为一个code point，通常使用十六进制表示。一个字符在Unicode中，可能由一个代码点组成，也可能由两个代码点构成（一个基本字符加上用于修饰的组合字符）。</p>
+<p>那么，问题来了，对于一个由两个代码点组成的字符，在正则表达式中使用<code>.</code>匹配时，点号应该匹配单个代码点还是整个字符（两个代码点）呢？</p>
+<p>目前的实践中，大部分程序将“字符”与“代码点”等价。也就是说，点号匹配单个代码点，无论是基本字符还是组合字符。</p>
+<p>举个栗子，<strong>à</strong>，在Unicode中由 <strong>U+0061(a)</strong> 和 <strong>U+0300(｀)</strong> 组成，可以由<code>^..$</code>匹配，而不是<code>^.$</code>。</p>
+<hr>
+<h4 id="行终止符"><a href="#行终止符" class="headerlink" title="行终止符"></a>行终止符</h4><p>Unicode定义了多个表示行终止符的字符，如果行终止符获得完全的支持，它会影响文本行从文件读入的方式。在正则表达式中，它们会影响<code>.</code>、<code>^</code>、<code>$</code>和<code>\Z</code>的匹配。</p>
+<hr>
+<p>这里也只是对正则表达式中比较概念性的内容作了记录，具体的细节仍然是在使用时要去查看文档进行确认的。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><em>精通正则表达式 Mastering Regular Expressions (3rd Edition).Jeffrey E.F. Friedl</em></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/" rel="tag"># 正则表达式</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/09/30/regularexpression-1/" rel="next" title="正则表达式学习（一） - 初识正则">
+                <i class="fa fa-chevron-left"></i> 正则表达式学习（一） - 初识正则
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/10/26/regularexpression-3/" rel="prev" title="正则表达式学习（三）- 正则表达式引擎">
+                正则表达式学习（三）- 正则表达式引擎 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%84%E7%90%86%E6%96%B9%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">处理方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9B%86%E6%88%90%E5%BC%8F%E5%A4%84%E7%90%86"><span class="nav-number">1.1.</span> <span class="nav-text">集成式处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E5%BC%8F%E5%A4%84%E7%90%86%E5%92%8C%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E5%BC%8F%E5%A4%84%E7%90%86"><span class="nav-number">1.2.</span> <span class="nav-text">程序式处理和面向对象式处理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8C%B9%E9%85%8D%E6%A8%A1%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text">匹配模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%97%E7%AC%A6%E7%BC%96%E7%A0%81"><span class="nav-number">3.</span> <span class="nav-text">字符编码</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Unicode"><span class="nav-number">3.1.</span> <span class="nav-text">Unicode</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E7%82%B9"><span class="nav-number">3.1.1.</span> <span class="nav-text">代码点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A1%8C%E7%BB%88%E6%AD%A2%E7%AC%A6"><span class="nav-number">3.1.2.</span> <span class="nav-text">行终止符</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">4.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

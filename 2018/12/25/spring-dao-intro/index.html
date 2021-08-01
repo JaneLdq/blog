@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Java,Spring," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="🎄圣诞快乐～( ´▽｀)  在JDBC二三事中我们提到了使用Java提供的JDBC API进行数据操作。不难发现，在使用这种相对底层的接口编码时，会出现很多类似的代码，几乎每次查询操作我们都要执行获取连接、执行查询、释放连接、处理异常、管理事务的提交与回滚一套流程，稍有不慎就会导致数据库连接泄露啊，违反了事务ACID原则啊等等。因此，在实际的应用开发中，我们一般都会借助框架提供的更可靠更抽象的方">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring中的数据访问方式">
+<meta property="og:url" content="http://liaodanqi.xyz/2018/12/25/spring-dao-intro/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="🎄圣诞快乐～( ´▽｀)  在JDBC二三事中我们提到了使用Java提供的JDBC API进行数据操作。不难发现，在使用这种相对底层的接口编码时，会出现很多类似的代码，几乎每次查询操作我们都要执行获取连接、执行查询、释放连接、处理异常、管理事务的提交与回滚一套流程，稍有不慎就会导致数据库连接泄露啊，违反了事务ACID原则啊等等。因此，在实际的应用开发中，我们一般都会借助框架提供的更可靠更抽象的方">
+<meta property="og:locale">
+<meta property="og:image" content="http://static.zybuluo.com/JaneL/dlzbapvxmhso0tqk0h1mlx16/service-repository%20%281%29.png">
+<meta property="og:image" content="http://static.zybuluo.com/JaneL/77n96xc9tpnwnv0q0so4ielq/DataAccessException.png">
+<meta property="og:image" content="http://static.zybuluo.com/JaneL/8qt69fcc3p3nepc480xec8vp/template-callback.png">
+<meta property="article:published_time" content="2018-12-25T15:17:31.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.560Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="Spring">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://static.zybuluo.com/JaneL/dlzbapvxmhso0tqk0h1mlx16/service-repository%20%281%29.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2018/12/25/spring-dao-intro/"/>
+
+
+
+
+
+  <title>Spring中的数据访问方式 | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2018/12/25/spring-dao-intro/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Spring中的数据访问方式</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-25T23:17:31+08:00">
+                2018-12-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>🎄圣诞快乐～( ´▽｀)</p>
+<hr>
+<p>在JDBC二三事中我们提到了使用Java提供的JDBC API进行数据操作。不难发现，在使用这种相对底层的接口编码时，会出现很多类似的代码，几乎每次查询操作我们都要执行获取连接、执行查询、释放连接、处理异常、管理事务的提交与回滚一套流程，稍有不慎就会导致数据库连接泄露啊，违反了事务ACID原则啊等等。<br>因此，在实际的应用开发中，我们一般都会借助框架提供的更可靠更抽象的方式的进行数据访问，让框架帮我们处理这些程式化的操作，解放自己来专注于核心业务逻辑。在这篇笔记里，我们就一起来看看如何使用Spring进行数据访问吧～</p>
+<p>Spring整合了多种持久化技术，你可以：</p>
+<ul>
+<li>使用Spring JDBC简化JDBC API操作；</li>
+<li>与JPA、Hibernate、MyBatis等ORM(Object-relational Mapping)框架集成；</li>
+<li>使用Spring提供的对NoSQL数据库的支持访问MongoDB、Redis等非关系型数据库。</li>
+</ul>
+<span id="more"></span>
+<p>Spring要提供一套通用的数据访问技术，整合各种持久化技术，那么“面向接口编程”自然是要遵守的首要原则。</p>
+<hr>
+<h2 id="面向接口编程"><a href="#面向接口编程" class="headerlink" title="面向接口编程"></a>面向接口编程</h2><p>通常我们会将数据访问功能放到一个或多个专注于这项任务的组件中，这类组件一般被成为数据访问对象(Data Access Object, DAO)或Repository。</p>
+<p>为了避免应用与特定的数据访问策略耦合在一起，我们应该以接口的方式编写Repository暴露功能，针对不同的持久化技术做具体的实现。如下图所示：<br><img src="http://static.zybuluo.com/JaneL/dlzbapvxmhso0tqk0h1mlx16/service-repository%20%281%29.png" alt="service-repository"></p>
+<p>又见熟悉的依赖倒置，这样做的好处显而易见：</p>
+<ul>
+<li>面向接口编程，屏蔽具体的持久化技术，实现service层与持久化技术的解耦；</li>
+<li>它使得service对象易于测试。它们不再与特定的数据访问实现绑定在一起，在测试时可以创建mock实现，这样无需连接数据库就可以测试service对象，提高了单元测试的效率，能更好的控制数据的一致性。</li>
+</ul>
+<p>为了实现这一目标，将具体的持久化技术隐藏到接口背后，Spring做了这样一件事——<strong>提供了一套统一的异常体系，屏蔽具体持久化技术的异常</strong>，这套异常体系用在了Spring支持的所有持久化方案中。</p>
+<hr>
+<h2 id="统一的异常体系"><a href="#统一的异常体系" class="headerlink" title="统一的异常体系"></a>统一的异常体系</h2><p>直接使用JDBC API，几乎所有的访问操作都会抛出SQLException，而SQLExeception又是检查型异常，这就导致代码里无可避免的充斥着try/catch代码块。而这些代码块并没有多大价值，原因如下：</p>
+<ul>
+<li>大多情况下，try/catch代码块中也就是记个日志，没做多少实质性工作；</li>
+<li>引发异常的问题多数是不可恢复的，比如数据连接失败、SQL语句语法错误、查询的列或表不存在、更新操作违反了数据库约束等</li>
+</ul>
+<p>当然啦，其根本原因是JDBC的异常设计过于简单，它将所有与数据访问相关的异常都塞在了一个通用异常SQLException里。并且，SQLException中包含的具体意思是由具体的持久化技术决定的。</p>
+<p>如果使用持久化框架，比如Hibernate。这类框架自身会封装一部分异常，提供相对丰富的异常体系，分别对应 特定的数据访问问题。但这些异常又与持久化框架相关了。</p>
+<p>作为更上层的Spring，需要的是具有一定描述性的且与特定持久化框架无关的异常。于是Spring定义一套自己的异常体系。</p>
+<hr>
+<h3 id="DataAccessException和它的继承者们"><a href="#DataAccessException和它的继承者们" class="headerlink" title="DataAccessException和它的继承者们"></a>DataAccessException和它的继承者们</h3><p>Spring在org.springframework.dao包中提供了一套完备的异常体系，这些异常都集成与DataAccessExecption，DataAccessExecption继承于NestedRuntimeException。这样做一方面保留了原始的异常信息，只要你愿意，就可以通过嵌套的异常找到根本原因；另一方面，将JDBC API抛出的检查型异常转换成了非检查型异常，这样就避免了泛滥成灾的try/catch代码块。当然，你还是可以根据需要捕捉你感兴趣的异常，以进行后续处理。</p>
+<p>下面这张图涵盖了DataAccessException和它的儿辈孙辈们～它们各自也还可以衍生出更多的子类～<br><img src="http://static.zybuluo.com/JaneL/77n96xc9tpnwnv0q0so4ielq/DataAccessException.png" alt="DataAccessException and its subclasses"><br>可以看到相比于一个大一统的SQLException，DataAccessException的继承者们的自描述性详细了很多，通过类名就能了解异常所代表的语义。</p>
+<p>Spring的这套异常体系具有高度的可扩展性，如果需要引入一种新的持久化技术，只需为其定义对应的自异常就可以了。</p>
+<hr>
+<h3 id="异常转换器"><a href="#异常转换器" class="headerlink" title="异常转换器"></a>异常转换器</h3><p>为了将JDBC API的SQLException或者是其他持久化框架特定的异常转换为Spring定义的异常，Spring为JDBC和各个框架分别提供了不同的异常转换器。</p>
+<p>🌰「举例时间」<br>以JDBC为例，在org.springframework.jdbc.support包中定义两个SQLExceptionTranslator接口，它的两个实现类SQLErrorCodeSQLExceptionTranslator和SQLStateSQLExceptionTranslator分别负责处理SQLException中的错误码和SQL状态码。</p>
+<p>像JPA的话，在org.springframework.orm.jpa包里定义了一个类EntityManagerFactoryUtils担任了异常转换器的角色。</p>
+<p>其他持久化框架这里就不做介绍啦～</p>
+<hr>
+<h2 id="数据访问模版化"><a href="#数据访问模版化" class="headerlink" title="数据访问模版化"></a>数据访问模版化</h2><p>在本文开头我们提到数据的访问过程是有一套固定步骤的，无论我们使用什么持久化技术，都需要一些特定的数据访问步骤。比如，我们都需要先获取一个连接并在数据处理完成后释放资源，这些步骤是固定的部分，不过每次数据访问的具体操作不尽相同，这属于数据访问过程中变化的部分。</p>
+<p>Spring将数据访问过程中固定的和可变的部分分割开来，将固定的部分放到<strong>模版类(Template)</strong>中，可变的部分通过<strong>回调(Callback)</strong>接口开放出来，用于定义具体数据访问和结果返回的操作。<br><img src="http://static.zybuluo.com/JaneL/8qt69fcc3p3nepc480xec8vp/template-callback.png" alt="template-callback pattern"><br>如上图所示，Spring的模版类负责处理固定部分，包括资源管理<br>事务管理和异常处理，具体业务相关的数据访问包括查询语句、参数绑定以及结果集处理则由可变的回调实现。<br>通常资源的管理不是一件容易的事，能交给框架来做简直不能更棒。这样不仅提高了开发效率，同时保证了资源使用的正确性。（妈妈再也不用担心我忘记释放资源从而引起资源泄露了～）</p>
+<p>跟异常转换一样，Spring给不同的持久化技术提供了各自的模版类，举个例子，在org.springframework.jdbc.core包中的JdbcTemplate就是为简化JDBC API调用过程提供的模版类啦。</p>
+<hr>
+<p>本篇笔记我们主要关注于Spring提供的数据访问方式背后的思想，以面向接口编程为出发点提高框架的灵活性和扩展性，以统一异常体系为前提，采用分割模版和回调的方式简化应用开发。个人觉得还是挺有启发性的～</p>
+<ul>
+<li><strong>参考资料</strong></li>
+<li>《Spring实战第四版》</li>
+<li>《精通Spring 4.x》</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Java/" rel="tag"># Java</a>
+          
+            <a href="/tags/Spring/" rel="tag"># Spring</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/19/js-recursion/" rel="next" title="JS中的递归函数怎么写？">
+                <i class="fa fa-chevron-left"></i> JS中的递归函数怎么写？
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/01/13/floyd-cycle-finding-algorithm/" rel="prev" title="Floyd's Cycle-Finding Algorithm">
+                Floyd's Cycle-Finding Algorithm <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%A2%E5%90%91%E6%8E%A5%E5%8F%A3%E7%BC%96%E7%A8%8B"><span class="nav-number">1.</span> <span class="nav-text">面向接口编程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%9F%E4%B8%80%E7%9A%84%E5%BC%82%E5%B8%B8%E4%BD%93%E7%B3%BB"><span class="nav-number">2.</span> <span class="nav-text">统一的异常体系</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#DataAccessException%E5%92%8C%E5%AE%83%E7%9A%84%E7%BB%A7%E6%89%BF%E8%80%85%E4%BB%AC"><span class="nav-number">2.1.</span> <span class="nav-text">DataAccessException和它的继承者们</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%82%E5%B8%B8%E8%BD%AC%E6%8D%A2%E5%99%A8"><span class="nav-number">2.2.</span> <span class="nav-text">异常转换器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E8%AE%BF%E9%97%AE%E6%A8%A1%E7%89%88%E5%8C%96"><span class="nav-number">3.</span> <span class="nav-text">数据访问模版化</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

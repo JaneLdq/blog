@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="爬虫," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="在上一篇文章中，基于Scrapy的爬虫的架子已经搭起来了，满心欢喜以为虫子能跑起来了，结果发现高兴得太早噢~ 写程序没有bug那还有什么乐趣？与八阿哥斗，其乐无穷啊！下面，就来看看八阿哥都使出了哪些招数吧~  Headers即使网站的页面都是对公众开放随意访问的，但是对于原始数据，很多网站如果没有公开API那就是不愿意轻易让大家获取的了。对于基本的robot或是真实用户的访问，通过HTTP请求的h">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一只爬虫的难产之旅（二）">
+<meta property="og:url" content="http://liaodanqi.xyz/2018/04/11/autohome-spider-2/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="在上一篇文章中，基于Scrapy的爬虫的架子已经搭起来了，满心欢喜以为虫子能跑起来了，结果发现高兴得太早噢~ 写程序没有bug那还有什么乐趣？与八阿哥斗，其乐无穷啊！下面，就来看看八阿哥都使出了哪些招数吧~  Headers即使网站的页面都是对公众开放随意访问的，但是对于原始数据，很多网站如果没有公开API那就是不愿意轻易让大家获取的了。对于基本的robot或是真实用户的访问，通过HTTP请求的h">
+<meta property="og:locale">
+<meta property="og:image" content="http://static.zybuluo.com/JaneL/ynfga9s8melz5yq5y2nesfm7/headers.PNG">
+<meta property="og:image" content="http://static.zybuluo.com/JaneL/94dvbnt1g36lrh8nddrusb3q/response_header.PNG">
+<meta property="og:image" content="http://static.zybuluo.com/JaneL/xz9stzk5abid981x913s7bis/image.png">
+<meta property="article:published_time" content="2018-04-11T13:05:47.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.531Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="爬虫">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://static.zybuluo.com/JaneL/ynfga9s8melz5yq5y2nesfm7/headers.PNG">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2018/04/11/autohome-spider-2/"/>
+
+
+
+
+
+  <title>一只爬虫的难产之旅（二） | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2018/04/11/autohome-spider-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">一只爬虫的难产之旅（二）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-11T21:05:47+08:00">
+                2018-04-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在上一篇文章中，基于Scrapy的爬虫的架子已经搭起来了，满心欢喜以为虫子能跑起来了，结果发现高兴得太早噢~</p>
+<p>写程序没有bug那还有什么乐趣？与八阿哥斗，其乐无穷啊！下面，就来看看八阿哥都使出了哪些招数吧~</p>
+<hr>
+<h2 id="Headers"><a href="#Headers" class="headerlink" title="Headers"></a>Headers</h2><p>即使网站的页面都是对公众开放随意访问的，但是对于原始数据，很多网站如果没有公开API那就是不愿意轻易让大家获取的了。对于基本的robot或是真实用户的访问，通过HTTP请求的header字段判断是最简单的方式。</p>
+<span id="more"></span>
+<p>当然啦，这一招也很好拆招，不过也需细心。有可能有时漏掉一两个字段就会拿不到数据哦。</p>
+<p>以访问URL: <a target="_blank" rel="noopener" href="https://k.autohome.com.cn/detail/view_01bz95vp0d64w30e9h70sg0000.html">https://k.autohome.com.cn/detail/view_01bz95vp0d64w30e9h70sg0000.html</a> 为例，打开开发者窗口，查看浏览器发送请求时所带的headers。<br><img src="http://static.zybuluo.com/JaneL/ynfga9s8melz5yq5y2nesfm7/headers.PNG" alt="headers.PNG-18.9kB"><br>如上图所示，将浏览器带的headers依葫芦画瓢加到代码里。上面高亮的几个字段单独拎出来聊一聊。</p>
+<ul>
+<li><code>Host:k.autohome.com.cn</code> -  给出接收请求的服务器的主机名和端口号，可以是域名也可以是IP地址；在HTTP/1.1中，Host字段是必须要有的，HTTP/1.0的话则有木有都可以。</li>
+<li><p><code>User-Agent:...</code> - 这一长串是非常重要的伪装了~一只聪明的虫子要懂得假装自己是个使用浏览器访问页面的好奇乖宝宝哦~（题外话，关于这一长串背后的故事曾经看到过一篇非常可爱的文章《<a target="_blank" rel="noopener" href="http://litten.me/2014/09/26/history-of-browser-useragent/">浏览器野史列传</a>》，很有意思~)<br>因为在请求头中对User-Agent进行伪装几乎是爬虫必要操作，Scrapy也提供了便捷的支持，只需三步：</p>
+<ol>
+<li><p>在settings.py文件中打开<code>USER_AGENTS</code>配置，示例如下：</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># Crawl responsibly by identifying yourself (and your website) on the user-agent</span><br><span class="line">USER_AGENTS = [</span><br><span class="line">    # 这里可以放多个常用User-Agent，随便搜索一下copy过来就可以啦</span><br><span class="line">]</span><br></pre></td></tr></table></figure></li>
+<li><p>在middlewares.py中新增一个类，比如就叫<em>RandomUserAgent</em>，在其process_request方法中添加随机选择一个User-Agent设置到请求头中的逻辑，代码如下:</p>
+ <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RandomUserAgent</span>(<span class="params"><span class="built_in">object</span></span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;Randomly rotate user agents based on a list of predefined ones&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, agents</span>):</span></span><br><span class="line">        self.agents = agents</span><br><span class="line"></span><br><span class="line"><span class="meta">    @classmethod</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">from_crawler</span>(<span class="params">cls, crawler</span>):</span></span><br><span class="line">        <span class="keyword">return</span> cls(crawler.settings.getlist(<span class="string">&#x27;USER_AGENTS&#x27;</span>))</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">process_request</span>(<span class="params">self, request, spider</span>):</span></span><br><span class="line">        request.headers.setdefault(<span class="string">&#x27;User-Agent&#x27;</span>, random.choice(self.agents))</span><br></pre></td></tr></table></figure></li>
+<li><p>在settings.py中的<code>DOWNLOADER_MIDDLEWARES</code>中加入新建的<em>RandomUserAgent</em>中间件，配置如下:</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">DOWNLOADER_MIDDLEWARES = &#123;</span><br><span class="line">    &#x27;autohomeSpider.middlewares.RandomUserAgent&#x27;: 1</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>完成以上三步，就可以每次发请求时，都会从配置好的User-Agent列表中随机挑一个添加到请求头中，假装是不同的用户用不同浏览器上浏览页面的效果。</p>
+</li>
+</ol>
+</li>
+<li><p><code>Connection: keep-alive</code> -这个字段对于这个爬虫是可有可无的，但是也是比较有用的一个字段。 HTTP/1.1允许TCP连接在完成一次事务处理后保持在打开状态，以便为之后的HTTP请求重用现存的连接，这样就大大降低了建立连接的资源和时间开销。keep-alive表示客户端请求将连接保持在打开状态，如果服务器同意，则在响应头中也会有一条相同的header，但在HTTP/1.0+中它并不是默认使用的，因此请求头中必须显式指明。HTTP/1.1不再支持keep-alive连接，而改用持久连接(persistent connection)取而代之，HTTP/1.1下持久链接默认就是激活的，如果要在事务处理后关闭连接，则需要显式添加一条<code>Connection:close</code>。(emmmmmmm……这部分HTTP/1.0和1.1的历史遗留问题还挺多的，详情可以戳《HTTP权威指南》第四章连接管理，讲得很详细。)</p>
+</li>
+</ul>
+<p>至于其他固定值的headers，可以直接写在上文提到的已经创建好的爬虫FeedbacksSpider类中，每次发请求时将其作为headers参数传入就可以了。</p>
+<hr>
+<h2 id="Redirect"><a href="#Redirect" class="headerlink" title="Redirect"></a>Redirect</h2><p>用浏览器访问口碑详情页（以 <a target="_blank" rel="noopener" href="https://k.autohome.com.cn/detail/view_01bz95vp0d64w30e9h70sg0000.html">https://k.autohome.com.cn/detail/view_01bz95vp0d64w30e9h70sg0000.html</a> 为例）时，观察页面加载过程，我们会发现先有一次<strong>302</strong>重定向，然后有一次<strong>307</strong>重定向，然后才是<strong>200</strong>成功加载页面。</p>
+<h3 id="302-303-307-傻傻分不清"><a href="#302-303-307-傻傻分不清" class="headerlink" title="302/303/307 傻傻分不清"></a>302/303/307 傻傻分不清</h3><p>当时看到302和307都是重定向，就去查资料，结果还蹦出来个303，那么他们之间到底有什么区别呢？</p>
+<p>下面是<a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc2616#section-10.3.3">RFC2616</a>里对302/303/307的定义：</p>
+<blockquote>
+<p><strong>302 Found</strong> - <em>The requested resource resides temporarily under a different URI. Since the redirection might be altered on occasion, the client SHOULD continue to use the Request-URI for future requests. If the 302 status code is received in response to a request other than GET or HEAD, the user agent MUST NOT automatically redirect the request unless it can be confirmed by the user, since this might change the conditions under which the request was issued.</em><br><strong>303 See Other(Since HTTP/1.1)</strong> - <em>The response to the request can be found under a different URI and SHOULD be retrieved using a GET method on that resource. This method exists primarily to allow the output of a POST-activated script to redirect the user agent to a selected resource.</em><br><strong>307 Temporary Redirect(Since HTTP/1.1)</strong> - <em>The requested resource resides temporarily under a different URI.Since the redirection MAY be altered on occasion, the client SHOULD continue to use the Request-URI for future requests. If the 307 status code is received in response to a request other than GET or HEAD, the user agent MUST NOT automatically redirect the request unless it can be confirmed by the user, since this might change the conditions under which the request was issued.</em></p>
+</blockquote>
+<p>303与302/307的不同之处就在于若原始请求是POST，那么服务器返回303并给出新URL，期望客户端向重定向URL发送一个GET请求（也就是客户端自己做主改变了操作类型，把POST变成了GET）。</p>
+<p>而看起来302和307根本就一样嘛，都表示当前URL访问的资源被临时移除，并在response中给出重定向的地址，如果原始请求是GET/HEAD之外的操作，则客户端重定向时要向用户再次确认是否进行与原始请求同样的操作（以免带来副作用）。</p>
+<p>那为什么还会出现两个状态码呢？主要就是因为HTTP/1.0和HTTP/1.1两个规范针对同一行为使用两个不同的状态码。（<strong>HTTP/1.0</strong>[<a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc1945">RFC1945</a>]中的<strong>302</strong>和<strong>HTTP/1.1</strong>[<a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc2616#section-10.3.3">RFC2616</a>]中的<strong>303</strong>）定义重了。<br>在<a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc2616#section-10.3.3">RFC2616</a>对302的解释中还有这么一段：</p>
+<blockquote>
+<p>RFC 1945 and RFC 2068 specify that the client is not allowed to change the method on the redirected request.  However, most existing user agent implementations treat 302 as if it were a 303 response, performing a GET on the Location field-value regardless of the original request method. The status codes 303 and 307 have been added for servers that wish to make unambiguously clear which kind of reaction is expected of the client.</p>
+</blockquote>
+<p>为了解决重复的问题，HTTP/1.1规范指出，对于HTTP/1.1客户端，用307状态码取代302状态码来进行临时重定向。这样服务器就可以将302状态码保留起来，为HTTP/1.0客户端使用了。</p>
+<hr>
+<h3 id="cookie不能丢"><a href="#cookie不能丢" class="headerlink" title="cookie不能丢"></a>cookie不能丢</h3><p>写好爬虫第一次启动时，就掉进了一个坑。从浏览器访问口碑详情页完全没问题，但是用scrapy访问的时候，就拿不到页面了，好奇怪。</p>
+<p>也是因为对HTTP请求访问不熟悉，用抓包工具大概折腾了一天，很仔细的对比了浏览器访问和用命令访问的请求过程，问题就出现在上一节提到的重定向过程里。</p>
+<p>再来仔细看看第一次302响应头里的内容：<br><img src="http://static.zybuluo.com/JaneL/94dvbnt1g36lrh8nddrusb3q/response_header.PNG" alt="302 Response Header"><br>这里高亮部分<code>Set-Cookie</code>非常重要，它里面包含了一个<em>autoac</em>值，看起来是个token之类的东西，总之如果丢了这个，之后即使重定向也不能正常拿到页面了。</p>
+<p>我们可以用curl命令看看详细的过程，以如下命令为例：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -L -v -b -i  &#x27;https://k.autohome.com.cn/detail/view_01bz95vp0d64w30e9h70sg0000.html&#x27;</span><br></pre></td></tr></table></figure><br>参数说明：</p>
+<ul>
+<li><code>-L</code>开启重定向，否则会直接返回302的结果，不会再继续访问重定向URL</li>
+<li><code>-b</code>也是这个问题的关键了，允许将之前收到的响应头中的<code>Set-Cookie</code>的值加到后续请求头中</li>
+<li><code>-i</code>,<code>-v</code>主要是为了查看请求头和响应头。<br>调用结果部分截图如下，可以看到第二次的重定向请求带上了cookie，这样服务器就会再次重定向回原URL，最终获取到页面。如果不带<code>-b</code>参数，就会重定向循坏，最终被服务器判断为爬虫，重定向到用户验证界面结束。<br><img src="http://static.zybuluo.com/JaneL/xz9stzk5abid981x913s7bis/image.png" alt="curl-header-detail"></li>
+</ul>
+<p>找到根本原因了，再来看看在Scrapy里我们要怎么修改代呢？<br>Scrapy默认不会处理非2xx的响应，因此跑之前的代码会导致什么都拿不到，为了让scrapy的spider处理30x在FeedbacksSpider类中添加如下参数，然后scrapy就会帮我们做好重定向以及set cookie的工作了。（详细介绍参见<a target="_blank" rel="noopener" href="https://doc.scrapy.org/en/latest/topics/spider-middleware.html#std:reqmeta-handle_httpstatus_list">Scrapy文档</a>）:<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">meta_no_redirect = &#123;</span><br><span class="line">    &#x27;handle_httpstatus_list&#x27;: [302, 404]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<hr>
+<p>到目前为止，我们填好了几个小水坑，终于可以顺利拿到页面了，说好的爬取数据终于可以开始了呢！</p>
+<p>无知的我尚未发现前方还有个巨大的坑早已挖好等我跳下去。</p>
+<p>继续填坑之旅请戳 <a href="/2018/04/23/autohome-spider-3/" title="[一只爬虫的难产之旅（三）]">[一只爬虫的难产之旅（三）]</a></p>
+<hr>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li>《HTTP权威指南》</li>
+<li><a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc2616#section-10.3.3">RFC2616</a></li>
+<li><a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc1945">RFC1945</a></li>
+<li><a target="_blank" rel="noopener" href="https://doc.scrapy.org/en/latest/topics/spider-middleware.html#std:reqmeta-handle_httpstatus_list">Scrapy文档</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E7%88%AC%E8%99%AB/" rel="tag"># 爬虫</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/08/autohome-spider-1/" rel="next" title="一只爬虫的难产之旅（一）">
+                <i class="fa fa-chevron-left"></i> 一只爬虫的难产之旅（一）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/04/23/autohome-spider-3/" rel="prev" title="一只爬虫的难产之旅（三）">
+                一只爬虫的难产之旅（三） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Headers"><span class="nav-number">1.</span> <span class="nav-text">Headers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Redirect"><span class="nav-number">2.</span> <span class="nav-text">Redirect</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#302-303-307-%E5%82%BB%E5%82%BB%E5%88%86%E4%B8%8D%E6%B8%85"><span class="nav-number">2.1.</span> <span class="nav-text">302&#x2F;303&#x2F;307 傻傻分不清</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cookie%E4%B8%8D%E8%83%BD%E4%B8%A2"><span class="nav-number">2.2.</span> <span class="nav-text">cookie不能丢</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">3.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

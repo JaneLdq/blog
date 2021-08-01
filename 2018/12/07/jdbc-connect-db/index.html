@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Java,JDBC," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="一个复古的主题，复习一波Java中数据库的基本操作。现在框架用起来这么方便，好多基础的概念都模糊了。 在这个话题下，首先要提到的一个词就是JDBC了，作为一个看到缩写就头大的人，我们就从它开始吧。 JDBC是什么？数据库的种类这么多，每种数据库都有其特定的协议。如果在开发或者维护Java程序过程中使用的数据库发生了变化，就意味着程序代码要根据特定的数据库进行调整。这个维护成本是非常高的。 而JDB">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JDBC二三事之连接数据库">
+<meta property="og:url" content="http://liaodanqi.xyz/2018/12/07/jdbc-connect-db/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="一个复古的主题，复习一波Java中数据库的基本操作。现在框架用起来这么方便，好多基础的概念都模糊了。 在这个话题下，首先要提到的一个词就是JDBC了，作为一个看到缩写就头大的人，我们就从它开始吧。 JDBC是什么？数据库的种类这么多，每种数据库都有其特定的协议。如果在开发或者维护Java程序过程中使用的数据库发生了变化，就意味着程序代码要根据特定的数据库进行调整。这个维护成本是非常高的。 而JDB">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-12-06T16:03:07.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.547Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="JDBC">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2018/12/07/jdbc-connect-db/"/>
+
+
+
+
+
+  <title>JDBC二三事之连接数据库 | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2018/12/07/jdbc-connect-db/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">JDBC二三事之连接数据库</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-07T00:03:07+08:00">
+                2018-12-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>一个复古的主题，复习一波Java中数据库的基本操作。现在框架用起来这么方便，好多基础的概念都模糊了。</p>
+<p>在这个话题下，首先要提到的一个词就是<strong>JDBC</strong>了，作为一个看到缩写就头大的人，我们就从它开始吧。</p>
+<h1 id="JDBC是什么？"><a href="#JDBC是什么？" class="headerlink" title="JDBC是什么？"></a>JDBC是什么？</h1><p>数据库的种类这么多，每种数据库都有其特定的协议。如果在开发或者维护Java程序过程中使用的数据库发生了变化，就意味着程序代码要根据特定的数据库进行调整。这个维护成本是非常高的。</p>
+<p>而JDBC(Java Database Connectivity)的出现就是为了让开发者能用统一通用的纯Java语言与多种不同的数据库打交道。简单说来，<strong>JDBC就是一组用于SQL数据库访问的Java API，采用driver manager来管理和动态绑定driver的机制来连接特定的数据库。</strong></p>
+<span id="more"></span>
+<p>这样做带来了两大好处：</p>
+<ul>
+<li>对于程序员而言，在开发Java程序时只需与JDBC API打交道，可以使用标准的SQL语句访问任意数据库。</li>
+<li>对于数据库和数据库工具提供商，由他们来提供更底层一些的driver，这也使得他们有机会根据各自的协议对driver进行更好的优化。</li>
+</ul>
+<h2 id="4种JDBC-Driver"><a href="#4种JDBC-Driver" class="headerlink" title="4种JDBC Driver"></a>4种JDBC Driver</h2><p>在JDBC中定义了四类driver类型，命名简单粗暴，分别是：</p>
+<ul>
+<li><strong>type 1</strong> - JDBC/ODBC bridges, 将JDBC转为ODBC，然后依赖ODBC driver连接数据库。在Java 8之后不再支持这种driver。</li>
+<li><strong>type 2</strong> - 使用Java和原始代码混写的driver，采用数据库的client API连接数据库。如果使用这种类型的driver，就必须同时安装相关的Java包和一些平台相关的代码。</li>
+<li><strong>type 3</strong> - 纯Java包，使用独立于数据库的协议传输数据库请求给一个服务端组件，由这个组件把请求转为特定的数据库协议。这种类型简化了客户端的部署，因为平台相关的代码都放在服务端了。</li>
+<li><strong>type 4</strong> - 纯Java包，直接把JDBC请求转化为特定的数据库协议。</li>
+</ul>
+<hr>
+<h1 id="使用JDBC连接数据库"><a href="#使用JDBC连接数据库" class="headerlink" title="使用JDBC连接数据库"></a>使用JDBC连接数据库</h1><p>要对数据进行操作，第一件要做的事情就是先连接上数据库了。JDBC应用主要使用两个类（分别代表两种方式）连接数据库：</p>
+<ul>
+<li><strong>DriverManager</strong></li>
+<li><strong>DataSource</strong></li>
+</ul>
+<p>下面我们将分别介绍这两种方式。</p>
+<hr>
+<h2 id="使用DriverManager连接数据库"><a href="#使用DriverManager连接数据库" class="headerlink" title="使用DriverManager连接数据库"></a>使用DriverManager连接数据库</h2><p>DriverManager通过<strong>数据库URL</strong>建立连接，那么，数据库URL又是什么呢？</p>
+<h3 id="JDBC数据库URL"><a href="#JDBC数据库URL" class="headerlink" title="JDBC数据库URL"></a>JDBC数据库URL</h3><p>JDBC使用一组类似URL的语法来描述数据源，通常包括数据库类型（vendor），以及相关的属性，比如主机名、端口号、数据库名字、用户名、密码等。不同的数据库提供商其URL的组成大体相同，但或多或少会有些小差别。这就好比每个地区的电话号码组成结构都不太一样。</p>
+<p>通用格式如下：</p>
+<blockquote>
+<p><strong>jdbc:subprotocol:other</strong></p>
+</blockquote>
+<p>上面的<code>subprotocol</code>用于指定特定的driver，<code>other</code>里面的内容与选择的<code>subprotocol</code>相关。</p>
+<p>举两个例子，比如连接MySQL数据库或者PostgreSQL数据库：</p>
+<blockquote>
+<p><strong>jdbc:mysql://localhost/test?user=jane$password=secret</strong><br><strong>jdbc:postgresql://localhost/test?user=jane&amp;password=secret&amp;ssl=true</strong></p>
+</blockquote>
+<hr>
+<h3 id="准备Driver"><a href="#准备Driver" class="headerlink" title="准备Driver"></a>准备Driver</h3><p>别急，在建立连接之前还有一件事情要做——别忘记<strong>把要用的Driver的 JAR包放到运行时的classpath中</strong>。</p>
+<p>其次，别忘记<strong>注册Driver</strong>，不过现在大多数Driver都能自动完成注册了：很多JDBC Driver JAR包都可以自动完成driver的注册——在这类JAR包中包含一个<code>META-INF/services/java.sql.Driver</code>文件，里面包含这个driver的名字。</p>
+<p>如果driver不能自动注册(JDBC4.0以前的driver)，则可以通过如下两种方式手动注册：</p>
+<ol>
+<li>静态注册，在Java程序中加载driver类：<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Class.forName(<span class="string">&quot;com.mysql.cj.jdbc.Driver&quot;</span>).newInstance();</span><br></pre></td></tr></table></figure></li>
+<li>动态注册，在命令行参数中指定<code>jdbc.drivers</code>属性：<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -Djdbc.drivers=com.mysql.cj.jdbc.Driver demoApp</span><br></pre></td></tr></table></figure>
+或者在程序中指定系统属性，还可以同时指定多个driver，采用分号分隔，如下所示：<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">System.setProperty(<span class="string">&quot;jdbc.drivers&quot;</span>, <span class="string">&quot;com.mysql.cj.jdbc.Driver:org.postgresql.Driver&quot;</span>);</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<hr>
+<h3 id="DriverManager创建连接"><a href="#DriverManager创建连接" class="headerlink" title="DriverManager创建连接"></a>DriverManager创建连接</h3><p>把准备工作做好后，建立数据库的连接就是几行代码的事了。<br>在本例中，我将数据库配置放在了<code>/resources/database.properties</code>中，内容如下：</p>
+<blockquote>
+<p>jdbc.drivers=com.mysql.cj.jdbc.Driver<br>jdbc.url=jdbc:mysql://localhost/dbdemo<br>jdbc.username=root<br>jdbc.password=12345678</p>
+</blockquote>
+<p>下面这段代码从database.properties中读取数据库配置，调用DriverManager获取连接：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Connection <span class="title">getDBConnection</span><span class="params">()</span> <span class="keyword">throws</span> SQLException, IOException </span>&#123;</span><br><span class="line">    <span class="comment">// read database config from &#x27;resources/database.properties&#x27; file</span></span><br><span class="line">    Properties props = <span class="keyword">new</span> Properties();</span><br><span class="line">    <span class="keyword">try</span>(InputStream in = DBConnector.class.getResourceAsStream(<span class="string">&quot;database.properties&quot;</span>)) &#123;</span><br><span class="line">        props.load(in);</span><br><span class="line">    &#125;</span><br><span class="line">    String drivers = props.getProperty(<span class="string">&quot;jdbc.drivers&quot;</span>);</span><br><span class="line">    <span class="comment">// set jdbc drivers</span></span><br><span class="line">    <span class="keyword">if</span> (drivers != <span class="keyword">null</span>) System.setProperty(<span class="string">&quot;jdbc.drivers&quot;</span>, drivers);</span><br><span class="line">    <span class="comment">// get database config</span></span><br><span class="line">    String url = props.getProperty(<span class="string">&quot;jdbc.url&quot;</span>);</span><br><span class="line">    String username = props.getProperty(<span class="string">&quot;jdbc.username&quot;</span>);</span><br><span class="line">    String password = props.getProperty(<span class="string">&quot;jdbc.password&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// use DriverManager to get database connection</span></span><br><span class="line">    <span class="keyword">return</span> DriverManager.getConnection(url, username, password);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="使用DataSource连接数据库"><a href="#使用DataSource连接数据库" class="headerlink" title="使用DataSource连接数据库"></a>使用DataSource连接数据库</h2><p>现在可以把上文介绍的DriverManager的方式忘掉了，DataSource才是真正的宠儿～它也是更为推荐的方式，其优势有如下几点：</p>
+<ol>
+<li>使底层的细节完全对应用的开发透明</li>
+<li>支持连接池和分布式事务（这对于企业级应用开发是非常重要的～）</li>
+</ol>
+<h3 id="DataSource的三种实现方式"><a href="#DataSource的三种实现方式" class="headerlink" title="DataSource的三种实现方式"></a>DataSource的三种实现方式</h3><p>一个DataSource实例就代表了一个数据源，它可以是一个DBMS，也可以只是一个文件。DataSource自身只是定义了一组接口，具体的实现由提供商完成。</p>
+<p>DataSource的实现可以按照其支持的功能划分为三种：</p>
+<ul>
+<li><strong>Basic DataSource</strong>：可以建立标准的Connection实例，不过既不支持连接池也不支持分布式事务</li>
+<li><strong>支持连接池的DataSource</strong>：使用连接池管理连接，使得连接可以重复使用</li>
+<li><strong>支持分布式事务的DataSource</strong>：能提供用于分布式事务处理的连接（一个事务可通过访问多个数据源完成）。</li>
+</ul>
+<p>一个JDBC Driver里至少要包含最基本的DataSource实现。举个例子，在MySQL的Driver里可以找到<code>MysqlDataSource</code>和<code>MysqlConnectionPoolDataSource</code>。而且一般支持分布式事务的DataSource也会支持连接池哦。</p>
+<p>了解了DataSource的三种实现，那么到底怎样使用DataSource建立连接呢？</p>
+<p>单独使用DataSource的方式跟DriverManager没有什么不同，就是创建DataSource实例，配置数据库属性，然后调用实例获取连接就可以了。示例代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyDataSourceFactory</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> DataSource <span class="title">getMySQLDataSource</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        Properties props = <span class="keyword">new</span> Properties();</span><br><span class="line">        <span class="keyword">try</span>(InputStream in = ClassLoader.getSystemResourceAsStream(<span class="string">&quot;database.properties&quot;</span>)) &#123;</span><br><span class="line">            props.load(in);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 创建DataSource示例并配置数据库属性</span></span><br><span class="line">        MysqlDataSource ds = <span class="keyword">new</span> MysqlDataSource();</span><br><span class="line">        ds.setURL(props.getProperty(<span class="string">&quot;jdbc.url&quot;</span>));</span><br><span class="line">        ds.setUser(props.getProperty(<span class="string">&quot;jdbc.username&quot;</span>));</span><br><span class="line">        ds.setPassword(props.getProperty(<span class="string">&quot;jdbc.password&quot;</span>));</span><br><span class="line">        <span class="keyword">return</span> ds;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> SQLException, IOException </span>&#123;</span><br><span class="line">        DataSource ds = MyDataSourceFactory.getMySQLDataSource();</span><br><span class="line">        <span class="comment">// 拿到DataSource示例创建连接</span></span><br><span class="line">        Connection conn = ds.getConnection();</span><br><span class="line">        <span class="keyword">try</span> (Statement stat = conn.createStatement()) &#123;</span><br><span class="line">            <span class="comment">// do whatever you want</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>不过像这样的代码应该只会出现在学生作业或者练习里了，在相对正式的应用开发中，一般会<strong>把DataSource与JNDI结合使用</strong>，这样才能更好的发挥出DataSource的几大优势。</p>
+<p>在这类场景中，建立连接通常分为两部分：</p>
+<ol>
+<li>首先，由管理员之类的角色负责部署DataSource，注册到JNDI Context，通常只要一次操作就OK。</li>
+<li>然后，开发人员就可以愉快地通过JNDI的lookup获取DataSource。</li>
+</ol>
+<p>（写着写着脑子冒出了饲养员儿给一群🐒投食的场景…</p>
+<p>我们依旧按步骤来看。</p>
+<h4 id="注册DataSource"><a href="#注册DataSource" class="headerlink" title="注册DataSource"></a>注册DataSource</h4><p>只接触过Web应用的场景，所以这里就以Tomcat为例介绍。像Tomcat这样的Servlet Container一般都内置了对JNDI Context和资源管理的支持，作为使用者，我们只需要提供一些配置信息，像创建DataSource示例和注册JNDI这些操作都由Container接管了。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Resource</span> <span class="attr">name</span>=<span class="string">&quot;jdbc/demodb&quot;</span> </span></span><br><span class="line"><span class="tag">      <span class="attr">global</span>=<span class="string">&quot;jdbc/demodb&quot;</span> </span></span><br><span class="line"><span class="tag">      <span class="attr">auth</span>=<span class="string">&quot;Container&quot;</span> </span></span><br><span class="line"><span class="tag">      <span class="attr">type</span>=<span class="string">&quot;javax.sql.DataSource&quot;</span> </span></span><br><span class="line"><span class="tag">      <span class="attr">driverClassName</span>=<span class="string">&quot;com.mysql.cj.jdbc.Driver&quot;</span> </span></span><br><span class="line"><span class="tag">      <span class="attr">url</span>=<span class="string">&quot;jdbc:mysql://localhost/demodb&quot;</span> </span></span><br><span class="line"><span class="tag">      <span class="attr">username</span>=<span class="string">&quot;root&quot;</span> </span></span><br><span class="line"><span class="tag">      <span class="attr">password</span>=<span class="string">&quot;secret&quot;</span> </span></span><br><span class="line"><span class="tag">      </span></span><br><span class="line"><span class="tag">      <span class="attr">maxActive</span>=<span class="string">&quot;100&quot;</span> </span></span><br><span class="line"><span class="tag">      <span class="attr">maxIdle</span>=<span class="string">&quot;20&quot;</span> </span></span><br><span class="line"><span class="tag">      <span class="attr">minIdle</span>=<span class="string">&quot;5&quot;</span> </span></span><br><span class="line"><span class="tag">      <span class="attr">maxWait</span>=<span class="string">&quot;10000&quot;</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+<p>将上面这段代码加到context.xml中就代表注册了一个名为<code>jdbc/demodb</code>，类型为DataSource的资源到JNDI Context中了。可以看到，除了配置基本的数据源信息之外，我们还可以指定连接池相关的属性。</p>
+<p>Note：在Tomcat中配置DataSource也有好几种方式，不同的地方在于你把DataSource配在应用层级还是服务器层级，各有利弊：</p>
+<ul>
+<li>配置在Application的<code>META-INF/context.xml</code>中：DataSource只能被当前应用使用，不能与其他应用共享；并且由于这个context.xml文件会被打包在war中部署到服务器，每次更新DataSource的配置，都要重新打包部署。</li>
+<li>配置在Tomcat<code>apache-tomcat/conf/context.xml</code>中：会给部署在当前Container中的<br>每个应用创建一个DataSource。如果配置的连接池最大连接数比较多，而且部署的应用也比较多的化，会非常消耗资源。比如<code>maxActive=100</code>，然后部署了30个应用，那么就会导致一共有3000个连接。</li>
+<li><strong>Tomcat的server.xml和context.xml组合使用</strong>：将DataSource定义在在server.xml的<code>GlobalNamingResources</code>中，然后可以选择在server的context.xml或Application的context.xml中定义<code>ResourceLink</code>来使用。</li>
+</ul>
+<p>组合的方式是比较灵活且推荐的。（关于Tomcat配置DataSource的详细例子可戳参考资料第二条～</p>
+<h4 id="在应用中通过JNDI获取DataSource"><a href="#在应用中通过JNDI获取DataSource" class="headerlink" title="在应用中通过JNDI获取DataSource"></a>在应用中通过JNDI获取DataSource</h4><p>这个操作就非常简单了，两行代码搞定：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Context ctx = <span class="keyword">new</span> InitialContext();</span><br><span class="line">DataSource ds = (DataSource)ctx.lookup(<span class="string">&quot;java:/comp/env/jdbc/demodb&quot;</span>);</span><br></pre></td></tr></table></figure></p>
+<p>通过JNDI的方式，即使我们去修改配置文件中的DataSource的信息，比如换了一个数据库，只要不更改JNDI名字，对于应用开发者而言，这些变更就是完全透明的。</p>
+<hr>
+<p>花了好几个晚上整理，常常看到一个名词，只有模糊印象，然后去查资料先了解，N多次冒出怀疑自己的理解能力不足的念头。最终这篇笔记里提到的内容多还是浅尝辄止，仅仅能作为引子，让这个模糊的印象稍微清晰了一点。</p>
+<hr>
+<ul>
+<li><strong>参考资料</strong></li>
+<li><a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/tutorial/jdbc/basics/index.html">Java Tutorial - JDBC Basics</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.journaldev.com/2513/tomcat-datasource-jndi-example-java#tomcat-datasource-jndi-configuration-example-8211-serverxml">Tomcat DataSource JNDI Example in Java</a></li>
+<li><em>Core Java 2, Volume 2: Advanced Features</em></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Java/" rel="tag"># Java</a>
+          
+            <a href="/tags/JDBC/" rel="tag"># JDBC</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/01/dearest-grandpa/" rel="next" title="给最最亲爱的外公">
+                <i class="fa fa-chevron-left"></i> 给最最亲爱的外公
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/12/08/jdbc-statements/" rel="prev" title="JDBC二三事之Statement">
+                JDBC二三事之Statement <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#JDBC%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">JDBC是什么？</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#4%E7%A7%8DJDBC-Driver"><span class="nav-number">1.1.</span> <span class="nav-text">4种JDBC Driver</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8JDBC%E8%BF%9E%E6%8E%A5%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">2.</span> <span class="nav-text">使用JDBC连接数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8DriverManager%E8%BF%9E%E6%8E%A5%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">2.1.</span> <span class="nav-text">使用DriverManager连接数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#JDBC%E6%95%B0%E6%8D%AE%E5%BA%93URL"><span class="nav-number">2.1.1.</span> <span class="nav-text">JDBC数据库URL</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%86%E5%A4%87Driver"><span class="nav-number">2.1.2.</span> <span class="nav-text">准备Driver</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DriverManager%E5%88%9B%E5%BB%BA%E8%BF%9E%E6%8E%A5"><span class="nav-number">2.1.3.</span> <span class="nav-text">DriverManager创建连接</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8DataSource%E8%BF%9E%E6%8E%A5%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">2.2.</span> <span class="nav-text">使用DataSource连接数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#DataSource%E7%9A%84%E4%B8%89%E7%A7%8D%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F"><span class="nav-number">2.2.1.</span> <span class="nav-text">DataSource的三种实现方式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B3%A8%E5%86%8CDataSource"><span class="nav-number">2.2.1.1.</span> <span class="nav-text">注册DataSource</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9C%A8%E5%BA%94%E7%94%A8%E4%B8%AD%E9%80%9A%E8%BF%87JNDI%E8%8E%B7%E5%8F%96DataSource"><span class="nav-number">2.2.1.2.</span> <span class="nav-text">在应用中通过JNDI获取DataSource</span></a></li></ol></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

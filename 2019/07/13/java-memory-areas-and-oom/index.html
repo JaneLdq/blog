@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Java," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="“你是什么垃圾？” ¯\_(ツ)_&#x2F;¯ 最近垃圾分类的话题那是相当火热，作为紧跟时代的程序员，我们不仅要开创格子衫的天下，还要走在时尚的最前沿～于是，我决定趁此机会，理一理Java中的内存管理与垃圾回收机制～ 「辣鸡系列」正式开坑～(⊙v⊙)  在日常的 Java 开发中，有 JVM 的自动内存管理机制，我们一般也不怎么关注 Java 的内存分配和垃圾回收，因为不太容易出现内存泄漏和溢出的问题。不">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java内存管理之运行时数据区">
+<meta property="og:url" content="http://liaodanqi.xyz/2019/07/13/java-memory-areas-and-oom/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="“你是什么垃圾？” ¯\_(ツ)_&#x2F;¯ 最近垃圾分类的话题那是相当火热，作为紧跟时代的程序员，我们不仅要开创格子衫的天下，还要走在时尚的最前沿～于是，我决定趁此机会，理一理Java中的内存管理与垃圾回收机制～ 「辣鸡系列」正式开坑～(⊙v⊙)  在日常的 Java 开发中，有 JVM 的自动内存管理机制，我们一般也不怎么关注 Java 的内存分配和垃圾回收，因为不太容易出现内存泄漏和溢出的问题。不">
+<meta property="og:locale">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/jvm-runtime-data-area.svg">
+<meta property="article:published_time" content="2019-07-13T14:24:13.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.545Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/jvm-runtime-data-area.svg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2019/07/13/java-memory-areas-and-oom/"/>
+
+
+
+
+
+  <title>Java内存管理之运行时数据区 | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2019/07/13/java-memory-areas-and-oom/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Java内存管理之运行时数据区</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-13T22:24:13+08:00">
+                2019-07-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>“你是什么垃圾？” ¯\_(ツ)_/¯</p>
+<p>最近垃圾分类的话题那是相当火热，作为紧跟时代的程序员，我们不仅要开创格子衫的天下，还要走在时尚的最前沿～于是，我决定趁此机会，理一理Java中的内存管理与垃圾回收机制～</p>
+<p>「辣鸡系列」正式开坑～(⊙v⊙)</p>
+<hr>
+<p>在日常的 Java 开发中，有 JVM 的自动内存管理机制，我们一般也不怎么关注 Java 的内存分配和垃圾回收，因为不太容易出现内存泄漏和溢出的问题。不太容易并不代表不会，如果对 JVM 的内存管理不了解的话，一旦出现问题，debug 就不那么美妙了。</p>
+<p>作为本系列的开篇，自然要从垃圾的来源 —— Java 的运行时数据区 (Run-Time Data Area) 讲起。</p>
+<span id="more"></span>
+<hr>
+<h2 id="运行时数据区"><a href="#运行时数据区" class="headerlink" title="运行时数据区"></a>运行时数据区</h2><p>JVM 在执行 Java 程序时会把它管理的内存区域划分为不同的数据区域，每个区域的用途、创建和销毁的时间都不同。<br>根据最新的 JVM 规范 <em><a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/specs/jvms/se12/html/index.html">The Java® Virtual Machine Specification (Java SE 12 Edition)</a></em>，JVM管理的内存包括如下几个区域。<br>（虽然说是最新的，不过就规范而言，这一部分的内容倒是基本没怎么变动）。</p>
+<h3 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h3><p>JVM 对多线程的支持是通过线程轮流切换并分配处理器执行时间的方式实现的，因此每个线程都有一个独立的程序计数器 (Program Counter Register)，用于保存当前线程所执行到的位置，这样在线程切换后就能恢复到正确的位置。</p>
+<ul>
+<li>如果当前执行的是一个 Java 方法，那么 <em>pc</em> 的值为正在执行的虚拟机字节码指令的地址；</li>
+<li>如果当前执行的是一个 Native 方法，那么 <em>pc</em> 的值为 <strong>Undefined</strong></li>
+</ul>
+<p><strong>「异常情况」</strong><br><em>程序计数器是 JVM 规范中唯一一个没有规定任何 OutOfMemoryError 情况的区域。</em></p>
+<hr>
+<h3 id="JVM-栈"><a href="#JVM-栈" class="headerlink" title="JVM 栈"></a>JVM 栈</h3><p>每一个 JVM 线程都有一个 JVM 栈 (Java Virtual Machine Stack)， 它的生命周期与线程相同。JVM 栈既可以是固定大小的，也可以是可扩展的。</p>
+<ul>
+<li>JVM 栈描述的是 Java 方法执行的内存模型，每个方法在执行时都会创建一个栈帧 （Frame），用于存储局部变量表、操作数栈、动态链接、方法出口等信息</li>
+<li>每个方法从调用到执行完成，就对应一个栈帧在 JVM 栈中从入栈到出栈</li>
+</ul>
+<p><strong>「异常情况」</strong></p>
+<ol>
+<li><em>如果线程请求的栈深度大于虚拟机所允许的深度，将抛出 </em>StackOverflowError<em>。</em></li>
+<li><em>如果 JVM 栈可以动态扩展（当前大部分虚拟机都可以动态扩展），如果扩展是无法申请到足够的内存，将抛出 </em>OutOfMemoryError<em>。</em></li>
+</ol>
+<hr>
+<h3 id="Native-方法栈"><a href="#Native-方法栈" class="headerlink" title="Native 方法栈"></a>Native 方法栈</h3><p>Native 方法栈 (Native Method Stack) 与 JVM 栈的作用非常相似，唯一的区别在于 Native 方法栈为 Native 方法服务，而 JVM 栈是为 Java 方法服务。(Native方法指用非Java语言写的方法)。<br>Native 方法栈与 JVM 栈一样，即可以是固定大小的，也可以扩展。</p>
+<p><strong>「异常情况」</strong><br><em>也会抛出 StackOverflowError 和 OutOfMemoryError，具体情况参见 JVM 栈「异常情况」。</em></p>
+<hr>
+<h3 id="堆"><a href="#堆" class="headerlink" title="堆"></a>堆</h3><p>Java 堆 (Heap) 是被<strong>所有线程共享</strong>的一块内存区域，在虚拟机启动时创建，用于存放对象实例。<br>JVM 规范的描述如下：</p>
+<blockquote>
+<p>The heap is the run-time data area from which memory for all class instances and arrays is allocated.<br>(所有的对象实例以及数组都要在堆上分配。)</p>
+</blockquote>
+<p>不过随着 JIT(Just In Time) 编译器和逃逸分析技术的发展，栈上分配、标量替换优化技术等使得这里的“所有”没有那么绝对了。</p>
+<p>根据 JVM 规范的规定，<strong>Java 堆可以处于物理上不连续的内存空间，只要逻辑上是连续的即可</strong>。<br>与栈相似，堆可以是固定大小的，也可以是可扩展的。（目前的主流虚拟机都按照可扩展实现的）。</p>
+<p><strong>堆是垃圾收集管理的主要区域</strong>，因此也被称作“GC堆”。（划重点，这里就回答了我们本篇笔记标题的提问：<strong>垃圾从何而来？从堆而来～</strong>）</p>
+<p><strong>「异常情况」</strong><br><em>如果堆中没有足够的内存完成实例分配，并且堆也无法再扩展时，会抛出 OutOfMemoryError。</em></p>
+<p>举个例子：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * VM Args: -Xms20m -Xmx20m -XX:+HeapDumpOnOutOfMemoryError</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HeapOOM</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">OOMObject</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        List&lt;OOMObject&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">            list.add(<span class="keyword">new</span> OOMObject());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>运行结果：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">java.lang.OutOfMemoryError: Java heap space</span><br><span class="line">Dumping heap to java_pid82766.hprof ...</span><br><span class="line">Heap dump file created [<span class="number">27851304</span> bytes in <span class="number">0.120</span> secs]</span><br><span class="line">Exception in thread <span class="string">&quot;main&quot;</span> java.lang.OutOfMemoryError: Java heap space</span><br><span class="line">    ...</span><br><span class="line">    at oom.HeapOOM.main(HeapOOM.java:<span class="number">17</span>)</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3><p>方法区 (Method Area) 跟 Java 堆一样，也是<strong>所有线程共享</strong>的内存区域，它在虚拟机启动时创建，用于存储已被虚拟机加载的类信息、常量、静态看量、即时编译器编译后的代码等数据<br>JVM 规范对方法区的限制很宽松，它和堆一样不需要连续的物理内存，可以是固定大小或可扩展的，<strong>还可以选择不实现垃圾回收</strong>。<br>在方法区中，主要的回收目标是<strong>对常量池的回收</strong>和<strong>对类的卸载</strong>，一般来说，这两类可回收的空间不大，但是请记住，<strong>不回收并不是个好选择</strong>。</p>
+<p>在早期版本(6及之前)的 JDK 中，HotSpot 虚拟机把GC分代收集扩展到了方法区，因此很多人又称方法区为“永久代”。需要注意的是，二者并不等价，方法区是概念，而永久代只是方法区的一种实现方式。对于其他虚拟机是不存在永久代这一概念的。事实上，在 JDK8 中，HotSpot 也不再以永久代实现方法区。</p>
+<p><strong>「异常情况」</strong><br><em>当方法区无法满足内存分配需求时，会抛出 OutOfMemoryError。</em></p>
+<hr>
+<h3 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h3><p>运行时常量池 (Run-Time Constant Pool) 是方法区的一部分。<br>Class 文件中除了有类的版本、字段、方法、接口等描述信息外，还有一项信息是常量池 (Constant Pool Table)，用于存放编译期生成的各种字面量和符号引用，这部分内容在类加载后存放于运行时常量池。也就是说每一个被加载的类或接口都对应有一个运行时常量池。</p>
+<p>相比于 Class 文件中的常量池，运行时常量池<strong>具备动态性</strong>。在运行期间，也可能将新的常量放入池中，这种特性利用的较多的是 <code>String</code> 类的 <code>intern()</code> 方法。<code>String.intern()</code> 是一个 Native 方法，它的作用是：如果字符串常量池中已经包含一个等于此 <code>String</code>对象的字符串，则返回代表池中这个字符串的 <code>String</code>对象，否则，将此 <code>String</code> 对象包含的字符串添加到常量池中，并且返回此 <code>String</code> 对象的引用。</p>
+<p><strong>「异常情况」</strong><br><em>运行时常量池位于方法区，自然也收到方法区内存的限制，当常量池无法申请到内存时将会抛出 OutOfMemeoryError</em>。</p>
+<hr>
+<p>关于方法区和常量池 OutOfMemoryError 的例子，根据 JDK 版本的不同，抛异常时的提示信息会不同。比如下面这段代码：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * VM Args: </span></span><br><span class="line"><span class="comment"> * JDK6 and before: -XX:PerSize=10M -XX:MaxPersize=10M</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RuntimeConstantPoolOOM</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        List&lt;String&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">            list.add(String.valueOf(i++).intern());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>在 JDK6 及之前的版本，方法区是被分配到永久代中的，可以通过 JVM 参数 <code>-XX:PermSize</code> 和 <code>-XX:MaxPermSize</code> 来限制方法区的大小，从而间接限制常量池的容量。据说运行以上代码会抛出如下错误（古早的JDK版本已经Oracle不给下载了，本来还想跑一下看看的）：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Exception in thread <span class="string">&quot;main&quot;</span> java.lang.OutOfMemoryError: PermGen space</span><br></pre></td></tr></table></figure><br><strong>“PermGen space”</strong> 说明运行时常量池属于方法区（JDK6 JVM中的永久代）。<br>但是在 JDK7 及之后，HotSpot JVM 开始逐步取缔“永久代”，到 JDK8 就被彻底移除了，由新引入的“元空间” (Metaspace)接替它的角色。</p>
+<p>我试了一下在 JDK8 上运行以上代码，由于“永久代”已经是过去式，上述两个参数 <code>Permsize</code> 和 <code>MaxPersize</code> 自然被移除了。在不显式限制内存大小的情况下运行上面的代码，可以一直运行下去而不会抛 OutOfMemoryError。<br>如果设置 <code>-Xmx10m</code> 来限制运行时内存的大小，运行后的结果如下所示：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Exception in thread <span class="string">&quot;main&quot;</span> java.lang.OutOfMemoryError: GC overhead limit exceeded</span><br><span class="line">    ...</span><br><span class="line">    at oom.RuntimeConstantPoolOOM.main(RuntimeConstantPoolOOM.java:<span class="number">15</span>)</span><br></pre></td></tr></table></figure><br>提示信息为 <strong>“GC overhead limit exceeded”</strong>。它表示程序运行时花在垃圾收集上的时间太多，效果却太差。</p>
+<blockquote>
+<p>By default the JVM is configured to throw this error if it spends more than 98% of the total time doing GC and when after the GC only less than 2% of the heap is recovered.</p>
+</blockquote>
+<p>如果再调小一点，比如设为 <code>-Xmx5m</code>，则运行结果如下所示，这次变为了 <strong>“Java heap space”</strong>：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Exception in thread <span class="string">&quot;main&quot;</span> java.lang.OutOfMemoryError: Java heap space</span><br><span class="line">    ...</span><br><span class="line">    at oom.RuntimeConstantPoolOOM.main(RuntimeConstantPoolOOM.java:<span class="number">15</span>)</span><br></pre></td></tr></table></figure><br>关于 OutOfMemoryError 的各种情况，有官方的文档介绍，详情请戳<a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/12/troubleshoot/troubleshoot-memory-leaks.html">Understand the OutOfMemoryError Exception</a>，</p>
+<hr>
+<p>总结一下，JVM 的运行时数据区可分为线程共享和线程私有两大类，一共包含六个区域，如下图表所示。</p>
+<table>
+<thead>
+<tr>
+<th>线程共享</th>
+<th>线程私有</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>堆<br>方法区<br>运行时常量池（包含在方法区内）</td>
+<td>程序计数器<br>JVM 栈<br>Native 方法栈</td>
+</tr>
+</tbody>
+</table>
+<p><img src="/uploads/images/jvm-runtime-data-area.svg" alt="Boyermoore Example"></p>
+<hr>
+<h2 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h2><p>直接内存 (Direct Memory) 并不是 JVM 运行时数据区的一部分，也不是 JVM 规范中定义的内存区域，不过由于这部分内存也被频繁使用，既然都是内存，就稍微提一下。<br>直接内存由 NIO 类引入，它可以使用 Native 函数库<strong>直接分配堆外内存</strong>，然后通过存储在 Java 堆中的 <code>DirectByteBuffer</code> 对象引用这块内存进行操作。<br>直接内存的分配不受 Java 堆大小的限制，但是会<strong>受本机总内存大小和处理器寻址空间的限制</strong>。<br>在配置虚拟机参数时，如果忽略了直接内存，容易使得各个内存区域总和大于物理内存限制，导致动态扩展时出现 OutOfMemoryError。</p>
+<h3 id="为什么要引入直接内存呢？"><a href="#为什么要引入直接内存呢？" class="headerlink" title="为什么要引入直接内存呢？"></a>为什么要引入直接内存呢？</h3><p><code>java.nio</code> 包中的 <code>ByteBuffer</code> 类有三个子类: <code>HeapByteBuffer</code>、<code>DirectByteBuffer</code> 和 <code>MappedByteBuffer</code>。顾名思义，<code>HeapByteBuffer</code>采用的从堆中分配内存的方式，其本质就是封装了一个 <code>byte[]</code>。那么为什么还要提供另外两个采用分配直接内存的实现类呢？<br>要回答这个问题，要从操作系统的I/O操作说起。操作系统的读写操作都是基于一块连续的空间 (contiguous sequence of bytes)，但是一个 <code>byte[]</code> 在堆上的会是一块连续的空间吗？并不一定，按照 JVM 规范中的描述，堆的物理实现都可以是不连续的，那这就无法保证堆上的字节数组一定会在一个连续空间里了。虽然 JVM 把一个一维字节数组分开存储的可能性不大，但是Java堆仍是不能被原生的I/O直接操作的，得先把堆上的数据拷贝到本机内存 (native memeory) 上，才能执行操作系统级的I/O操作。这样效率就低了很多，<strong>直接内存</strong>的出现就是为了提高这类操作的效率。</p>
+<hr>
+<p>在本篇笔记中，我们搞清楚了 JVM 中到底有哪些运行时数据区，它们的创建时间、用途和可能造成的异常情况是什么。<br>那么，还记得标题问题的答案吗？六个数据区，谁是垃圾回收的重点关注对象呀？</p>
+<p><strong>是它，是它，就是它，我们的小垃圾，Java 堆！</strong></p>
+<p>不过别忘了，方法区的回收虽然不在 JVM 规范的强制要求内，也是不可忽视的哦～</p>
+<hr>
+<p><strong>参考资料</strong></p>
+<ul>
+<li><em>深入理解 Java 虚拟机（第二版）</em></li>
+<li><a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/specs/jvms/se12/html/index.html">The Java® Virtual Machine Specification (Java SE 12 Edition)</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.oracle.com/en/java/javase/12/troubleshoot/troubleshoot-memory-leaks.html">Understand the OutOfMemoryError Exception</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.fusion-reactor.com/evangelism/understanding-java-buffer-pool-memory-space/">Understanding Java Buffer Pool Memory Space</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Java/" rel="tag"># Java</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/06/22/java-generics-2/" rel="next" title="Java泛型与数组">
+                <i class="fa fa-chevron-left"></i> Java泛型与数组
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/07/20/gc-mark-sweep/" rel="prev" title="GC算法笔记（一）标记-清除算法">
+                GC算法笔记（一）标记-清除算法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA"><span class="nav-number">1.</span> <span class="nav-text">运行时数据区</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E8%AE%A1%E6%95%B0%E5%99%A8"><span class="nav-number">1.1.</span> <span class="nav-text">程序计数器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JVM-%E6%A0%88"><span class="nav-number">1.2.</span> <span class="nav-text">JVM 栈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Native-%E6%96%B9%E6%B3%95%E6%A0%88"><span class="nav-number">1.3.</span> <span class="nav-text">Native 方法栈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A0%86"><span class="nav-number">1.4.</span> <span class="nav-text">堆</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%B3%95%E5%8C%BA"><span class="nav-number">1.5.</span> <span class="nav-text">方法区</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%97%B6%E5%B8%B8%E9%87%8F%E6%B1%A0"><span class="nav-number">1.6.</span> <span class="nav-text">运行时常量池</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B4%E6%8E%A5%E5%86%85%E5%AD%98"><span class="nav-number">2.</span> <span class="nav-text">直接内存</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%BC%95%E5%85%A5%E7%9B%B4%E6%8E%A5%E5%86%85%E5%AD%98%E5%91%A2%EF%BC%9F"><span class="nav-number">2.1.</span> <span class="nav-text">为什么要引入直接内存呢？</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

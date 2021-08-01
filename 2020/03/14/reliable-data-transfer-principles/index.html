@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="网络,可靠数据传输," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="写在前面：从上一篇开始，大概会有一系列网络相关的笔记，主要内容整理自《计算机网络：自顶向下方法》这本书，目前在看的是英文版，个人感觉比中文版看起来流畅。原本打算以《计算机网络（第五版）》为主要参考书的，这本与前者相反，是以自底向上的结构组织的，比较下来发现自己更适应前者的思维模式。在整理笔记的时候考虑到一些术语的翻译，也会参考后者，同时查漏补缺。目前看来两本书的涵盖点都挺全面的，相比之下，前者版本">
+<meta property="og:type" content="article">
+<meta property="og:title" content="可靠的数据传输实现指南（一）- 基本机制">
+<meta property="og:url" content="http://liaodanqi.xyz/2020/03/14/reliable-data-transfer-principles/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="写在前面：从上一篇开始，大概会有一系列网络相关的笔记，主要内容整理自《计算机网络：自顶向下方法》这本书，目前在看的是英文版，个人感觉比中文版看起来流畅。原本打算以《计算机网络（第五版）》为主要参考书的，这本与前者相反，是以自底向上的结构组织的，比较下来发现自己更适应前者的思维模式。在整理笔记的时候考虑到一些术语的翻译，也会参考后者，同时查漏补缺。目前看来两本书的涵盖点都挺全面的，相比之下，前者版本">
+<meta property="og:locale">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/rdt-1.svg">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/rdt-2.svg">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/rdt-2-1-sender.svg">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/rdt-2-1-receiver.svg">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/rdt-3-sender.svg">
+<meta property="article:published_time" content="2020-03-14T02:18:41.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.559Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="网络">
+<meta property="article:tag" content="可靠数据传输">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/rdt-1.svg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2020/03/14/reliable-data-transfer-principles/"/>
+
+
+
+
+
+  <title>可靠的数据传输实现指南（一）- 基本机制 | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2020/03/14/reliable-data-transfer-principles/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">可靠的数据传输实现指南（一）- 基本机制</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-14T10:18:41+08:00">
+                2020-03-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>写在前面：从上一篇开始，大概会有一系列网络相关的笔记，主要内容整理自《计算机网络：自顶向下方法》这本书，目前在看的是英文版，个人感觉比中文版看起来流畅。原本打算以《计算机网络（第五版）》为主要参考书的，这本与前者相反，是以自底向上的结构组织的，比较下来发现自己更适应前者的思维模式。在整理笔记的时候考虑到一些术语的翻译，也会参考后者，同时查漏补缺。目前看来两本书的涵盖点都挺全面的，相比之下，前者版本更新更快，内容更与时俱进。</p>
+<hr>
+<p>在人们离不开网络的当今，我们通过网络交流、购物、协同工作，为了使这些活动能通过网络顺利地进行，我们需要解决网络传输的两大基本问题：</p>
+<ul>
+<li><strong>如何提供可靠的数据传输</strong></li>
+<li><strong>如何避免网络拥塞以及在拥塞发生时如何恢复</strong></li>
+</ul>
+<p>在本篇笔记中，我们先来了解一下实现可靠的数据传输的相关机制。</p>
+<span id="more"></span>
+<h1 id="什么是可靠的数据传输"><a href="#什么是可靠的数据传输" class="headerlink" title="什么是可靠的数据传输"></a>什么是可靠的数据传输</h1><p>当我们评价一个人“可靠”时，普遍认同的一点便是交待这个人做的事一定会有个靠谱的结果。那么当我们定义一个数据传输为“可靠”时，又包含了什么要求呢？<br>主要有三点：</p>
+<ul>
+<li><strong>正确性</strong>：在传输中数据不会出现位差错，也就是 0 变成 1，1 变成 0</li>
+<li><strong>完整性</strong>：在传输中不会发生数据丢失</li>
+<li><strong>有序性</strong>：经传输得到的数据的顺序与其发送顺序一致</li>
+</ul>
+<hr>
+<h1 id="一个可靠数据传输协议的诞生"><a href="#一个可靠数据传输协议的诞生" class="headerlink" title="一个可靠数据传输协议的诞生"></a>一个可靠数据传输协议的诞生</h1><p>为了满足这三个条件，一个可靠的数据传输协议要用到哪些机制呢？为了更好地理解它们，让我们从零开始设计一个可靠的数据传输协议，就叫它 RDT (Reliable Data Transfer Protocol) 吧，在这个过程中，我们会逐步介绍各个机制及其作用。</p>
+<h2 id="RDT-1-0-适用于完全可靠的信道"><a href="#RDT-1-0-适用于完全可靠的信道" class="headerlink" title="RDT 1.0 - 适用于完全可靠的信道"></a>RDT 1.0 - 适用于完全可靠的信道</h2><p>我们都知道网络是一个分层架构的体系，上层的协议依赖于底层协议提供的服务。假如底层已经提供了可靠的信道，那么运行于其上的协议可以认为其数据的可靠性已经得到了保证，自己不需要再做额外的处理。</p>
+<p>假设我们的 RDT 是一个运行在具备了可靠数据传输的通道之上的协议，那么它其实不用做什么，下图展示了 RDT 1.0 中发送方与接收方的有限状态机 (finite-state machine, FSM)。<br><img src="/uploads/images/rdt-1.svg" alt="RDT 1.0"></p>
+<p>「Note」 <em>在上图（及下文的FSM图中），箭头旁边的虚线框中由虚线分隔的上半部分粗体字内容代表触发该状态改变的<strong>事件</strong>，下半部分代表事件发生后要执行的<strong>操作 (actions)</strong>。</em></p>
+<p>RDT 1.0 中的发送方和接收方都只有一个状态：</p>
+<ul>
+<li>发送方一直处于<strong>等待上层的调用</strong>状态 - 当上层调用 <code>rdt_send</code> 这个事件发生时，它将上层数据封装成 packet，然后调用下层服务发送数据，然后回到<strong>等待上层调用</strong>状态，等待下一次被调用。</li>
+<li>接收方一直处于<strong>等待下层的调用</strong>状态 - 当下层调用 <code>rdt_rcv</code> 这个事件发生时，它将数据从底层传过来的 packet 解析出来将其交付给上层，然后回到<strong>等待下层调用</strong>状态，等待下一波被调用。</li>
+</ul>
+<p>然而，如此完美可靠的信道在现实中是不可能存在的，毕竟理想很丰满，就让我们一点点削去理想的血肉，直面骨感的现实吧~</p>
+<hr>
+<h2 id="RDT-2-x-适用于可能会出现位差错的信道"><a href="#RDT-2-x-适用于可能会出现位差错的信道" class="headerlink" title="RDT 2.x - 适用于可能会出现位差错的信道"></a>RDT 2.x - 适用于可能会出现位差错的信道</h2><p>现在我们的信道有了一点小瑕疵，有可能在传输数据的过程中发生位差错，这也就意味着我们收到的数据可能是不正确的。那么问题来了：</p>
+<ul>
+<li><strong>接收方如何知道数据是否正确呢？</strong></li>
+<li><strong>接收方发现数据出错时要怎么办呢？</strong></li>
+</ul>
+<h3 id="校验和与应答机制-Checksum-amp-Acknowledgement"><a href="#校验和与应答机制-Checksum-amp-Acknowledgement" class="headerlink" title="校验和与应答机制 Checksum &amp; Acknowledgement"></a>校验和与应答机制 Checksum &amp; Acknowledgement</h3><p>想象一下打电话的场景，如果一方明确接收到对方的消息，为了让对方知道，一般都会实时给出“好的”之类响应，当传过来的消息不清晰时，接收方一般会追问：“我刚刚没听清，请再说一遍。”</p>
+<p>用技术术语来描述，“好的”这类消息就被称为<strong>肯定应答 (positive acknowledgement, ACK)</strong>，“我没听清，请再说一遍”这类消息就被称为<strong>否定应答 (negative acknowledgement, NAK)</strong>，当接收方收到否定应答时，就会重传消息。在计算机网络中，基于这类重传机制的可靠数据传输协议被称为 <strong>ARQ (Automatic Repeat reQuest, 自动重传请求) 协议</strong>。</p>
+<p>ARQ 协议通过如下几个功能点的组合来处理位差错：</p>
+<ul>
+<li><strong>错误检测 (Error Detection)</strong> - 要处理位差错，首先要能发现位差错。校验和 (checksum) 是常用的技术。为了实现校验和，我们需要在 RDT 2.0 的 packet 里添加额外的字段</li>
+<li><strong>接收方反馈 (Receiver Feedback)</strong> - 为了让发送方知道数据出现了差错，接收方要显式地给予反馈，比如上文提到的肯定应答和否定应答。理论上，应答 packet 只要 1 位大小就够了，比如 0 代表 NAK, 1 代表 ACK。</li>
+<li><strong>重传 (Retransmission)</strong> - 发送方要重传出错的 packet。</li>
+</ul>
+<hr>
+<p>下面是 RDT 2.0 的发送方和接收方的 FSM：<br><img src="/uploads/images/rdt-2.svg" alt="RDT 2.0"></p>
+<p>在上图所示 FSM 中，我们可以看到发送方在发出一个 packet 之后，就一直停在等待应答的状态，直到收到接收方的 ACK 应答才回到等待上层调用的状态，也就说在发送方确认接收方收到上一条消息之后才会发送新的消息，按这种模式运行的协议被称为 <strong>停等 (stop-and-wait) 协议</strong>。</p>
+<hr>
+<h3 id="序号-Sequence-Number"><a href="#序号-Sequence-Number" class="headerlink" title="序号 Sequence Number"></a>序号 Sequence Number</h3><p>RDT 2.0 看起来没问题，事实上，我们忽视了非常致命的一点 —— <strong>ACK 和 NAK 消息也可能在传输过程中出错</strong>，这种情况要怎么办呢？首先，我们要给 ACK 和 NAK 消息也加上校验和以便检测其是否出错，然后呢？<br>我们可能采取的方式有如下几种：</p>
+<ol>
+<li>当 A 收到的 ACK 或 NAK 出错时，它可以回复一条“你说啥，请再说一遍。”给 B，正常情况下 B 收到之后重传应答。问题就出在这条“你说啥”可能也出错了，B 没听懂，又给 A 发了一条“你说啥”，然后这条消息也出错了，…。显然，这个方案不可取。</li>
+<li>增加校验和的长度，使得能直接从校验和中恢复消息。这种情况能解决 packet 出错的问题，但是不适用于会丢包的信道。</li>
+<li><strong>若发送方收到出错的 ACK 或 NAK，则重传一遍刚刚传送的数据</strong>。这个方案会带来一个新的问题——<strong>重复分组 (duplicate packet)</strong>。因为 ACK 或 NAK 的出错，发送方可能会多次发送同一个 packet，接收方如何得知当前收到的 packet 是新的还是重传的呢？</li>
+</ol>
+<p>为了能区分重复分组，我们可以为每个 packet 添加一个<strong>序号 (sequence number)</strong>字段。接收方通过读取 packet 的序号就能知道这是否是一个重传的 packet。对于 RDT 2.0 这种 stop-and-wait 协议，1位序号就够了。</p>
+<hr>
+<p>下图展示了添加了序号字段的 RDT 2.1 发送方与接收方的 FSM：<br><img src="/uploads/images/rdt-2-1-sender.svg" alt="RDT 2.1 Sender"><br><img src="/uploads/images/rdt-2-1-receiver.svg" alt="RDT 2.1 Receiver"><br>在 RDT 2.1 中，除了引入了序号之外，我们去掉了 NAK，而选择了返回最后一个正确接收的 packet 的 ACK（ACK 包含了该 packet 的序号）来通知发送方数据传输发生了错误，当发送方收到一个 ACK 中的 packet 序号与当前等待应答的 packet 序号不匹配时，就会判定数据传输出错从而触发重传机制。</p>
+<hr>
+<h2 id="RDT-3-0-适用于会有位差错的丢包信道"><a href="#RDT-3-0-适用于会有位差错的丢包信道" class="headerlink" title="RDT 3.0 - 适用于会有位差错的丢包信道"></a>RDT 3.0 - 适用于会有位差错的丢包信道</h2><p>在现实环境中，信道不仅可能出现位差错，还可能出现丢包的情况，那么，新的问题来了：</p>
+<ul>
+<li><strong>如何检测丢包？</strong></li>
+<li><strong>丢包之后怎么办？</strong> - 这个问题应用我们在 RDT 2.x 中已经提到的<strong>校验和</strong>、<strong>肯定/否定应答</strong>、<strong>序号</strong>、<strong>重传</strong>等机制来解决。</li>
+</ul>
+<p>第二个问题有了答案，那如何检测丢包呢？<br>我们将这个任务交给发送方，当发送方发现一个 packet 发出之后，等待<strong>足够久</strong>的时间后都没有收到应答，则确认 packet 已丢失。</p>
+<p><strong>足够久</strong> 是多久呢？至少要大于<strong>发送方与接收方之间的一个往返延迟(round-trip delay)，可能包含中间路由器的缓冲时延 + 接收方处理一个 packet 的时间</strong>。<br>不过，最坏情况下的延迟并不好估计，而且有可能很长，然而理想情况下协议应该尽快从丢包中回复，如果每次都等待最坏情况下的延迟时间并不是明智的决定。实际应用中，这个值的任务交给发送方来选择。</p>
+<p>等待一段时间后没有收到应答的可能情况会有如下几种：</p>
+<ul>
+<li>发送的 packet 丢失</li>
+<li>接收方回复的 ACK 丢失</li>
+<li>packet 或 ACK 并没有丢失，只是延迟太久</li>
+</ul>
+<p>然而，作为发送方并不关心丢包的原因，只要一招就能搞定一切 —— <strong>重传</strong>。</p>
+<hr>
+<h3 id="计时器-Timer"><a href="#计时器-Timer" class="headerlink" title="计时器 Timer"></a>计时器 Timer</h3><p>要实现基于时间的重传机制，我们需要一个<strong>倒计数定时器 (countdown timer)</strong>。<br>发送方在发送 packet 的同时启动一个定时器，当倒计时结束时还没有收到应答的话，计时器会中断发送方通知其采取适当的动作。</p>
+<hr>
+<p>下图展示了引入了计时器的 RDT 3.0 的发送方的 FSM，RDT 3.0 发送方的 FSM 与 RDT 2.1 的相同：<br><img src="/uploads/images/rdt-3-sender.svg" alt="RDT 3.0 Sender"></p>
+<hr>
+<p>经过逐步地完善，RDT 3.0 终于可以被称之为一个可靠的数据传输协议了。我们注意到在 RDT 3.0 中 packet 的序号始终在 0 和 1 之间交替，因此 RDT 3.0 又被称为<strong>交替位协议(Alternating-bit Protocol)</strong>。实际上，交替位协议是数据链路层的一个协议。</p>
+<hr>
+<h1 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h1><p>最后，让我们总结一下在本文中提到的实现可靠数据传输用到的机制：</p>
+<ul>
+<li><strong>校验和 Checksum</strong> - 用于差错检测</li>
+<li><strong>应答机制 Acknowledgement (ACK/NAK)</strong> - 接收方通过应答机制通知发送方数据是否正确完整地被接收。应答中将包含了对应的 packet 的序号以便发送方在必要时重传。</li>
+<li><strong>序号 Sequence Number</strong> - 通过检测序号是否连续或者是否为期待的序号值可判断是否发生丢包；也用于检测重复分组。</li>
+<li><strong>计时器 Timer</strong> - 考虑到 ACK 也可能丢失，计时器用于判断是否丢包。</li>
+</ul>
+<p>RDT 3.0 综合以上四类机制实现了可靠的数据传输，然而作为一个停等协议，它的性能实在是不尽人意。尤其在现在的高速网络中，我们需要效率更高的可靠数据传输协议。<br>为了达到这一目标，我们还需要引入一个非常重要的机制：</p>
+<ul>
+<li><strong>管道化 Pipelining</strong></li>
+</ul>
+<p>考虑到篇幅问题，下一篇见~</p>
+<hr>
+<p><strong>参考资料</strong></p>
+<ul>
+<li>Computer Networking: A Top-Down Approach, 7th Edition</li>
+<li>计算机网络，第五版</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E7%BD%91%E7%BB%9C/" rel="tag"># 网络</a>
+          
+            <a href="/tags/%E5%8F%AF%E9%9D%A0%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93/" rel="tag"># 可靠数据传输</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/03/01/dns/" rel="next" title="DNS 两三事">
+                <i class="fa fa-chevron-left"></i> DNS 两三事
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/03/15/reliable-data-transfer-principles-2/" rel="prev" title="可靠的数据传输实现指南（二）- 管道化">
+                可靠的数据传输实现指南（二）- 管道化 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%8F%AF%E9%9D%A0%E7%9A%84%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93"><span class="nav-number">1.</span> <span class="nav-text">什么是可靠的数据传输</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E5%8F%AF%E9%9D%A0%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%AF%9E%E7%94%9F"><span class="nav-number">2.</span> <span class="nav-text">一个可靠数据传输协议的诞生</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#RDT-1-0-%E9%80%82%E7%94%A8%E4%BA%8E%E5%AE%8C%E5%85%A8%E5%8F%AF%E9%9D%A0%E7%9A%84%E4%BF%A1%E9%81%93"><span class="nav-number">2.1.</span> <span class="nav-text">RDT 1.0 - 适用于完全可靠的信道</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RDT-2-x-%E9%80%82%E7%94%A8%E4%BA%8E%E5%8F%AF%E8%83%BD%E4%BC%9A%E5%87%BA%E7%8E%B0%E4%BD%8D%E5%B7%AE%E9%94%99%E7%9A%84%E4%BF%A1%E9%81%93"><span class="nav-number">2.2.</span> <span class="nav-text">RDT 2.x - 适用于可能会出现位差错的信道</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%A1%E9%AA%8C%E5%92%8C%E4%B8%8E%E5%BA%94%E7%AD%94%E6%9C%BA%E5%88%B6-Checksum-amp-Acknowledgement"><span class="nav-number">2.2.1.</span> <span class="nav-text">校验和与应答机制 Checksum &amp; Acknowledgement</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%8F%E5%8F%B7-Sequence-Number"><span class="nav-number">2.2.2.</span> <span class="nav-text">序号 Sequence Number</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RDT-3-0-%E9%80%82%E7%94%A8%E4%BA%8E%E4%BC%9A%E6%9C%89%E4%BD%8D%E5%B7%AE%E9%94%99%E7%9A%84%E4%B8%A2%E5%8C%85%E4%BF%A1%E9%81%93"><span class="nav-number">2.3.</span> <span class="nav-text">RDT 3.0 - 适用于会有位差错的丢包信道</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%A1%E6%97%B6%E5%99%A8-Timer"><span class="nav-number">2.3.1.</span> <span class="nav-text">计时器 Timer</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">小结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

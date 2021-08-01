@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="爬虫," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="迟迟没有动手整理这一部分的内容，因为即使磕磕绊绊最终写出了一个勉强能用的爬虫，也是基于“拿来主义”在各大神的代码基础上拼凑出来的，其中还有很多知识点并没有弄懂。后来再查资料细看也十分痛苦。现在写记录的这些大部分还是一知半解的知识，暂且罗列在这儿，待有时间慢慢咀嚼。 下面进入正文。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一只爬虫的难产之旅（三）">
+<meta property="og:url" content="http://liaodanqi.xyz/2018/04/23/autohome-spider-3/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="迟迟没有动手整理这一部分的内容，因为即使磕磕绊绊最终写出了一个勉强能用的爬虫，也是基于“拿来主义”在各大神的代码基础上拼凑出来的，其中还有很多知识点并没有弄懂。后来再查资料细看也十分痛苦。现在写记录的这些大部分还是一知半解的知识，暂且罗列在这儿，待有时间慢慢咀嚼。 下面进入正文。">
+<meta property="og:locale">
+<meta property="og:image" content="http://static.zybuluo.com/JaneL/d9b7zs0268c0vgvtm7hcl3h7/css_font_example.PNG">
+<meta property="og:image" content="http://static.zybuluo.com/JaneL/ahs4skde5r5ie22ubrcj2nnk/font-face.PNG">
+<meta property="og:image" content="http://static.zybuluo.com/JaneL/t4a3becpdqn2in71v6gz74gj/font-example.PNG">
+<meta property="og:image" content="http://static.zybuluo.com/JaneL/vbxz2ib9jln7lqkrmpsfln6w/js_block.PNG">
+<meta property="og:image" content="http://static.zybuluo.com/JaneL/pgbcxh0zupzi6cf6vaxkt7si/js_replace.PNG">
+<meta property="article:published_time" content="2018-04-23T09:03:16.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.532Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="爬虫">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://static.zybuluo.com/JaneL/d9b7zs0268c0vgvtm7hcl3h7/css_font_example.PNG">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2018/04/23/autohome-spider-3/"/>
+
+
+
+
+
+  <title>一只爬虫的难产之旅（三） | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2018/04/23/autohome-spider-3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">一只爬虫的难产之旅（三）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-23T17:03:16+08:00">
+                2018-04-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>迟迟没有动手整理这一部分的内容，因为即使磕磕绊绊最终写出了一个勉强能用的爬虫，也是基于“拿来主义”在各大神的代码基础上拼凑出来的，其中还有很多知识点并没有弄懂。后来再查资料细看也十分痛苦。现在写记录的这些大部分还是一知半解的知识，暂且罗列在这儿，待有时间慢慢咀嚼。</p>
+<p>下面进入正文。</p>
+<span id="more"></span>
+<hr>
+<p>按照爬虫（一）和爬虫（二）写好之后的代码，能开始爬数据了，打开数据库看一下口碑文章的具体内容，一阵悲伤袭来，为什么是不完整的！</p>
+<p>对比在浏览器里看到的内容，明明都是好好的，怎么取到的数据就变成断断续续的了呢？这究竟是怎么回事？</p>
+<p>审查元素了解一下。<br><img src="http://static.zybuluo.com/JaneL/d9b7zs0268c0vgvtm7hcl3h7/css_font_example.PNG" alt="css_font_example.PNG-244.8kB"><br>从上面的截图可以看到，对于浏览器显示出的一句看起来很正常的文本，其实在html文件中有不少文字都被<code>&lt;span&gt;</code>标签包住了：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">span</span> <span class="attr">style</span>=<span class="string">&quot;font-family:myfont;&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">span</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>而且里面是一个不能正常显示的字符编码。这是什么操作？</p>
+<p>注意到这些span标签的共性，都被赋予了一个css属性<code>font-family:myfont</code>，那么这个应该就是突破口了。</p>
+<hr>
+<h2 id="CSS自定义字体"><a href="#CSS自定义字体" class="headerlink" title="CSS自定义字体"></a>CSS自定义字体</h2><p>隐约记得以前用过css自定义字体，把两个关键字<em>CSS自定义字体 反爬</em>放在一次在google搜了一下，没想到一下子就找到了相关的反爬介绍。感谢前辈们！</p>
+<p>在审查元素里查找<code>@font-face</code>，可以找到类似如下的代码段:</p>
+<p><img src="http://static.zybuluo.com/JaneL/ahs4skde5r5ie22ubrcj2nnk/font-face.PNG" alt="font-face.PNG-11.7kB"><br>在这个页面里，定义了一个叫myfont的自定义字体，每次打开页面时，浏览器会从src字段定义的地址下载这个字体用于当前页面的渲染。而这个字体文件，也是随机变化的，所以在爬的时候每次都要重新下载字体。</p>
+<p>顺便简单了解一下TTF(TrueType)字体文件吧，不然再看其他人的博客时也晕乎乎的。<br>使用FontCreator打开从上文截图中那个URL下载下来的字体，内容如下：</p>
+<p><img src="http://static.zybuluo.com/JaneL/t4a3becpdqn2in71v6gz74gj/font-example.PNG" alt="font-example.PNG-104.7kB"><br>这个字体文件给部分汉字赋予了自定义unicode，例如下面这个不可见字符，可以在word中得到其unicode编码ED57，再对应上图中编码为ED57的字形，就得到了“的”这个字。<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--中间这个框框的unicode就是ED57--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">span</span> <span class="attr">style</span>=<span class="string">&quot;font-family:myfont;&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">span</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>对css自定义字体有了基本的了解之后，反反爬思路就有了：</p>
+<ul>
+<li>下载当前页面的自定义字体</li>
+<li>替换自定义字体编码</li>
+</ul>
+<p>具体在Python中操作字体文件时可用<a target="_blank" rel="noopener" href="https://github.com/fonttools/fonttools">fonttools</a>库, 部分代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> fontTools.ttLib <span class="keyword">import</span> TTFont</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line"><span class="comment"># 这一部分是观察到汽车之家每次动态生成的字体文件虽然编码不同，</span></span><br><span class="line"><span class="comment"># 但每个文件中对应修改的字符都是固定的这些，并且顺序也是一定的，</span></span><br><span class="line"><span class="comment"># 因此在将动态编码转为一般字符编码时，可以通过index来进行转换</span></span><br><span class="line"><span class="comment"># 如果自定义中字形顺序发生变化，那么list_font也要随机更新，</span></span><br><span class="line"><span class="comment"># 如果自定义字形顺序是随机的，那么这个反反爬操作应该就失效了</span></span><br><span class="line"></span><br><span class="line">list_font = [ <span class="string">&#x27; &#x27;</span>, <span class="string">&#x27;一&#x27;</span>, <span class="string">&#x27;七&#x27;</span>, <span class="string">&#x27;三&#x27;</span>, <span class="string">&#x27;上&#x27;</span>, <span class="string">&#x27;下&#x27;</span>, <span class="string">&#x27;不&#x27;</span>, <span class="string">&#x27;中&#x27;</span>, <span class="string">&#x27;档&#x27;</span>, <span class="string">&#x27;比&#x27;</span>, <span class="string">&#x27;油&#x27;</span>, <span class="string">&#x27;泥&#x27;</span>, <span class="string">&#x27;灯&#x27;</span>, <span class="string">&#x27;九&#x27;</span>, <span class="string">&#x27;了&#x27;</span>, <span class="string">&#x27;二&#x27;</span>, <span class="string">&#x27;五&#x27;</span>, <span class="string">&#x27;低&#x27;</span>, <span class="string">&#x27;保&#x27;</span>, <span class="string">&#x27;光&#x27;</span>, <span class="string">&#x27;八&#x27;</span>, <span class="string">&#x27;公&#x27;</span>, <span class="string">&#x27;六&#x27;</span>, <span class="string">&#x27;养&#x27;</span>, <span class="string">&#x27;内&#x27;</span>, <span class="string">&#x27;冷&#x27;</span>, <span class="string">&#x27;副&#x27;</span>, <span class="string">&#x27;加&#x27;</span>, <span class="string">&#x27;动&#x27;</span>, <span class="string">&#x27;十&#x27;</span>, <span class="string">&#x27;电&#x27;</span>, <span class="string">&#x27;的&#x27;</span>, <span class="string">&#x27;皮&#x27;</span>, <span class="string">&#x27;盘&#x27;</span>, <span class="string">&#x27;真&#x27;</span>, <span class="string">&#x27;着&#x27;</span>, <span class="string">&#x27;路&#x27;</span>, <span class="string">&#x27;身&#x27;</span>, <span class="string">&#x27;软&#x27;</span>, <span class="string">&#x27;过&#x27;</span>, <span class="string">&#x27;近&#x27;</span>, <span class="string">&#x27;远&#x27;</span>, <span class="string">&#x27;里&#x27;</span>, <span class="string">&#x27;量&#x27;</span>, <span class="string">&#x27;长&#x27;</span>, <span class="string">&#x27;门&#x27;</span>, <span class="string">&#x27;问&#x27;</span>, <span class="string">&#x27;只&#x27;</span>, <span class="string">&#x27;右&#x27;</span>, <span class="string">&#x27;启&#x27;</span>, <span class="string">&#x27;呢&#x27;</span>, <span class="string">&#x27;味&#x27;</span>, <span class="string">&#x27;和&#x27;</span>, <span class="string">&#x27;响&#x27;</span>, <span class="string">&#x27;四&#x27;</span>, <span class="string">&#x27;地&#x27;</span>, <span class="string">&#x27;坏&#x27;</span>, <span class="string">&#x27;坐&#x27;</span>, <span class="string">&#x27;外&#x27;</span>, <span class="string">&#x27;多&#x27;</span>, <span class="string">&#x27;大&#x27;</span>, <span class="string">&#x27;好&#x27;</span>, <span class="string">&#x27;孩&#x27;</span>, <span class="string">&#x27;实&#x27;</span>, <span class="string">&#x27;小&#x27;</span>, <span class="string">&#x27;少&#x27;</span>, <span class="string">&#x27;短&#x27;</span>, <span class="string">&#x27;矮&#x27;</span>, <span class="string">&#x27;硬&#x27;</span>, <span class="string">&#x27;空&#x27;</span>, <span class="string">&#x27;级&#x27;</span>, <span class="string">&#x27;耗&#x27;</span>, <span class="string">&#x27;雨&#x27;</span>, <span class="string">&#x27;音&#x27;</span>, <span class="string">&#x27;高&#x27;</span>, <span class="string">&#x27;左&#x27;</span>, <span class="string">&#x27;开&#x27;</span>, <span class="string">&#x27;当&#x27;</span>, <span class="string">&#x27;很&#x27;</span>, <span class="string">&#x27;得&#x27;</span>, <span class="string">&#x27;性&#x27;</span>, <span class="string">&#x27;自&#x27;</span>, <span class="string">&#x27;手&#x27;</span>, <span class="string">&#x27;排&#x27;</span>, <span class="string">&#x27;控&#x27;</span>, <span class="string">&#x27;无&#x27;</span>, <span class="string">&#x27;是&#x27;</span>, <span class="string">&#x27;更&#x27;</span>, <span class="string">&#x27;有&#x27;</span>, <span class="string">&#x27;机&#x27;</span>, <span class="string">&#x27;来&#x27;</span> ]</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Font</span>(<span class="params"><span class="built_in">object</span></span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, url</span>):</span></span><br><span class="line">        ttf = requests.get(<span class="string">&quot;http:&quot;</span> + url, stream=<span class="literal">True</span>)</span><br><span class="line">        file_path = <span class="string">&#x27;./fonts/&#x27;</span> + re.search(<span class="string">&#x27;/([\w\d-]+)..ttf&#x27;</span>, url).group(<span class="number">1</span>) + <span class="string">&#x27;.ttf&#x27;</span></span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(file_path, <span class="string">&quot;wb+&quot;</span>) <span class="keyword">as</span> pdf:</span><br><span class="line">            <span class="keyword">for</span> chunk <span class="keyword">in</span> ttf.iter_content(chunk_size=<span class="number">1024</span>):</span><br><span class="line">                <span class="keyword">if</span> chunk:</span><br><span class="line">                    pdf.write(chunk)</span><br><span class="line">        self.ttf = TTFont(file_path)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_glyph_id</span>(<span class="params">self, glyph</span>):</span></span><br><span class="line">        index = self.ttf.getGlyphID(glyph)</span><br><span class="line">        <span class="keyword">return</span> index</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_font</span>(<span class="params">self, glyph</span>):</span></span><br><span class="line">        <span class="comment"># 根据自定义编码拿到glyph的index</span></span><br><span class="line">        <span class="built_in">id</span> = self.get_glyph_id(glyph)</span><br><span class="line">        <span class="comment"># 根据index拿到一般字符编码</span></span><br><span class="line">        <span class="keyword">return</span> list_font[<span class="built_in">id</span>]</span><br></pre></td></tr></table></figure>
+<p>这样，css自定义字体反爬坑就算是趟过去了，总结一下几个相关知识点：</p>
+<ul>
+<li>css自定义字体<code>@font-face</code></li>
+<li>两个工具：<ul>
+<li>字体查看工具<a target="_blank" rel="noopener" href="http://www.high-logic.com/font-editor/fontcreator.html">FontCreator</a></li>
+<li>Python字体操作库<a target="_blank" rel="noopener" href="https://github.com/fonttools/fonttools">fonttools</a></li>
+</ul>
+</li>
+</ul>
+<hr>
+<p>好了，css字体我们也替换过了，这下爬下来的内容应该没问题了吧。哎，所以说我还是图样图森破啊！<br>加上了字体替换，还是不管用，就要濒临放弃的时候决定再仔仔细细看一遍网页源码。欸，有猫腻！</p>
+<p><img src="http://static.zybuluo.com/JaneL/vbxz2ib9jln7lqkrmpsfln6w/js_block.PNG" alt="js_block.PNG-34.8kB"><br>如上图所示，内容部分的标签里有不少<code>&lt;!--@athm_js@--&gt;</code>注释的<code>&lt;script&gt;</code>代码块，看起来就很可疑。展开之后是一串明显经过处理的js代码。想必定是它们对页面又做了手脚，继续google。</p>
+<p>还好，又找到了前辈们的经验分享，不然真的要束手无策了。</p>
+<p>可以想见，在浏览器加载了html文件之后，会在前端运行这些js代码，而这些js代码呢，对原始获取的html页面做了一定的处理，最后变成呈现在用户眼前的页面。</p>
+<p><img src="http://static.zybuluo.com/JaneL/pgbcxh0zupzi6cf6vaxkt7si/js_replace.PNG" alt="js_replace.PNG-39.5kB"><br>如上图高亮所示，可以推断这些js做的一部分事情就是把原装html中的某些部分替换成用span标签包裹的自定义字符。</p>
+<p>而到目前为止，我们用代码爬取到的页面并不会像在浏览器中加载一样运行其中的js代码，因此直接对其做css替换并不能得到想要的结果。</p>
+<p>找到病因就知道接下来该做什么了。</p>
+<hr>
+<h2 id="用PyV8运行js"><a href="#用PyV8运行js" class="headerlink" title="用PyV8运行js"></a>用PyV8运行js</h2><p>爬虫是用Python写的，那么最先想到的方式就是在Python中运行js代码来模拟浏览器的操作。Python正好也有这样一个库PyV8提供了在Python中运行js的环境。</p>
+<h3 id="安装PyV8"><a href="#安装PyV8" class="headerlink" title="安装PyV8"></a>安装PyV8</h3><p>PyV8是一个用Python封装V8引擎的壳，使得能够在Python中构建js的运行时环境。这个库历史久远，而且目前也不怎么有人在维护了，只支持Python2.X，所以为了使用PyV8这个库，原本这个爬虫项目是基于Python3.X都全部改成了2.X <em>(:з)∠)</em></p>
+<p>但是呢，在安装的过程中，也折腾了好一会儿。最后找到了一个比较靠谱的github仓库，安装过程参考这篇博客<a target="_blank" rel="noopener" href="https://my.oschina.net/u/854530/blog/853808">pyv8安装记录</a>。命令如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">apt-get install -y libboost-all-dev</span><br><span class="line">git clone https://github.com/buffer/pyv8.git</span><br><span class="line">cd pyv8</span><br><span class="line">python setup.py build</span><br><span class="line">python setup.py install</span><br></pre></td></tr></table></figure>
+<h3 id="使用PyV8"><a href="#使用PyV8" class="headerlink" title="使用PyV8"></a>使用PyV8</h3><p>PyV8的文档找了很久也没找到什么，在项目中用的代码也是在前辈的代码上稍作修改就用起来了。代码主体来自博客<a target="_blank" rel="noopener" href="https://blog.csdn.net/zz153417230/article/details/79087170">Python爬去最新饭爬虫汽车之家口碑</a>。<br>在copy了大神的代码之后，爬虫终于可以获取到完整的数据了。开心到飞起来！真的是非常非常感谢愿意分享经验的前辈们了！</p>
+<p>然鹅，还没有飞出两米，又双叒叕掉坑里了。<br>在爬虫跑起来之后，发现爬不了几个页面就会挂，查看log发现报了<strong>Segmentation Fault</strong>的错。排除之后发现这个问题是由PyV8造成的，内存没来得及及时释放什么的造成了溢出。继续Google，把各种奇奇怪怪的解决方案都试了一下，最终找到了一个不再出错的方式。（吐槽：PyV8没有正式文档，而且各种版本都靠开源大神们的贡献真的用起来很捉急_(:з)∠)_</p>
+<p>解决方案来自<a target="_blank" rel="noopener" href="https://github.com/sbilly/pyv8/issues/248">PyV8 segmentation fault with CherryPy</a>。修改后的部分代码如下所示：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> bs4 <span class="keyword">import</span> BeautifulSoup</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> PyV8</span><br><span class="line"><span class="keyword">from</span> document <span class="keyword">import</span> Global</span><br><span class="line"><span class="keyword">from</span> font <span class="keyword">import</span> Font</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"></span><br><span class="line">reload(sys)</span><br><span class="line">sys.setdefaultencoding(<span class="string">&#x27;utf8&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> PyV8.JSLocker():</span><br><span class="line">    ctx = PyV8.JSContext(Global())</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">replace_comment</span>(<span class="params">item, font_decoder</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;用16进制数字替换掉段落中的span&quot;&quot;&quot;</span></span><br><span class="line">    obj = get_title_comment_js(item)</span><br><span class="line">    title = obj[<span class="number">0</span>]                      <span class="comment">#获取标题</span></span><br><span class="line">    con = obj[<span class="number">1</span>]                        <span class="comment">#获取加密后段落</span></span><br><span class="line">    js = put_js(obj[<span class="number">2</span>])                 <span class="comment">#获取js后重新组装js</span></span><br><span class="line">    con = replace(con, js, font_decoder)</span><br><span class="line">    <span class="keyword">return</span> &#123;title: <span class="built_in">str</span>(con)&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_title_comment_js</span>(<span class="params"> content</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;获取标题和混淆的js代码&quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># 获取小标题</span></span><br><span class="line">    title = content.split(<span class="string">&quot;】&quot;</span>)[<span class="number">0</span>]</span><br><span class="line">    <span class="comment"># 获取加密的文本</span></span><br><span class="line">    start = re.search(<span class="string">&#x27;&lt;!--@athm_BASE64@--&gt;&#x27;</span>, content).span()[<span class="number">1</span>]</span><br><span class="line">    end = re.search(<span class="string">&#x27;&lt;!--@athm_js@--&gt;&#x27;</span>, content).span()[<span class="number">0</span>]</span><br><span class="line">    comment = content[start: end].decode(<span class="string">&quot;utf-8&quot;</span>)</span><br><span class="line">    <span class="comment"># 获取混淆的js代码</span></span><br><span class="line">    soup = BeautifulSoup(content, <span class="string">&quot;lxml&quot;</span>, from_encoding=<span class="string">&#x27;utf-8&#x27;</span>)</span><br><span class="line">    h_js = soup.find(<span class="string">&#x27;script&#x27;</span>)</span><br><span class="line">    <span class="comment"># 将标题和混淆的js存入一个列表</span></span><br><span class="line">    <span class="keyword">return</span> [title, comment, h_js]</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">put_js</span>(<span class="params">js</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;组装js代码&quot;&quot;&quot;</span></span><br><span class="line">    js = <span class="built_in">str</span>(js)[<span class="number">8</span>:-<span class="number">9</span>]</span><br><span class="line">    <span class="comment"># 在开始处定义变量</span></span><br><span class="line">    def_var = <span class="string">&quot;var result = &quot;</span></span><br><span class="line">    js = def_var + js</span><br><span class="line">    <span class="comment"># 在指定位置定义数组</span></span><br><span class="line">    first_point = js.index(<span class="string">&quot;&#123;&quot;</span>)</span><br><span class="line">    def_arr = <span class="string">&quot;var arr = [];&quot;</span></span><br><span class="line">    js = js[:first_point+<span class="number">1</span>]+def_arr+js[first_point+<span class="number">1</span>:]</span><br><span class="line">    <span class="comment"># 在指定位置给数组赋值</span></span><br><span class="line">    regex = <span class="string">r&quot;function\s*\w+\(\)\s*\&#123;\s*(\w+)\s*=[\s\S]*?\);\s*(\w+)\s*=[\s\S]*?\);\s*(\w+)\s*=[\s\S]*?\);&quot;</span></span><br><span class="line">    tuple_groups = re.search(regex, js).groups()</span><br><span class="line">    second_point = re.search(regex, js).span()[<span class="number">1</span>]</span><br><span class="line">    set_arr = <span class="string">&quot;arr = [&quot;</span>+<span class="built_in">str</span>(tuple_groups[<span class="number">0</span>])+<span class="string">&quot;, &quot;</span>+<span class="built_in">str</span>(tuple_groups[<span class="number">1</span>])+<span class="string">&quot;];&quot;</span></span><br><span class="line">    js = js[:second_point]+set_arr+js[second_point:]</span><br><span class="line">    <span class="comment"># 在指定位置return数组</span></span><br><span class="line">    add_return = <span class="string">&quot;return arr;&quot;</span></span><br><span class="line">    js = js.strip()</span><br><span class="line">    js = js[:-<span class="number">13</span>]+add_return+js[-<span class="number">13</span>:]</span><br><span class="line">    <span class="keyword">return</span> js</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">replace</span>(<span class="params">con, js, font_decoder</span>):</span></span><br><span class="line">    list_num16_index = run_js(js)             <span class="comment">#利用v8运行js,获得16进制数字和对应关系</span></span><br><span class="line">    list_num16 = list_num16_index[<span class="number">0</span>]</span><br><span class="line">    list_num16 = list_num16[<span class="number">0</span>].split(<span class="string">&quot;,&quot;</span>)</span><br><span class="line">    list_index = list_num16_index[<span class="number">1</span>]</span><br><span class="line">    regex = <span class="string">r&quot;&lt;span\s*class[\s\S]*?hs_kw(\d+)[\w\s\S]*?&lt;/span&gt;&quot;</span></span><br><span class="line">    list_span = re.finditer(regex, con)</span><br><span class="line">    <span class="keyword">for</span> span <span class="keyword">in</span> list_span:</span><br><span class="line">        tag_span = span.group().encode(<span class="string">&#x27;unicode_escape&#x27;</span>).decode(<span class="string">&#x27;string_escape&#x27;</span>)</span><br><span class="line">        index = list_index[<span class="built_in">int</span>(span.group(<span class="number">1</span>))]</span><br><span class="line">        num16 = list_num16[<span class="built_in">int</span>(index)]</span><br><span class="line">        glyph = <span class="string">&quot;uni&quot;</span>+num16.upper()</span><br><span class="line">        <span class="comment"># 在这里进行css自定义字符替换</span></span><br><span class="line">        font = font_decoder.get_font(glyph)</span><br><span class="line">        con = con.replace(tag_span, font)</span><br><span class="line">    <span class="keyword">return</span> con</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">run_js</span>(<span class="params"> js</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;在v8中运行js,获得16进制数字和对应数字&quot;&quot;&quot;</span></span><br><span class="line">    glob = Global()</span><br><span class="line">    list_num16 = []</span><br><span class="line">    list_index = []</span><br><span class="line">    <span class="keyword">with</span> PyV8.JSLocker():</span><br><span class="line">        ctx.enter()</span><br><span class="line">        ctx.<span class="built_in">eval</span>(js)</span><br><span class="line">        <span class="built_in">vars</span> = ctx.<span class="built_in">locals</span></span><br><span class="line">        js_array = <span class="built_in">vars</span>.result</span><br><span class="line">        <span class="keyword">for</span> num16 <span class="keyword">in</span> js_array[<span class="number">0</span>]:</span><br><span class="line">            list_num16.append(num16)</span><br><span class="line">        <span class="keyword">for</span> index <span class="keyword">in</span> js_array[<span class="number">1</span>]:</span><br><span class="line">            list_index.append(index)</span><br><span class="line">        PyV8.JSUnlocker()</span><br><span class="line">        ctx.leave()</span><br><span class="line">        PyV8.JSEngine.collect()</span><br><span class="line">    <span class="keyword">return</span> [list_num16, list_index]</span><br></pre></td></tr></table></figure>
+<p>上面这段代码对js的处理我还没太看懂_(:з)∠)_，大概是在混淆后的js中添加了一部分代码获取到了要替换的十六进制数字，然后顺便搞定了自定义字体替换。</p>
+<p>再次给大神们笔芯！♥</p>
+<p>组装好所有的代码之后，再跑爬虫时，终于能work了！</p>
+<hr>
+<h2 id="遗留问题"><a href="#遗留问题" class="headerlink" title="遗留问题"></a>遗留问题</h2><p>在本系列的最开头就说过这只爬虫仍然是一只有缺陷的虫子，主要残疾是由汽车之家的用户验证机制导致的。频繁访问多个口碑页面之后，服务器会重定向到一个用户验证页面，在浏览器打开这个页面时，会被要求输入验证码，有的时候是拼图形式，有的时候是按顺序戳汉字形式。</p>
+<p>实在是没有精力再继续研究这玩意儿了，所以在实际跑爬虫的时候，基本上只能算是半自动，每次爬到被墙的时候，就要手动戳开浏览器输个验证码什么的_(:з)∠)_</p>
+<p>唉，到底还是缺陷儿。</p>
+<hr>
+<h2 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h2><p>终于，爬虫难产之旅系列到这里就结束啦。虽然最终产物仍然不够完美（还应该更好的，到底还是被畏难心理打败了）。复盘一下整个过程，虽然还遗留了不少疑惑，但比之前又get了很多。剩下的坑，等哪天搞定了心理建设再继续吧~</p>
+<p>代码请戳 → <a target="_blank" rel="noopener" href="https://github.com/JaneLdq/autohome-spider.git">autohome-spider</a><br>爬虫系列:</p>
+<ul>
+<li><a href="/2018/04/08/autohome-spider-1/" title="[一只爬虫的难产之旅（一）]">[一只爬虫的难产之旅（一）]</a></li>
+<li><a href="/2018/04/11/autohome-spider-2/" title="[一只爬虫的难产之旅（二）]">[一只爬虫的难产之旅（二）]</a>
+</li>
+</ul>
+<hr>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/32087297">汽车之家字体反爬破解实践</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/21721472">Glyph（字形）和 font（字型）有什么区别和联系</a></li>
+<li><a target="_blank" rel="noopener" href="https://my.oschina.net/u/854530/blog/853808">PyV8安装记录</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E7%88%AC%E8%99%AB/" rel="tag"># 爬虫</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/11/autohome-spider-2/" rel="next" title="一只爬虫的难产之旅（二）">
+                <i class="fa fa-chevron-left"></i> 一只爬虫的难产之旅（二）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/02/read-the-razors-edge/" rel="prev" title="生活到底是为了什么">
+                生活到底是为了什么 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#CSS%E8%87%AA%E5%AE%9A%E4%B9%89%E5%AD%97%E4%BD%93"><span class="nav-number">1.</span> <span class="nav-text">CSS自定义字体</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8PyV8%E8%BF%90%E8%A1%8Cjs"><span class="nav-number">2.</span> <span class="nav-text">用PyV8运行js</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85PyV8"><span class="nav-number">2.1.</span> <span class="nav-text">安装PyV8</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8PyV8"><span class="nav-number">2.2.</span> <span class="nav-text">使用PyV8</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%81%97%E7%95%99%E9%97%AE%E9%A2%98"><span class="nav-number">3.</span> <span class="nav-text">遗留问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E6%9D%9F%E8%AF%AD"><span class="nav-number">4.</span> <span class="nav-text">结束语</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

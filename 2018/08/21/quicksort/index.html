@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="排序," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="上一篇笔记里提到了快速排序，顺便翻了翻书复习了一遍，关于算法的实现和优化其实有不少需要留意的细节，写篇笔记巩固一下。 快速排序这个名字也是非常直白了，它的平均运行时间为O(NlogN)，当然了，最坏的情况也可能达到O(N^2)，不过使用一些小技巧就可以极大避免这种极端情况的出现，比如上一篇笔记里提到的“洗牌”。 快速排序本质上属于一种分治的递归算法，将数组S排序的基本算法由以下几步组成：  如果S">
+<meta property="og:type" content="article">
+<meta property="og:title" content="快速排序避坑指南">
+<meta property="og:url" content="http://liaodanqi.xyz/2018/08/21/quicksort/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="上一篇笔记里提到了快速排序，顺便翻了翻书复习了一遍，关于算法的实现和优化其实有不少需要留意的细节，写篇笔记巩固一下。 快速排序这个名字也是非常直白了，它的平均运行时间为O(NlogN)，当然了，最坏的情况也可能达到O(N^2)，不过使用一些小技巧就可以极大避免这种极端情况的出现，比如上一篇笔记里提到的“洗牌”。 快速排序本质上属于一种分治的递归算法，将数组S排序的基本算法由以下几步组成：  如果S">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-08-21T02:21:21.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.557Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="排序">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2018/08/21/quicksort/"/>
+
+
+
+
+
+  <title>快速排序避坑指南 | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2018/08/21/quicksort/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">快速排序避坑指南</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-21T10:21:21+08:00">
+                2018-08-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index">
+                    <span itemprop="name">算法</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>上一篇笔记里提到了快速排序，顺便翻了翻书复习了一遍，关于算法的实现和优化其实有不少需要留意的细节，写篇笔记巩固一下。</p>
+<p>快速排序这个名字也是非常直白了，它的平均运行时间为<strong>O(NlogN)</strong>，当然了，最坏的情况也可能达到<strong>O(N^2)</strong>，不过使用一些小技巧就可以极大避免这种极端情况的出现，比如上一篇笔记里提到的“洗牌”。</p>
+<p>快速排序本质上属于一种分治的递归算法，将数组<code>S</code>排序的基本算法由以下几步组成：</p>
+<ol>
+<li>如果<code>S</code>中元素个数是0或1，返回；</li>
+<li>取<code>S</code>中任一元素<code>v</code>作为<code>pivot</code>；</li>
+<li>将<code>S</code>中除<code>v</code>以外的元素划分为两个不相交集合：大于等于v(<code>S1</code>)和小于等于v的(<code>S2</code>)；</li>
+<li>分别<code>S1</code>和<code>S2</code>进行快速排序得到<code>S1&#39;</code>，<code>S2&#39;</code>，返回<code>S1&#39;</code>接上<code>v</code>接上<code>S2&#39;</code>。</li>
+</ol>
+<p>看起来很简单，实现也不难，但是很有可能一不小心就导致算法出错或者性能很差哦。下面我们就来看看有哪些需要注意的地方吧～</p>
+<span id="more"></span>
+<hr>
+<h1 id="Pivot怎么选？"><a href="#Pivot怎么选？" class="headerlink" title="Pivot怎么选？"></a>Pivot怎么选？</h1><p>虽然上面的说法是取任一元素作为<code>pivot</code>，这样做虽然能最终达到排序的目标，但实际上<code>pivot</code>的选择会对算法的性能产生不小的影响，也是一项技术活哦。<br>常见的选择可能有如下几种：</p>
+<ul>
+<li><p><strong>将第一个元素作为pivot</strong><br>如果输入数组是随机的，那么总是选第一个是可以接受的。然而如果数组是预排序的或是反序的，那么这样选择<code>pivot</code>就会产生一个非常差的分割，而且这糟糕的情况会发生在所有递归中。所以，<strong>一定不要这样做！</strong></p>
+</li>
+<li><p><strong>随机选取pivot</strong><br>随机选取pivot是一种非常安全的策略，不过由于生成随机数的开销也比较大，也减少不了算法其余部分的平均运行时间。</p>
+</li>
+<li><p><strong>三数中值分割法</strong> ★<br>pivot最好的选择是数组的中值，但是要找到中值本身就会减慢排序的速度，可以通过随机选取三个元素取它们的中值作为数组中值的估计值。考虑到随性并没有太大的帮助，一般的做法是<strong>选择数组最左端，最右端和中间位置上的三个元素作为<code>pivot</code></strong>。</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> &lt;T extends Comparable&lt;? <span class="keyword">super</span> T&gt;&gt; <span class="function">T <span class="title">findPivot</span><span class="params">(T[] arr, <span class="keyword">int</span> lo, <span class="keyword">int</span> hi)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> mid = (lo + hi) / <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">if</span> (arr[mid].compareTo(arr[lo]) &lt; <span class="number">0</span>)</span><br><span class="line">        Util.swap(arr, lo, mid);</span><br><span class="line">    <span class="keyword">if</span> (arr[hi].compareTo(arr[lo]) &lt; <span class="number">0</span>)</span><br><span class="line">        Util.swap(arr, lo, hi);</span><br><span class="line">    <span class="keyword">if</span> (arr[hi].compareTo(arr[mid]) &lt; <span class="number">0</span>)</span><br><span class="line">        Util.swap(arr, mid, hi);</span><br><span class="line">    <span class="comment">// 将倒数第二个元素与pivot替换，因为经过以上比较，arr[hi]一定大于枢纽元，arr[lo]一定小于pivot</span></span><br><span class="line">    Util.swap(arr, mid, hi-<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">return</span> arr[hi-<span class="number">1</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意上面这段代码，其实还做了一小步优化。三个元素经过比较和交换后，<code>arr[lo]</code>已经是小于<code>pivot</code>的元素，<code>arr[hi]</code>已经是大于<code>pivot</code>的元素，对于这一轮快速排序，它们已经在正确的分割里了，而且<code>pivot</code>也被交换到了<code>arr[hi-1]</code>，后续只需要对<code>[lo+1, hi-2]</code>这个区间里的元素进行分割。</p>
+<hr>
+<h1 id="分割策略如何定？"><a href="#分割策略如何定？" class="headerlink" title="分割策略如何定？"></a>分割策略如何定？</h1><p>分割是一种很容易出错或导致低效的操作，其实主要就是边界情况的考虑。在快速排序中一种需要谨慎考虑的情况就是<strong>如何处理与pivot相等的元素</strong>。（这个我在自己实现的时候深有体会啊，一不留神就掉坑里了…）</p>
+<p>首先，无论我们如何处理相等的元素，一般第一步都是<strong>把pivot与数组最后的元素进行交换，把pivot与要进行分割的数据段隔离开</strong>。</p>
+<p>我们先讨论数组中不包含相等元素的情况：<br>用两个指针<code>i</code>, <code>j</code>分别从第0个元素和第n-2个元素向中间移动，当<code>i &lt; j</code>时，将<code>i</code>右移，移过那些小于<code>pivot</code>的元素，将<code>j</code>左移，移过大于<code>pivot</code>的元素。当<code>i</code>和<code>j</code>停止时，如果<code>i &lt; j</code>则将这两个元素互换。如此直到<code>i</code>和<code>j</code>交错。</p>
+<p>最后一步将<code>pivot</code>与<code>i</code>所指的元素交换。（这里稍微分析以下就可以确定最终i停下的位置一定是大于<code>pivot</code>的）</p>
+<p>下面考虑如何处理相等的情况，问题关键在于遇到与<code>pivot</code>相等的元素时，<code>i</code>和<code>j</code>是否停止？<br>有如下三种可能：</p>
+<ol>
+<li><strong><code>i</code>和<code>j</code>都停下</strong>★ ：如果数组中元素全部相同，那么这会导致相等的元素要进行很多次交换。但是它的好处在于i和j将在中间交叉，这种分割将建立两个几乎相等的数组。</li>
+<li><strong><code>i</code>和<code>j</code>只有一个停下</strong>：这会导致分割非常不均衡，因为相等的元素都会被划分到一边。</li>
+<li><strong><code>i</code>和<code>j</code>都不停下</strong>：如果都不停下，就要考虑<code>i</code>和<code>j</code>越界的情况，而且实现的时候要精确定位i最终到过的位置与<code>pivot</code>进行交换。这个判断由于要考虑越界的情况，会相对复杂。而且产生的分割不平衡。在所有元素都相同的情况下，时间复杂度为O(N^2)。</li>
+</ol>
+<p>对比以上三种情况，相比于得到两个不平衡子数组，我们宁愿多进行几次交换获得相对平衡的分割。所以我们选择<strong><code>i</code>和<code>j</code>都停下</strong>这种策略。</p>
+<hr>
+<h1 id="小数组怎么处理？"><a href="#小数组怎么处理？" class="headerlink" title="小数组怎么处理？"></a>小数组怎么处理？</h1><p>对于小数组，快速排序的效果不如插入排序。而且快速排序作为递归算法，对小数组进行排序是无可避免的。<br>通常的解决办法是对于小数组不使用递归的快速排序，而选择比如插入排序这样对小数组有效的排序算法。<br>那么如何界定小数组呢？<strong>一般选择5-20的范围，10就不错</strong>。<br>通过对小数组单独处理，还能避免在进行三数中值比较时出现只有一到两个元素的情况。（亲测这也是个坑啊…如果不处理小数组，那么取出来的<code>pivot</code>可能位于第0或1的位置，一不小心就越界了…）</p>
+<hr>
+<h1 id="快速排序的实现"><a href="#快速排序的实现" class="headerlink" title="快速排序的实现"></a>快速排序的实现</h1><p>综上所述，最终实现的快速排序代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">QuickSort</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> N = <span class="number">10</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T extends Comparable&lt;? <span class="keyword">super</span> T&gt;&gt; <span class="function"><span class="keyword">void</span> <span class="title">sort</span><span class="params">(T[] arr)</span> </span>&#123;</span><br><span class="line">        quicksort(arr, <span class="number">0</span>, arr.length-<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> &lt;T extends Comparable&lt;? <span class="keyword">super</span> T&gt;&gt; <span class="function"><span class="keyword">void</span> <span class="title">quicksort</span><span class="params">(T[] arr, <span class="keyword">int</span> lo, <span class="keyword">int</span> hi)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 对大数组使用快速排序</span></span><br><span class="line">        <span class="keyword">if</span> (hi - lo &gt;= N) &#123;</span><br><span class="line">            <span class="keyword">if</span> (lo &lt; hi) &#123;</span><br><span class="line">                T pivot = findPivot(arr, lo, hi);</span><br><span class="line">                <span class="comment">// 这里i和j分别初始化为lo和hi-1，如前所述lo和hi-1的位置上已经是正确划分的值</span></span><br><span class="line">                <span class="comment">// 下面循环里的[++i]和[++j]在取值之前，先自加自减，相当于从lo+1和hi-2的位置开始比较</span></span><br><span class="line">                <span class="comment">// 这里还有一点需要注意的，如果不区别对待小数组，得到的j的值有可能就是0，这时[--j]就会报数组越界啦</span></span><br><span class="line">                <span class="keyword">int</span> i = lo, j = hi-<span class="number">1</span>;</span><br><span class="line">                <span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">                    <span class="comment">// </span></span><br><span class="line">                    <span class="keyword">while</span> (arr[++i].compareTo(pivot) &lt; <span class="number">0</span>) &#123;&#125;</span><br><span class="line">                    <span class="keyword">while</span> (arr[--j].compareTo(pivot) &gt; <span class="number">0</span>) &#123;&#125;</span><br><span class="line">                    <span class="keyword">if</span> (i &gt; j)</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                    Util.swap(arr, i, j);</span><br><span class="line">                &#125;</span><br><span class="line">                Util.swap(arr, i, hi-<span class="number">1</span>);</span><br><span class="line">                quicksort(arr, lo, i-<span class="number">1</span>);</span><br><span class="line">                quicksort(arr, i+<span class="number">1</span>, hi);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 对小数组使用插入排序</span></span><br><span class="line">            InsertionSort.sort(arr);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> &lt;T extends Comparable&lt;? <span class="keyword">super</span> T&gt;&gt; <span class="function">T <span class="title">findPivot</span><span class="params">(T[] arr, <span class="keyword">int</span> lo, <span class="keyword">int</span> hi)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> mid = (lo + hi) / <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">if</span> (arr[mid].compareTo(arr[lo]) &lt; <span class="number">0</span>)</span><br><span class="line">            Util.swap(arr, lo, mid);</span><br><span class="line">        <span class="keyword">if</span> (arr[hi].compareTo(arr[lo]) &lt; <span class="number">0</span>)</span><br><span class="line">            Util.swap(arr, lo, hi);</span><br><span class="line">        <span class="keyword">if</span> (arr[hi].compareTo(arr[mid]) &lt; <span class="number">0</span>)</span><br><span class="line">            Util.swap(arr, mid, hi);</span><br><span class="line">        <span class="comment">// 将倒数第二个元素与枢纽元替换，因为经过以上比较，arr[hi]一定大于枢纽元，arr[lo]一定小于枢纽元</span></span><br><span class="line">        Util.swap(arr, mid, hi-<span class="number">1</span>);</span><br><span class="line">        <span class="keyword">return</span> arr[hi-<span class="number">1</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>思考一下：如果把上面的16-24行换成下面这几行会发生什么？</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> i = lo + <span class="number">1</span>, j = hi;</span><br><span class="line"><span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">    <span class="keyword">while</span>(arr[i].compareTo(pivot) &lt; <span class="number">0</span>) i++;</span><br><span class="line">    <span class="keyword">while</span>(arr[j].compareTo(pivot) &gt; <span class="number">0</span>) j--;</span><br><span class="line">    <span class="keyword">if</span> (i &lt; j) </span><br><span class="line">        Util.swap(arr, i, j);</span><br><span class="line">    <span class="keyword">else</span> </span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果这样写，当<code>arr[i]=arr[j]=pivot</code>的时候，就会死循环啦，一定要小心哦～（别问我为什么知道的，凭实力翻车〒▽〒</p>
+<p>事实证明前辈们总结出来的经验和小技巧小细节都是非常容易出错的地方，我自己实现的时候差不多把这些坑都踩了个遍，好了，我去面壁思过了。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E6%8E%92%E5%BA%8F/" rel="tag"># 排序</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/18/kth-largest-in-an-array/" rel="next" title="Kth Largest Element in an Array">
+                <i class="fa fa-chevron-left"></i> Kth Largest Element in an Array
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/08/31/hystrix-intro/" rel="prev" title="Hystrix简单介绍">
+                Hystrix简单介绍 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Pivot%E6%80%8E%E4%B9%88%E9%80%89%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">Pivot怎么选？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%86%E5%89%B2%E7%AD%96%E7%95%A5%E5%A6%82%E4%BD%95%E5%AE%9A%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">分割策略如何定？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B0%8F%E6%95%B0%E7%BB%84%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86%EF%BC%9F"><span class="nav-number">3.</span> <span class="nav-text">小数组怎么处理？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">4.</span> <span class="nav-text">快速排序的实现</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

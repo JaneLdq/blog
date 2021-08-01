@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="字符串搜索,KMP," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本期日常：上午去上海WAIC溜达了一圈，惊叹于谷歌艺术计划里AI与艺术品擦出的火花。逛到Art Camera展区真的心生感激，任何藏品不可避免的自然老化过程，即使再如何减缓也无法彻底阻止，尽可能用技术高保真存留艺术品的原貌，也许是我们能为这些从古至今遗留的珍宝们做的最好的事情。  还是回到本篇笔记主题——字符串搜索来。相比于艺术品欣赏这等阳春白雪，字符串搜索可谓大家日常使用最频繁的操作之一了。 稍">
+<meta property="og:type" content="article">
+<meta property="og:title" content="字符串搜索玩耍指南（一）- KMP算法">
+<meta property="og:url" content="http://liaodanqi.xyz/2018/09/19/kmp/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="本期日常：上午去上海WAIC溜达了一圈，惊叹于谷歌艺术计划里AI与艺术品擦出的火花。逛到Art Camera展区真的心生感激，任何藏品不可避免的自然老化过程，即使再如何减缓也无法彻底阻止，尽可能用技术高保真存留艺术品的原貌，也许是我们能为这些从古至今遗留的珍宝们做的最好的事情。  还是回到本篇笔记主题——字符串搜索来。相比于艺术品欣赏这等阳春白雪，字符串搜索可谓大家日常使用最频繁的操作之一了。 稍">
+<meta property="og:locale">
+<meta property="og:image" content="http://static.zybuluo.com/JaneL/7ls0euxfs7nd5t9vgnhjratj/KMP-DFA.png">
+<meta property="article:published_time" content="2018-09-19T14:24:45.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.549Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="字符串搜索">
+<meta property="article:tag" content="KMP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://static.zybuluo.com/JaneL/7ls0euxfs7nd5t9vgnhjratj/KMP-DFA.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2018/09/19/kmp/"/>
+
+
+
+
+
+  <title>字符串搜索玩耍指南（一）- KMP算法 | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2018/09/19/kmp/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">字符串搜索玩耍指南（一）- KMP算法</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-19T22:24:45+08:00">
+                2018-09-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index">
+                    <span itemprop="name">算法</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本期日常：<br>上午去上海WAIC溜达了一圈，惊叹于谷歌艺术计划里AI与艺术品擦出的火花。逛到Art Camera展区真的心生感激，任何藏品不可避免的自然老化过程，即使再如何减缓也无法彻底阻止，尽可能用技术高保真存留艺术品的原貌，也许是我们能为这些从古至今遗留的珍宝们做的最好的事情。</p>
+<hr>
+<p>还是回到本篇笔记主题——字符串搜索来。<br>相比于艺术品欣赏这等阳春白雪，字符串搜索可谓大家日常使用最频繁的操作之一了。</p>
+<p>稍微正式的定义一下字符串搜索：<strong>给定一串长度为N的文本（text）和一个长度为M的字符串（pattern），找到这个字符串在文本中出现的位置</strong>。</p>
+<p>字符串搜索的几个算法都挺经典的，比如KMP，至少我在真正接触之前就久闻大名了。接下来，我们就逐个击破～</p>
+<span id="more"></span>
+<hr>
+<h1 id="热身运动-Brute-Force"><a href="#热身运动-Brute-Force" class="headerlink" title="热身运动 Brute-Force"></a>热身运动 Brute-Force</h1><p>对于任何问题，一般都有一个最直观的最容易想到的方法。很多时候，你可能都不屑于采取暴力解决的方式，但是对于小白玩家而言，先使用原始的方法得到一些进展，之后再进一步调优/学习高阶玩法，不然很容易毫无头绪，反而乱了阵脚。脚踏实地，才是真理。（摸摸小肚子，一口吃不成胖子，肉都是日积月累长起来的啊～）</p>
+<p>暴力解法，话不多说，直接上代码：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BruteForce</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">search</span><span class="params">(String txt, String pattern)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> n = txt.length();</span><br><span class="line">        <span class="keyword">int</span> m = pattern.length();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt;= n - m; i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; m; j++) </span><br><span class="line">                <span class="keyword">if</span> (text.charAt(i + j) != pattern.charAt(j))</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">if</span> (j == m) <span class="keyword">return</span> i; <span class="comment">// found</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> n; <span class="comment">// not found</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>不难看出，暴力解法在最差的情况下时间复杂度为O(MN)，但在绝大多数实际应用场景中，内循环的比较基本上只要进行一次，这样的话，时间复杂度近似为O(N)，要比理论最差情况好很多。</p>
+<p>当然，在某些场景下，我们可能会遇到诸如在“AAAAAAAAB”中搜索“AAAAB”这样的字符串，针对这种情况，暴力解法就不够优秀了。</p>
+<hr>
+<h1 id="进阶玩法之KMP"><a href="#进阶玩法之KMP" class="headerlink" title="进阶玩法之KMP"></a>进阶玩法之KMP</h1><p>算法的命名一般都是用其发明者的名字，KMP分别代表<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Donald_Knuth">D.E.Knuth</a>, <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/James_H._Morris">J.H.Morris</a>和<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Vaughan_Pratt">V.R.Pratt</a>三位发明者。</p>
+<p>要了解KMP的主要思想，我们先来看看暴力解法之所以不够快的原因。<br>下面是暴力解法的另一种实现，更直观的表示了匹配失败后文本指针<code>i</code>和字符指针<code>j</code>的回溯。<br><em>注：这里用<code>i</code>表示文本指针(text pointer)，<code>j</code>表示字符指针(pattern pointer)。</em><br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BruteForce</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">search</span><span class="params">(String txt, String pattern)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> n = txt.length();</span><br><span class="line">        <span class="keyword">int</span> m = pattern.length();</span><br><span class="line">        <span class="keyword">int</span> i, j;</span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>, j = <span class="number">0</span>; i &lt; n &amp;&amp; j &lt; m; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (text.charAt(i) == pattern.charAt(j)) j++;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                i -= j; <span class="comment">// explicit backup</span></span><br><span class="line">                j = <span class="number">0</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (j == m) <span class="keyword">return</span> i - m; <span class="comment">// found</span></span><br><span class="line">        <span class="keyword">return</span> n; <span class="comment">// not found</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>如下例中所示状态，在内部循环<code>j = 3</code>的位置进行比较时，检测到<strong>不匹配(mismatch)</strong>，因为<code>txt[5] = &#39;B&#39;, pattern[3] = &#39;A&#39;</code>，所以<code>i</code>回退<code>j - 1</code>个位置，进入下一轮匹配。<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">0 1 2 3 4 5 6 7 8 9</span><br><span class="line">A A B A A B A A B A     &lt;= txt</span><br><span class="line">      ^   ^ </span><br><span class="line">   i-j+1  i    </span><br><span class="line">- - B A A A             &lt;= pattern</span><br><span class="line">          ^</span><br><span class="line">          j</span><br><span class="line">    0 1 2 3</span><br></pre></td></tr></table></figure><br>其实，当我们从<code>i - j + 1</code>重新开始匹配时，对于这段文本中<code>[3,5]</code>的这部分字符，在前一轮循环中已经遍历过了，这部分的信息是已知的，我们已经知道<code>txt[3, 5] = &quot;AAB&quot;</code>，没有匹配的可能，<code>i</code>其实不用从<code>i - j + 1</code>开始，因为<code>txt[i] = pattern[0] = ‘B&#39;</code>， 可以将<code>i</code>增 1，然后设<code>j = 1</code>，从 pattern 的第二个字符开始比较。</p>
+<p>而这恰恰就是KMP算法的基本思想：<strong>利用已知的这部分信息来避免不必要的文本回溯</strong>。<br>通过分析几种 mismatch 的情况，我们将看到，针对每种情况，都<strong>可以利用已知信息判断该从哪儿重新开始</strong>，并且这个重置操作可以通过重置<code>j</code>的值来实现，而不需要回溯<code>i</code>, 这就保证了<code>i</code>永远都是前进的（正所谓开弓没有回头箭呀～）。</p>
+<p>如何判断从哪儿重新开始呢？<br>这个问题的答案可以说是KMP算法的精髓所在：我们可以提前确定遇到每种情况如何重新开始，因为，这<strong>完全是由且仅由搜索的这个字符串（pattern）决定的</strong>。<br>稍微思考一下就能明白，当匹配失败在<code>i</code>处发生时，<code>i</code>前面的<code>j - 1</code>个字符就是字符串(pattern)的前<code>j - 1</code>个字符（否则在更早之前就应该匹配失败了～）。</p>
+<hr>
+<h2 id="使用DFA来表示跳转规则"><a href="#使用DFA来表示跳转规则" class="headerlink" title="使用DFA来表示跳转规则"></a>使用DFA来表示跳转规则</h2><p>现在我们知道，只要有了给定的字符串，我们就可以构建出进行匹配时，每种情况下指针的跳转规则。KMP算法引入了DFA(Deterministic finite-state automation)来表示这些规则。</p>
+<p>举个例子来说，给定字符串<code>ABABAC</code>，我们可以构建如下图所示DFA：<br><img src="http://static.zybuluo.com/JaneL/7ls0euxfs7nd5t9vgnhjratj/KMP-DFA.png" alt="KMP-DFA Example"><br>给定字符串长度为M，则DFA一共有M+1个状态，起始状态为0，结束状态为M。<br>上图中黑色字符前进方向的状态转换表示一次匹配成功(match)转换，红色字符反向的状态转换表示一次匹配失败(mismatch)转换。</p>
+<p>手工画DFA很简单，怎么让代码构建出一个字符串的DFA？用什么数据结构来保存这个DFA？</p>
+<h3 id="如何在代码中表示DFA？"><a href="#如何在代码中表示DFA？" class="headerlink" title="如何在代码中表示DFA？"></a>如何在代码中表示DFA？</h3><p>首先回答第二个问题，我们用二维数组来表示一个DFA：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// R表示字符集中所有字符的个数，这里选用Extended-ASCII字符集，所以值为256</span></span><br><span class="line"><span class="keyword">int</span> R = <span class="number">256</span>; </span><br><span class="line"><span class="comment">// M表示pattern的长度，也是所有状态总数</span></span><br><span class="line"><span class="keyword">int</span>[][] dfa = <span class="keyword">new</span> <span class="keyword">int</span>[R][M];</span><br></pre></td></tr></table></figure><br><em>虽然我们上图所示DFA只包含了pattern中的字符，但不表示文本中不会出现其他字符，只是在这里省略了，显而易见，在任何状态下遇到字符集里其他字符都会跳转到状态0。</em></p>
+<p>对于某个字符<code>c</code>，<code>dfa[c][j]</code>就表示当我们在状态<code>j</code>时遇到了字符<code>c</code>，那么就跳转到<code>dfa[c][j]</code>对应的状态。</p>
+<p>当我们进行字符串搜索时，对于文本指针<code>i</code>，<code>dfa[text.charAt(i)][j]</code>表示当我们处于状态<code>j</code>时遇到了字符<code>text.chartAt(i)</code>该跳转到的状态<code>j&#39;</code>，完成跳转之后，i自增为<code>i&#39;</code>，指向下一个字符，然后跳转到<code>dfa[text.charAt(i&#39;)][j&#39;]</code>，i自增…直到跳转到状态M(match)或者遍历完整个文本(mismatch)。</p>
+<p>沿用上例，下面是字符串<code>ABABAC</code>对应的DFA数组：</p>
+<table>
+<thead>
+<tr>
+<th>char\state</th>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pattern.charAt(j)</td>
+<td>A</td>
+<td>B</td>
+<td>A</td>
+<td>B</td>
+<td>A</td>
+<td>C</td>
+</tr>
+<tr>
+<td>A</td>
+<td><strong>1</strong></td>
+<td><em>1</em></td>
+<td><strong>3</strong></td>
+<td><em>1</em></td>
+<td><strong>5</strong></td>
+<td><em>1</em></td>
+</tr>
+<tr>
+<td>B</td>
+<td><em>0</em></td>
+<td><strong>2</strong></td>
+<td><em>0</em></td>
+<td><strong>4</strong></td>
+<td><em>0</em></td>
+<td><em>4</em></td>
+</tr>
+<tr>
+<td>C</td>
+<td><em>0</em></td>
+<td><em>0</em></td>
+<td><em>0</em></td>
+<td><em>0</em></td>
+<td><em>0</em></td>
+<td><strong>6</strong></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="如何构建DFA？"><a href="#如何构建DFA？" class="headerlink" title="如何构建DFA？"></a>如何构建DFA？</h3><p>现在，只剩下一步工作我们就可以使用KMP来进行字符串搜索了，也是最关键的一步，<strong>构建DFA</strong>。</p>
+<p>字符串匹配过程中DFA的状态转移分为两种情况，在当前状态<code>j</code>下：</p>
+<ul>
+<li>字符匹配成功转移</li>
+<li>字符匹配失败转移</li>
+</ul>
+<p>还是从简单的情况入手，不难得出，字符匹配成功时的转移很简单，就是从当前状态<code>j</code>转移到下一个状态<code>j + 1</code>，也就是<code>dfa[pattern.charAt(j)][j] = j + 1</code>。</p>
+<p>那么，当我们匹配失败时，应该跳转回哪个状态呢？<br>上文也提到了，当我们在<code>pattern.charAt(j)</code>发生匹配失败时，失败前的<code>j - 1</code>个字符就是<code>pattern[0, j - 1]</code>，是已知的；而又因为匹配失败，需要向前挪一步，需要重新比较的部分就变成了<code>pattern[1, j - 1]</code>。因此，当我们构建在状态<code>j</code>时的跳转时，只需要用到之前已经构建好的从状态<code>0</code>到状态<code>j-1</code>这部分DFA的信息。所以，只要有了初始值，之后就是个动态规划问题了。</p>
+<p>最后一个细节，重置状态的值X的如何更新。显然，X的初始值<code>X0 = 0</code>且在状态<code>j</code>时<code>X &lt; j</code>；之后每一步<code>X = dfa[patter.charAt(j)][X]</code>。<br><em>（这一步我还想了好一会儿，大概理解了，不知道能不能解释清楚：在重置<code>j</code>的时候，虽然<code>pattern.charAt(j)</code>匹配失败了，但是前<code>j - 1</code>步的匹配已经让<code>X0</code>实现了<code>k</code>步转移来到了当前的<code>X</code>，所以对于<code>j + 1</code>而言，在<code>X</code>状态上又匹配了一次<code>pattern.charAt(j)</code>）</em></p>
+<p>终于，我们总结一下构建DFA的几个步骤：<br>对于每个状态<code>j</code>，作如下操作：</p>
+<ol>
+<li>把<code>dfa[][X]</code>拷贝到<code>dfa[][j]</code>（这是在匹配失败时进行的跳转）</li>
+<li>把<code>dfa[pattern.charAt(j)][j]</code>设为<code>j + 1</code></li>
+<li>更新<code>X = dfa[pattern.charAt(j)][X]</code></li>
+</ol>
+<hr>
+<h2 id="KMP的实现"><a href="#KMP的实现" class="headerlink" title="KMP的实现"></a>KMP的实现</h2><p>于是，在长篇大论解释了一番KMP算法的思路后，我们会看到KMP的实现代码是如此的简洁：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">KMP</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Extended-ASCII字符集</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> R = <span class="number">256</span>;</span><br><span class="line">    <span class="comment">// pattern的长度</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> M;</span><br><span class="line">    <span class="comment">// DFA</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span>[][] dfa;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">KMP</span><span class="params">(String pattern)</span> </span>&#123;</span><br><span class="line">        M = pattern.length();</span><br><span class="line">        dfa = <span class="keyword">new</span> <span class="keyword">int</span>[R][M];</span><br><span class="line">        <span class="comment">// 初始状态X，只有匹配pattern的第一个字符成功是跳转到状态1</span></span><br><span class="line">        <span class="comment">// 遇到其他字符均为0</span></span><br><span class="line">        dfa[pattern.charAt(<span class="number">0</span>)][<span class="number">0</span>] = <span class="number">1</span>;</span><br><span class="line">        <span class="comment">// 开始愉快地进行动态规划，设X的初始值为0</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> X = <span class="number">0</span>, j = <span class="number">1</span>; j &lt; M; j++) &#123;</span><br><span class="line">            <span class="comment">// 匹配失败，回溯到X</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> c = <span class="number">0</span>; c &lt; R; c++) &#123;</span><br><span class="line">                dfa[c][j] = dfa[c][X];</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 匹配成功时，从j跳转到j+1</span></span><br><span class="line">            dfa[pattern.charAt(j)][j] = j + <span class="number">1</span>;</span><br><span class="line">            <span class="comment">// 对于j+1而言，X应该是从最初的X走了j-1时的状态</span></span><br><span class="line">            X = dfa[pattern.charAt(j)][X];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">search</span><span class="params">(String txt)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> i, j, n = txt.length();</span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>, j = <span class="number">0</span>; i &lt; n &amp;&amp; j &lt; M; i++) &#123;</span><br><span class="line">            j = dfa[txt.charAt(i)][j];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (j == M) <span class="keyword">return</span> i - M;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">return</span> n;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></p>
+<p>真的简洁！</p>
+<p>看代码也能很清晰的得出KMP的时间复杂度在O(M + N)，M为字符串的长度，N为文本长度。</p>
+<p>另外KMP中由于用到了字符集R，如果字符集很大，DFA的构建时间为O(MR)也是需要考虑到的。</p>
+<p>在真实的应用场景中，如果不是经常遇到具有重复特征的文本，Brute-force的表现并不差，KMP的优化并没有太大优势。不过KMP确实证明了字符串搜索问题具有线性时间的解。</p>
+<p>不过KMP不进行文本回溯的特点，在某些使用输入流的情况下会相对方便。否则，如果要进行文本回溯，就需要对输入流做缓存处理。</p>
+<hr>
+<p>没想到花了半个下午加整个晚上的时间才差不过梳理了一下KMP，不过又解决了一些疑问，还是很有收获啦。（尝试看了下《算法导论》里对KMP的解释，放弃了QAQ，还是更喜欢Robert Sedgewick老爷爷的话风～</p>
+<p>虽然KMP致力于避免文本回溯来提高性能，然而，今天根本还没来得及提起的Boyer-Moore算法反而是一个利用回溯大大提高了性能的算法，下次见。（莫名有点心疼KMP</p>
+<hr>
+<p>参考资料</p>
+<ul>
+<li><em>Algorithms, 4th Edition</em> by Robert Sedgewick and Kevin Wayne</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%90%9C%E7%B4%A2/" rel="tag"># 字符串搜索</a>
+          
+            <a href="/tags/KMP/" rel="tag"># KMP</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/10/git-merge-rebase/" rel="next" title="Git - Merging & Rebasing">
+                <i class="fa fa-chevron-left"></i> Git - Merging & Rebasing
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/08/boyer-moore/" rel="prev" title="字符串搜索玩耍指南（二）- Boyer-Moore算法">
+                字符串搜索玩耍指南（二）- Boyer-Moore算法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%83%AD%E8%BA%AB%E8%BF%90%E5%8A%A8-Brute-Force"><span class="nav-number">1.</span> <span class="nav-text">热身运动 Brute-Force</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%9B%E9%98%B6%E7%8E%A9%E6%B3%95%E4%B9%8BKMP"><span class="nav-number">2.</span> <span class="nav-text">进阶玩法之KMP</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8DFA%E6%9D%A5%E8%A1%A8%E7%A4%BA%E8%B7%B3%E8%BD%AC%E8%A7%84%E5%88%99"><span class="nav-number">2.1.</span> <span class="nav-text">使用DFA来表示跳转规则</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%9C%A8%E4%BB%A3%E7%A0%81%E4%B8%AD%E8%A1%A8%E7%A4%BADFA%EF%BC%9F"><span class="nav-number">2.1.1.</span> <span class="nav-text">如何在代码中表示DFA？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BADFA%EF%BC%9F"><span class="nav-number">2.1.2.</span> <span class="nav-text">如何构建DFA？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#KMP%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.2.</span> <span class="nav-text">KMP的实现</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

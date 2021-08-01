@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Java,JDBC," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本期日常：下雪啦。如果能窝在温暖的房间里，和家人朋友吃着火锅，聊着天，一起欣赏漫天飞舞的雪花，想想就觉得很美好呢。然而，此刻的我却只能孤独地在冷飕飕的房间里瑟瑟发抖，敲打着冰冷的键盘，流泪～（好啦，并没有(´･ω･&#96;)  上一篇笔记里，我们历经千辛万苦连上了数据库，接下来终于可以愉快地增删改查了～ 在JDBC中，有三类SQL语句：  Statement PreparedStatement Call">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JDBC二三事之Statement">
+<meta property="og:url" content="http://liaodanqi.xyz/2018/12/08/jdbc-statements/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="本期日常：下雪啦。如果能窝在温暖的房间里，和家人朋友吃着火锅，聊着天，一起欣赏漫天飞舞的雪花，想想就觉得很美好呢。然而，此刻的我却只能孤独地在冷飕飕的房间里瑟瑟发抖，敲打着冰冷的键盘，流泪～（好啦，并没有(´･ω･&#96;)  上一篇笔记里，我们历经千辛万苦连上了数据库，接下来终于可以愉快地增删改查了～ 在JDBC中，有三类SQL语句：  Statement PreparedStatement Call">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-12-08T06:03:07.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.548Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="JDBC">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2018/12/08/jdbc-statements/"/>
+
+
+
+
+
+  <title>JDBC二三事之Statement | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2018/12/08/jdbc-statements/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">JDBC二三事之Statement</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-08T14:03:07+08:00">
+                2018-12-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本期日常：下雪啦。如果能窝在温暖的房间里，和家人朋友吃着火锅，聊着天，一起欣赏漫天飞舞的雪花，想想就觉得很美好呢。<br>然而，此刻的我却只能孤独地在冷飕飕的房间里瑟瑟发抖，敲打着冰冷的键盘，流泪～（好啦，并没有(´･ω･`)</p>
+<hr>
+<p>上一篇笔记里，我们历经千辛万苦连上了数据库，接下来终于可以愉快地增删改查了～</p>
+<p>在JDBC中，有三类SQL语句：</p>
+<ul>
+<li><strong>Statement</strong></li>
+<li><strong>PreparedStatement</strong></li>
+<li><strong>CallableStatement</strong></li>
+</ul>
+<p>接下来，我们就来分别看看它们的用途吧~<br><span id="more"></span></p>
+<h1 id="使用Statement执行简单查询"><a href="#使用Statement执行简单查询" class="headerlink" title="使用Statement执行简单查询"></a>使用Statement执行简单查询</h1><p>Statement主要用于实现最最简单的不包含任何输入输出参数的SQL语句。<br>使用Statement执行简单查询的基本流程如下：</p>
+<ol>
+<li>使用Connection创建Statement</li>
+<li>定义SQL语句，调用Statement执行SQL语句</li>
+<li>处理结果ResultSet</li>
+</ol>
+<p>举个例子：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Connection conn = DBConnector.getDBConnection();</span><br><span class="line"><span class="keyword">try</span> (Statement stat = conn.createStatement()) &#123;</span><br><span class="line">    ResultSet rs = stat.executeQuery(<span class="string">&quot;SELECT title, id FROM books&quot;</span>);</span><br><span class="line">    <span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;#&quot;</span> + rs.getInt(<span class="number">2</span>) + <span class="string">&quot; &quot;</span> + rs.getString(<span class="string">&quot;title&quot;</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>值得注意的几点：</p>
+<ol>
+<li>使用ResultSet获取数据时如果采用index的方式，它是从1开始计数的！（作为一个让早已习惯从零开始的程序员表示这简直…反程序员啊/。\）如上例中，因为SQL语句中是按”title, id”的顺序读取的，所以这里rs.getInt(2)取的是第二列id；除此之外，也可以显式指明列名，如上例中rs.getString(“title”)的方式。<strong>使用index效率更高，使用列名代码可读性更好。</strong></li>
+<li>每个Statement实例使用之后要<strong>及时关闭释放资源</strong>，上例中使用的<code>try-with-resources</code>语句，在try语句块执行结束后会自动释放stat。更保险一点，也可以把Connection放在<code>try-with-resources</code>语句里。</li>
+</ol>
+<hr>
+<h1 id="使用PreparedStatement提升效率和安全指数"><a href="#使用PreparedStatement提升效率和安全指数" class="headerlink" title="使用PreparedStatement提升效率和安全指数"></a>使用PreparedStatement提升效率和安全指数</h1><p>PreparedStatement继承自Statement，它与Statement的不同之处在于，在创建PreparedStatement实例时就要指定SQL语句，这个语句会被立即传给DBMS编译，这样PreparedStatement实例包含的是一个预编译好的SQL语句，在后续执行时就可以直接运行，以提升查询效率。（而Statement实例是在每次执行时才传入SQL语句，然后每次都要先编译再运行。）</p>
+<p>PreparedStatment最常见的使用方式是结合查询参数使用，传入不同参数多次执行同一SQL语句，这在业务场景中也是非常常见的。</p>
+<p>举个非常简单的例子，某黑心出版商决定给旗下一部分书涨价，那么就可以通过如下代码操作：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">updateBookPrice</span><span class="params">(Map&lt;Integer, Double&gt; books)</span> <span class="keyword">throws</span> SQLException, IOException </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> (Connection conn = DBConnector.getDBConnection()) &#123;</span><br><span class="line">        String query = <span class="string">&quot;UPDATE books SET price = price + ? WHERE id = ?&quot;</span>;</span><br><span class="line">        PreparedStatement stat = conn.prepareStatement(query);</span><br><span class="line">        <span class="keyword">for</span> (Map.Entry&lt;Integer, Double&gt; e: books.entrySet()) &#123;</span><br><span class="line">            stat.setDouble(<span class="number">1</span>, e.getValue());</span><br><span class="line">            stat.setInt(<span class="number">2</span>, e.getKey());</span><br><span class="line">            stat.executeUpdate();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>这样呢，我们就可以使用一个PreparedStatement更新多本书的价格。</p>
+<p><strong>Note #1</strong>: <em>以前没少用直接拼接字符串的方式执行SQL查询，然而这样做不仅<strong>效率低</strong>，<strong>易出错</strong>，如果没有做好特殊字符的转义等防范措施很容易被人使用SQL注入恶意入侵，<strong>带来极大的安全风险</strong>。因此，在需要绑定参数的时候，一定要记得<strong>使用PreparedStatement</strong>哦～</em></p>
+<p><strong>NOTE #2</strong>: <em>PreparedStatement实例在创建它的Connection实例被关闭后就不可再使用了。不过，很多数据库会自动缓存PreparedStatement，如果一个相同的查询被Prepare两次，数据库会直接重用已编译好的查询策略。因此，多次调用prepareStatement也没有关系啦～</em></p>
+<p><strong>Note #3</strong>: <em>对于复杂的SQL查询，<strong>“If you can do it in SQL, don’t do it in Java.”</strong>。为什么要强调这一点，因为有时候会不想写复杂的SQL语句，而通过多次查询多个结果集后，在使用Java代码处理来得到最终结果。（Emmmm….我好像经常冒出这样的念头/。\）然而，这样做效率是十分低的，毕竟这是人家数据库调优存在的意义啊，放着不用他们会很伤心的～</em></p>
+<h1 id="使用CallableStatement调用带输入输出参数的存储过程"><a href="#使用CallableStatement调用带输入输出参数的存储过程" class="headerlink" title="使用CallableStatement调用带输入输出参数的存储过程"></a>使用CallableStatement调用带输入输出参数的存储过程</h1><p>对于一些复杂的包含了输入参数甚至输出参数的存储过程（stored procedures），简单的Statement和PreparedStatement就搞不定了，这时，我们就需要亮出第三类Statement——<strong>CallableStatement</strong>。看名字就知道它就是专门应对这类需求的。这里提一点，CallableStatment又是继承自PreparedStatement。可见这三类Statement在职责上是逐层增加的。</p>
+<p>举个简单的例子。首先我们在数据库中创建一个procedure备用（实在不想费脑子设定一个有意义的场景了，单纯为了举个🌰，将就看哈～）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">DELIMITER $$</span><br><span class="line">CREATE PROCEDURE get_book_publisher(IN book_id INT, OUT title VARCHAR(255), OUT publisher VARCHAR(255))</span><br><span class="line">BEGIN</span><br><span class="line">    SELECT books.title, publishers.name INTO title, publisher</span><br><span class="line">    FROM books, publishers</span><br><span class="line">    WHERE books.id = book_id AND books.publisher_id = publishers.id;</span><br><span class="line">END</span><br><span class="line">$$</span><br><span class="line">DELIMITER ;</span><br></pre></td></tr></table></figure>
+<p>在上面这个procedure中，我们定义了一个输入参数<code>book_id</code>，两个输出参数<code>title</code>和<code>publisher</code>。意思呢，就是输入书的ID，输出书名和出版商名称。<br>在Java中调用这个procedure的代码如下所示：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">getBookPublisherById</span><span class="params">(Connection conn, <span class="keyword">int</span> bookId)</span> <span class="keyword">throws</span> SQLException </span>&#123;</span><br><span class="line">    <span class="comment">// 类似与PreparedStatement，使用?作为参数占位符</span></span><br><span class="line">    String query = <span class="string">&quot;&#123;call get_book_publisher(?, ?, ?)&#125;&quot;</span>;</span><br><span class="line">    <span class="comment">// 调用prepareCall创建一个CallableStatement实例</span></span><br><span class="line">    <span class="keyword">try</span> (CallableStatement stat = conn.prepareCall(query)) &#123;</span><br><span class="line">        <span class="comment">// 设置输入参数</span></span><br><span class="line">        stat.setInt(<span class="number">1</span>, bookId);</span><br><span class="line">        <span class="comment">// 注册输出参数并指定类型</span></span><br><span class="line">        stat.registerOutParameter(<span class="number">2</span>, Types.VARCHAR);</span><br><span class="line">        stat.registerOutParameter(<span class="number">3</span>, Types.VARCHAR);</span><br><span class="line"></span><br><span class="line">        stat.executeUpdate();</span><br><span class="line">        <span class="comment">// 获取输出参数</span></span><br><span class="line">        String title = stat.getString(<span class="number">2</span>);</span><br><span class="line">        String publisher = stat.getString(<span class="number">3</span>);</span><br><span class="line">        <span class="keyword">return</span> title + <span class="string">&quot; - &quot;</span> + publisher;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h1 id="处理多个结果集"><a href="#处理多个结果集" class="headerlink" title="处理多个结果集"></a>处理多个结果集</h1><p>有的时候调用预定义的存储过程会有多个输出结果。（话说这种情况我还真的第一次尝试）<br>这种情况要怎么处理呢？依旧举例来说。我们在MySQL数据库中再创建一个简单的procedure：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">DELIMITER $$</span><br><span class="line">CREATE PROCEDURE get_books_publishers()</span><br><span class="line">BEGIN</span><br><span class="line">    SELECT * FROM books;</span><br><span class="line">    SELECT * FROM publishers;</span><br><span class="line">END</span><br><span class="line">$$</span><br><span class="line">DELIMITER ;</span><br></pre></td></tr></table></figure><br>为了遍历所返回的全部结果集，我们可以这样做：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getBooksPublisher</span><span class="params">(Connection conn)</span> <span class="keyword">throws</span> SQLException</span>&#123;</span><br><span class="line">    String query = <span class="string">&quot;&#123;call get_books_publishers()&#125;&quot;</span>;</span><br><span class="line">    <span class="keyword">try</span> (Statement stat = conn.createStatement()) &#123;</span><br><span class="line">        <span class="comment">// 第一步：调用execute执行查询，如果返回是个ResultSet则为true，如果是Update count或无结果集则为false</span></span><br><span class="line">        <span class="keyword">boolean</span> isResult = stat.execute(query);</span><br><span class="line">        <span class="keyword">boolean</span> done = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">while</span> (!done) &#123;</span><br><span class="line">            <span class="keyword">if</span> (isResult) &#123;</span><br><span class="line">                <span class="comment">// 拿到第一个结果集或者数值</span></span><br><span class="line">                ResultSet rs = stat.getResultSet();</span><br><span class="line">                <span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">                    System.out.println(rs.getInt(<span class="number">1</span>) + <span class="string">&quot; &quot;</span> + rs.getString(<span class="number">2</span>));</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">int</span> updateCount = stat.getUpdateCount();</span><br><span class="line">                <span class="comment">// 如果下一个不是update count则返回值为-1</span></span><br><span class="line">                <span class="keyword">if</span> (updateCount &lt; <span class="number">0</span>) done = <span class="keyword">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 如果有多个结果集，调用getMoreResults方法指向下一个结果集，如果没有或不是结果集，返回false</span></span><br><span class="line">            <span class="keyword">if</span> (!done) isResult = stat.getMoreResults();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h1 id="使用Statement执行Batch操作"><a href="#使用Statement执行Batch操作" class="headerlink" title="使用Statement执行Batch操作"></a>使用Statement执行Batch操作</h1><p>每个Statement，PreparedStatement和CallableStatement实例在被创建的时候，都包含了一个空的list，这个list里面可以添加多个SQL command，然后以Batch的形式提交到数据库。</p>
+<p>举个例子就懂啦：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">insertBooks</span><span class="params">(Connection conn)</span> <span class="keyword">throws</span> SQLException </span>&#123;</span><br><span class="line">    <span class="comment">// 使用Batch之前记得先禁用自动提交</span></span><br><span class="line">    conn.setAutoCommit(<span class="keyword">false</span>);</span><br><span class="line">    String sql = <span class="string">&quot;INSERT INTO books(title, publisher_id, price) VALUES (?, ?, ?)&quot;</span>;</span><br><span class="line">    <span class="keyword">try</span> (PreparedStatement stat = conn.prepareStatement(sql)) &#123;</span><br><span class="line">        stat.setString(<span class="number">1</span>, <span class="string">&quot;Harry Potter And The Sorcerer&#x27;s Stone&quot;</span>);</span><br><span class="line">        stat.setInt(<span class="number">2</span>, <span class="number">3</span>);</span><br><span class="line">        stat.setDouble(<span class="number">3</span>, <span class="number">106.8</span>);</span><br><span class="line">        <span class="comment">// 调用addBatch来添加SQL命令</span></span><br><span class="line">        stat.addBatch();</span><br><span class="line"></span><br><span class="line">        stat.setString(<span class="number">1</span>, <span class="string">&quot;Harry Potter and the Chamber of Secrets&quot;</span>);</span><br><span class="line">        stat.setInt(<span class="number">2</span>, <span class="number">3</span>);</span><br><span class="line">        stat.setDouble(<span class="number">3</span>, <span class="number">142.87</span>);</span><br><span class="line">        stat.addBatch();</span><br><span class="line"></span><br><span class="line">        stat.setString(<span class="number">1</span>, <span class="string">&quot;Harry Potter and the Prisoner of Azkaban&quot;</span>);</span><br><span class="line">        stat.setInt(<span class="number">2</span>, <span class="number">3</span>);</span><br><span class="line">        stat.setDouble(<span class="number">3</span>, <span class="number">124.9</span>);</span><br><span class="line">        stat.addBatch();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 三条命令将按顺序执行，并且它们各自影响的行数会依次存放在一个数组中返回</span></span><br><span class="line">        <span class="keyword">int</span>[] updateCounts = stat.executeBatch();</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 执行Batch之后，之前添加的命令并不会被清空，这时可以调用clearBatch来清空，在本例中并没有必要，因为后续没有更多操作了。如果后续还要使用batch一定要注意这一点，避免重复提交。</span></span><br><span class="line">        <span class="comment">// stat.clearBatch();</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 将Batch提交到数据库</span></span><br><span class="line">        conn.commit();</span><br><span class="line">        conn.setAutoCommit(<span class="keyword">true</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>需要特别注意的是，在Batch可以添加诸如更新、插入、删除语句，以及一些DDL语句比如<code>CREATE TABLE</code>、<code>DROP TABLE</code>等。但是，不能Batch中添加会返回一个ResultSet对象的语句，比如查询语句，否则会抛异常哦。</p>
+<hr>
+<p>到此为止，我们着重介绍了使用三种statement执行SQL语句来实现增删改查操作，除此之外，使用查询得到的ResultSet以及它的子类RowSet也是可以对数据集进行增删改的，这又是些什么操作呢？我们有缘再见～</p>
+<hr>
+<ul>
+<li><p><strong>参考资料</strong></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/tutorial/jdbc/basics/index.html">Java Tutorial - JDBC Basics</a></p>
+</li>
+<li><em>Core Java 2, Volume 2: Advanced Features</em></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Java/" rel="tag"># Java</a>
+          
+            <a href="/tags/JDBC/" rel="tag"># JDBC</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/07/jdbc-connect-db/" rel="next" title="JDBC二三事之连接数据库">
+                <i class="fa fa-chevron-left"></i> JDBC二三事之连接数据库
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/12/09/jdbc-resultset/" rel="prev" title="JDBC二三事之ResultSet">
+                JDBC二三事之ResultSet <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8Statement%E6%89%A7%E8%A1%8C%E7%AE%80%E5%8D%95%E6%9F%A5%E8%AF%A2"><span class="nav-number">1.</span> <span class="nav-text">使用Statement执行简单查询</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8PreparedStatement%E6%8F%90%E5%8D%87%E6%95%88%E7%8E%87%E5%92%8C%E5%AE%89%E5%85%A8%E6%8C%87%E6%95%B0"><span class="nav-number">2.</span> <span class="nav-text">使用PreparedStatement提升效率和安全指数</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8CallableStatement%E8%B0%83%E7%94%A8%E5%B8%A6%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BA%E5%8F%82%E6%95%B0%E7%9A%84%E5%AD%98%E5%82%A8%E8%BF%87%E7%A8%8B"><span class="nav-number">3.</span> <span class="nav-text">使用CallableStatement调用带输入输出参数的存储过程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A4%84%E7%90%86%E5%A4%9A%E4%B8%AA%E7%BB%93%E6%9E%9C%E9%9B%86"><span class="nav-number">4.</span> <span class="nav-text">处理多个结果集</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8Statement%E6%89%A7%E8%A1%8CBatch%E6%93%8D%E4%BD%9C"><span class="nav-number">5.</span> <span class="nav-text">使用Statement执行Batch操作</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

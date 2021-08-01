@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="网络安全,认证与授权," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="想写Web认证相关的笔记很久了。之前工作内容有部分跟这个主题相关，当时看到的知识点时是非常分散的，一会儿看到底层协议，一会儿看到最佳实践，就感觉内容特别多且杂，导致我相当一段时间都很混乱。 所以这篇笔记，我决定首先从用户交互方式和使用场景来介绍几种基本的认证方式，先搭个框子，更详细的内容以后分模块介绍。 假设一个业务场景，就用我们的甜品店在线订购网站举例吧：  初次光临的用户需要注册账号（用户名、">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Web认证那些事儿（一）从用户体验感受认证流程">
+<meta property="og:url" content="http://liaodanqi.xyz/2018/10/16/web-authentication-intro/index.html">
+<meta property="og:site_name" content="Jane">
+<meta property="og:description" content="想写Web认证相关的笔记很久了。之前工作内容有部分跟这个主题相关，当时看到的知识点时是非常分散的，一会儿看到底层协议，一会儿看到最佳实践，就感觉内容特别多且杂，导致我相当一段时间都很混乱。 所以这篇笔记，我决定首先从用户交互方式和使用场景来介绍几种基本的认证方式，先搭个框子，更详细的内容以后分模块介绍。 假设一个业务场景，就用我们的甜品店在线订购网站举例吧：  初次光临的用户需要注册账号（用户名、">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-10-16T11:53:24.000Z">
+<meta property="article:modified_time" content="2021-08-01T09:41:50.562Z">
+<meta property="article:author" content="Jane Liao">
+<meta property="article:tag" content="网络安全">
+<meta property="article:tag" content="认证与授权">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://liaodanqi.xyz/2018/10/16/web-authentication-intro/"/>
+
+
+
+
+
+  <title>Web认证那些事儿（一）从用户体验感受认证流程 | Jane</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Jane</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Learn & Live</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2018/10/16/web-authentication-intro/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Jane">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Web认证那些事儿（一）从用户体验感受认证流程</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-16T19:53:24+08:00">
+                2018-10-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">技术笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>想写Web认证相关的笔记很久了。之前工作内容有部分跟这个主题相关，当时看到的知识点时是非常分散的，一会儿看到底层协议，一会儿看到最佳实践，就感觉内容特别多且杂，导致我相当一段时间都很混乱。</p>
+<p>所以这篇笔记，我决定首先从用户交互方式和使用场景来介绍几种基本的认证方式，先搭个框子，更详细的内容以后分模块介绍。</p>
+<p>假设一个业务场景，就用我们的甜品店在线订购网站举例吧：</p>
+<ol>
+<li>初次光临的用户需要注册账号（用户名、密码等等）</li>
+<li>用户登录账号后可下单购买甜品</li>
+</ol>
+<p>就一个从这么简单的小站开始，我们决定在第一版网站中采用最原始的认证方式——<strong>用户名密码认证</strong>。</p>
+<span id="more"></span>
+<p>后来，甜品店发展了会员制度，用户可以在个人账号下充值，于是涉及到金钱的问题，甜品店老板决定网站的安全性要提高。现在用户信息泄漏这么严重，很多人设秘密也不过脑子，经常重复使用密码，实在是太容易被盗号了。我们决定给网站认证方式升级。</p>
+<p>这里需要引入两组概念：</p>
+<ol>
+<li><strong>身份认证的三个要素</strong></li>
+</ol>
+<ul>
+<li><strong>Knowledge Factor</strong> - 用户知道的信息，比如密码、身份证号等(something the user knows)</li>
+<li><strong>Ownership Factor</strong> - 用户拥有的认证硬件，比如手机、USB Key等(something the user has)</li>
+<li><strong>Inherence Factor</strong> - 用户自身的唯一特征，比如指纹、DNA、脸、签名等(something the user is or does)。举个例子，手机指纹解锁就是通过这一要素进行认证。</li>
+</ul>
+<ol start="2">
+<li><strong>三种强度递增的认证方案</strong></li>
+</ol>
+<ul>
+<li><strong>单因素认证(Single-Factor Authentication)</strong>：在认证过程中只需提供上述三种要素中的一种即可。我们使用的用户名密码认证就属于单因素认证。</li>
+<li><strong>双因素认证(Two-Factor Authentication)</strong>：将上述三种要素的其中两种结合使用。举个例子，古老的网银一般都会需要用户密码和一个USB Key才可以通过认证。</li>
+<li><strong>多因素认证(Multi-Factor Authentication)</strong>：使用两种以上要素进行认证。</li>
+</ul>
+<p>好，现在回到甜品店网站安全升级任务。显然，增加认证要素能一定程度提高认证强度，进而提高网站的安全性。所以我们决定将认证方案升级为<strong>用户名密码（Knowledge factor）加手机验证码（Ownership Factor）</strong>的双因素认证方案。</p>
+<p>值得注意的是，双因素认证增加了用户登录网站要完成的操作，<strong>用户体验变差了</strong>。从日常使用中，我们不难发现，很多应用采取了折中的方式：正常登录仍然采取用户名密码单因素认证，如果监测到用户登录异常（比如在一个没见过IP地址登录或者频繁登录）时才要求进一步追加手机验证码认证。</p>
+<hr>
+<p>网站又运营了一段时间后，我们发现很多新用户在浏览了网站想要下单时，发现注册操作要创建用户名还要求输入复杂的密码，如此繁琐的过程浇灭了潜在TA对甜品的热情。这怎么可以？为了留住潜在用户，简化注册流程，我们决定引入<strong>第三方登录</strong>，比如与微信、QQ、微博等认证接口集成。</p>
+<p>这样新用户也可以方便快捷的创建账号下单啦。</p>
+<hr>
+<p>随着我们线上订购网站越来越完善，甜品店业务也越做越大，从小小的店铺发展成了一个大型企业。为了支持企业正常运转，企业内部搭建了一套复杂运营管理体系。企业的员工会用到其中的很多不同的系统（比如财务、物流、人力资源等系统）完成日常的工作，如果每个系统都要单独登录认证员工信息才可以操作，工作效率会被大大降低。<br>基于这样的情形，我们决定引入<strong>单点登录，简称SSO(Single Sign On)</strong>。对于企业内部而言，各个系统之间是互相信任的，通过SSO，员工能在所有的内部系统认证其身份，从而免去重复登录。</p>
+<p>从此，我们的甜品大亨带领一众员工走上人生巅峰~</p>
+<hr>
+<p>本文我们从用户使用场景介绍了几种认证方式，包括<strong>用户名密码认证</strong>、<strong>单点登录</strong>、<strong>第三方登录</strong>等。之后便开始逐一深入介绍每种认证以及其延伸出的内容。</p>
+<p>未完待续~</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" rel="tag"># 网络安全</a>
+          
+            <a href="/tags/%E8%AE%A4%E8%AF%81%E4%B8%8E%E6%8E%88%E6%9D%83/" rel="tag"># 认证与授权</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/10/12/rabin-karp/" rel="next" title="字符串搜索玩耍指南（三）- Rabin-Karp算法">
+                <i class="fa fa-chevron-left"></i> 字符串搜索玩耍指南（三）- Rabin-Karp算法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/18/username-password-authentication/" rel="prev" title="Web认证那些事儿（二）用户名密码认证">
+                Web认证那些事儿（二）用户名密码认证 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JaneLdq" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:janeldq@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jane Liao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>
