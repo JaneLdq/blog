@@ -85,5 +85,5 @@ math:
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: git
-  repo: ${GH_TOKEN}@github.com:JaneLdq/janeldq.github.io.git
+  repo: git@github.com:JaneLdq/janeldq.github.io.git
   branch: master
