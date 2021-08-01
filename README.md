@@ -1,2 +1,2 @@
 # janes-blog
-Personal blog source
+Jane's personal blog
