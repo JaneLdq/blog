@@ -40,7 +40,7 @@
 
   
   
-  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+  <link href="/blog/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
 
 
 
@@ -48,21 +48,21 @@
 
 
 
-<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
 
-<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
-
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+<link href="/blog/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
 
 
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+  <link rel="apple-touch-icon" sizes="180x180" href="/blog/images/apple-touch-icon-next.png?v=5.1.4">
 
 
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+  <link rel="icon" type="image/png" sizes="32x32" href="/blog/images/favicon-32x32-next.png?v=5.1.4">
 
 
-  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+  <link rel="icon" type="image/png" sizes="16x16" href="/blog/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/blog/images/logo.svg?v=5.1.4" color="#222">
 
 
 
@@ -82,20 +82,20 @@
 <meta name="description" content="在上一篇笔记中，我们提到安全的网络通信有三点基本特性：保密性、报文完整性和身份认证。这篇笔记我们就来聊聊报文完整性和身份认证，二者是息息相关的。还是用 Alice 和 Bob 来举例，当 Bob 收到一条来自 Alice 的消息，他需要验证如下内容：  这条消息在传输过程中没有被篡改 - 验证报文完整性 这条消息确实是 Alice 发的 - 进行身份认证">
 <meta property="og:type" content="article">
 <meta property="og:title" content="浅谈网络安全（二）- 报文完整性与数字签名">
-<meta property="og:url" content="http://yoursite.com/2020/04/11/net-sec-integrity-and-digital-signature/index.html">
+<meta property="og:url" content="http://liaodanqi.xyz/blog/2020/04/11/net-sec-integrity-and-digital-signature/index.html">
 <meta property="og:site_name" content="Jane">
 <meta property="og:description" content="在上一篇笔记中，我们提到安全的网络通信有三点基本特性：保密性、报文完整性和身份认证。这篇笔记我们就来聊聊报文完整性和身份认证，二者是息息相关的。还是用 Alice 和 Bob 来举例，当 Bob 收到一条来自 Alice 的消息，他需要验证如下内容：  这条消息在传输过程中没有被篡改 - 验证报文完整性 这条消息确实是 Alice 发的 - 进行身份认证">
 <meta property="og:locale">
-<meta property="og:image" content="http://yoursite.com/uploads/images/digital-signature.png">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/digital-signature.png">
 <meta property="article:published_time" content="2020-04-11T09:52:36.000Z">
-<meta property="article:modified_time" content="2021-08-01T13:21:18.385Z">
+<meta property="article:modified_time" content="2021-08-01T15:19:26.409Z">
 <meta property="article:author" content="Jane Liao">
 <meta property="article:tag" content="网络安全">
 <meta property="article:tag" content="数字签名">
 <meta property="article:tag" content="加密哈希">
 <meta property="article:tag" content="消息摘要">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://yoursite.com/uploads/images/digital-signature.png">
+<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/digital-signature.png">
 
 
 
@@ -125,7 +125,7 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2020/04/11/net-sec-integrity-and-digital-signature/"/>
+  <link rel="canonical" href="http://liaodanqi.xyz/blog/2020/04/11/net-sec-integrity-and-digital-signature/"/>
 
 
 
@@ -159,7 +159,7 @@
     
 
     <div class="custom-logo-site-title">
-      <a href="/"  class="brand" rel="start">
+      <a href="/blog/"  class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
         <span class="site-title">Jane</span>
         <span class="logo-line-after"><i></i></span>
@@ -187,7 +187,7 @@
       
         
         <li class="menu-item menu-item-home">
-          <a href="/%20" rel="section">
+          <a href="/blog/%20" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
@@ -197,7 +197,7 @@
       
         
         <li class="menu-item menu-item-categories">
-          <a href="/categories/%20" rel="section">
+          <a href="/blog/categories/%20" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
             
@@ -207,7 +207,7 @@
       
         
         <li class="menu-item menu-item-tags">
-          <a href="/tags/%20" rel="section">
+          <a href="/blog/tags/%20" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
             
@@ -217,7 +217,7 @@
       
         
         <li class="menu-item menu-item-archives">
-          <a href="/archives/%20" rel="section">
+          <a href="/blog/archives/%20" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
@@ -258,12 +258,12 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/11/net-sec-integrity-and-digital-signature/">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/blog/blog/2020/04/11/net-sec-integrity-and-digital-signature/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="">
       <meta itemprop="description" content="">
-      <meta itemprop="image" content="/uploads/avatar.jpg">
+      <meta itemprop="image" content="/blog/uploads/avatar.jpg">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -310,7 +310,7 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                  <a href="/blog/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
                     <span itemprop="name">技术笔记</span>
                   </a>
                 </span>
@@ -439,13 +439,13 @@
       
         <div class="post-tags">
           
-            <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" rel="tag"># 网络安全</a>
+            <a href="/blog/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" rel="tag"># 网络安全</a>
           
-            <a href="/tags/%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D/" rel="tag"># 数字签名</a>
+            <a href="/blog/tags/%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D/" rel="tag"># 数字签名</a>
           
-            <a href="/tags/%E5%8A%A0%E5%AF%86%E5%93%88%E5%B8%8C/" rel="tag"># 加密哈希</a>
+            <a href="/blog/tags/%E5%8A%A0%E5%AF%86%E5%93%88%E5%B8%8C/" rel="tag"># 加密哈希</a>
           
-            <a href="/tags/%E6%B6%88%E6%81%AF%E6%91%98%E8%A6%81/" rel="tag"># 消息摘要</a>
+            <a href="/blog/tags/%E6%B6%88%E6%81%AF%E6%91%98%E8%A6%81/" rel="tag"># 消息摘要</a>
           
         </div>
       
@@ -458,7 +458,7 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2020/04/07/net-sec-confidentiality/" rel="next" title="浅谈网络安全（一）- 保密性与加密机制">
+              <a href="/blog/2020/04/07/net-sec-confidentiality/" rel="next" title="浅谈网络安全（一）- 保密性与加密机制">
                 <i class="fa fa-chevron-left"></i> 浅谈网络安全（一）- 保密性与加密机制
               </a>
             
@@ -468,7 +468,7 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2020/04/18/net-sec-key-management/" rel="prev" title="浅谈网络安全（三）- 密钥的管理与分发">
+              <a href="/blog/2020/04/18/net-sec-key-management/" rel="prev" title="浅谈网络安全（三）- 密钥的管理与分发">
                 浅谈网络安全（三）- 密钥的管理与分发 <i class="fa fa-chevron-right"></i>
               </a>
             
@@ -537,7 +537,7 @@
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
               <img class="site-author-image" itemprop="image"
-                src="/uploads/avatar.jpg"
+                src="/blog/uploads/avatar.jpg"
                 alt="" />
             
               <p class="site-author-name" itemprop="name"></p>
@@ -549,7 +549,7 @@
             
               <div class="site-state-item site-state-posts">
               
-                <a href="/archives/%20%7C%7C%20archive">
+                <a href="/blog/archives/%20%7C%7C%20archive">
               
                   <span class="site-state-item-count">75</span>
                   <span class="site-state-item-name">日志</span>
@@ -561,7 +561,7 @@
               
               
               <div class="site-state-item site-state-categories">
-                <a href="/categories/index.html">
+                <a href="/blog/categories/index.html">
                   <span class="site-state-item-count">6</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
@@ -572,7 +572,7 @@
               
               
               <div class="site-state-item site-state-tags">
-                <a href="/tags/index.html">
+                <a href="/blog/tags/index.html">
                   <span class="site-state-item-count">39</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
@@ -719,57 +719,57 @@
 
   
   
-    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+    <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
   
 
   
   
-    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+    <script type="text/javascript" src="/blog/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
   
 
   
   
-    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+    <script type="text/javascript" src="/blog/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
   
 
   
   
-    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+    <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
   
 
   
   
-    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+    <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
   
 
   
   
-    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+    <script type="text/javascript" src="/blog/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
   
-
-
-  
-
-
-  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
-
-  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
-
-
-
-  
-  
-
-  
-  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
-<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
-
 
 
   
 
 
-  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=5.1.4"></script>
 
 
 

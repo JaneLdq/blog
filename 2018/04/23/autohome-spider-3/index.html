@@ -40,7 +40,7 @@
 
   
   
-  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+  <link href="/blog/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
 
 
 
@@ -48,21 +48,21 @@
 
 
 
-<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
 
-<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
-
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+<link href="/blog/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
 
 
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+  <link rel="apple-touch-icon" sizes="180x180" href="/blog/images/apple-touch-icon-next.png?v=5.1.4">
 
 
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+  <link rel="icon" type="image/png" sizes="32x32" href="/blog/images/favicon-32x32-next.png?v=5.1.4">
 
 
-  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+  <link rel="icon" type="image/png" sizes="16x16" href="/blog/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/blog/images/logo.svg?v=5.1.4" color="#222">
 
 
 
@@ -82,7 +82,7 @@
 <meta name="description" content="迟迟没有动手整理这一部分的内容，因为即使磕磕绊绊最终写出了一个勉强能用的爬虫，也是基于“拿来主义”在各大神的代码基础上拼凑出来的，其中还有很多知识点并没有弄懂。后来再查资料细看也十分痛苦。现在写记录的这些大部分还是一知半解的知识，暂且罗列在这儿，待有时间慢慢咀嚼。 下面进入正文。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="一只爬虫的难产之旅（三）">
-<meta property="og:url" content="http://yoursite.com/2018/04/23/autohome-spider-3/index.html">
+<meta property="og:url" content="http://liaodanqi.xyz/blog/2018/04/23/autohome-spider-3/index.html">
 <meta property="og:site_name" content="Jane">
 <meta property="og:description" content="迟迟没有动手整理这一部分的内容，因为即使磕磕绊绊最终写出了一个勉强能用的爬虫，也是基于“拿来主义”在各大神的代码基础上拼凑出来的，其中还有很多知识点并没有弄懂。后来再查资料细看也十分痛苦。现在写记录的这些大部分还是一知半解的知识，暂且罗列在这儿，待有时间慢慢咀嚼。 下面进入正文。">
 <meta property="og:locale">
@@ -92,7 +92,7 @@
 <meta property="og:image" content="http://static.zybuluo.com/JaneL/vbxz2ib9jln7lqkrmpsfln6w/js_block.PNG">
 <meta property="og:image" content="http://static.zybuluo.com/JaneL/pgbcxh0zupzi6cf6vaxkt7si/js_replace.PNG">
 <meta property="article:published_time" content="2018-04-23T09:03:16.000Z">
-<meta property="article:modified_time" content="2021-08-01T13:21:18.381Z">
+<meta property="article:modified_time" content="2021-08-01T15:19:26.405Z">
 <meta property="article:author" content="Jane Liao">
 <meta property="article:tag" content="爬虫">
 <meta name="twitter:card" content="summary">
@@ -126,7 +126,7 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2018/04/23/autohome-spider-3/"/>
+  <link rel="canonical" href="http://liaodanqi.xyz/blog/2018/04/23/autohome-spider-3/"/>
 
 
 
@@ -160,7 +160,7 @@
     
 
     <div class="custom-logo-site-title">
-      <a href="/"  class="brand" rel="start">
+      <a href="/blog/"  class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
         <span class="site-title">Jane</span>
         <span class="logo-line-after"><i></i></span>
@@ -188,7 +188,7 @@
       
         
         <li class="menu-item menu-item-home">
-          <a href="/%20" rel="section">
+          <a href="/blog/%20" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
@@ -198,7 +198,7 @@
       
         
         <li class="menu-item menu-item-categories">
-          <a href="/categories/%20" rel="section">
+          <a href="/blog/categories/%20" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
             
@@ -208,7 +208,7 @@
       
         
         <li class="menu-item menu-item-tags">
-          <a href="/tags/%20" rel="section">
+          <a href="/blog/tags/%20" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
             
@@ -218,7 +218,7 @@
       
         
         <li class="menu-item menu-item-archives">
-          <a href="/archives/%20" rel="section">
+          <a href="/blog/archives/%20" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
@@ -259,12 +259,12 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/23/autohome-spider-3/">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/blog/blog/2018/04/23/autohome-spider-3/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="">
       <meta itemprop="description" content="">
-      <meta itemprop="image" content="/uploads/avatar.jpg">
+      <meta itemprop="image" content="/blog/uploads/avatar.jpg">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -311,7 +311,7 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                  <a href="/blog/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
                     <span itemprop="name">技术笔记</span>
                   </a>
                 </span>
@@ -408,8 +408,8 @@
 <h2 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h2><p>终于，爬虫难产之旅系列到这里就结束啦。虽然最终产物仍然不够完美（还应该更好的，到底还是被畏难心理打败了）。复盘一下整个过程，虽然还遗留了不少疑惑，但比之前又get了很多。剩下的坑，等哪天搞定了心理建设再继续吧~</p>
 <p>代码请戳 → <a target="_blank" rel="noopener" href="https://github.com/JaneLdq/autohome-spider.git">autohome-spider</a><br>爬虫系列:</p>
 <ul>
-<li><a href="/2018/04/08/autohome-spider-1/" title="[一只爬虫的难产之旅（一）]">[一只爬虫的难产之旅（一）]</a></li>
-<li><a href="/2018/04/11/autohome-spider-2/" title="[一只爬虫的难产之旅（二）]">[一只爬虫的难产之旅（二）]</a>
+<li><a href="/blog/2018/04/08/autohome-spider-1/" title="[一只爬虫的难产之旅（一）]">[一只爬虫的难产之旅（一）]</a></li>
+<li><a href="/blog/2018/04/11/autohome-spider-2/" title="[一只爬虫的难产之旅（二）]">[一只爬虫的难产之旅（二）]</a>
 </li>
 </ul>
 <hr>
@@ -435,7 +435,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/%E7%88%AC%E8%99%AB/" rel="tag"># 爬虫</a>
+            <a href="/blog/tags/%E7%88%AC%E8%99%AB/" rel="tag"># 爬虫</a>
           
         </div>
       
@@ -448,7 +448,7 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/04/11/autohome-spider-2/" rel="next" title="一只爬虫的难产之旅（二）">
+              <a href="/blog/2018/04/11/autohome-spider-2/" rel="next" title="一只爬虫的难产之旅（二）">
                 <i class="fa fa-chevron-left"></i> 一只爬虫的难产之旅（二）
               </a>
             
@@ -458,7 +458,7 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2018/05/02/read-the-razors-edge/" rel="prev" title="生活到底是为了什么">
+              <a href="/blog/2018/05/02/read-the-razors-edge/" rel="prev" title="生活到底是为了什么">
                 生活到底是为了什么 <i class="fa fa-chevron-right"></i>
               </a>
             
@@ -527,7 +527,7 @@
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
               <img class="site-author-image" itemprop="image"
-                src="/uploads/avatar.jpg"
+                src="/blog/uploads/avatar.jpg"
                 alt="" />
             
               <p class="site-author-name" itemprop="name"></p>
@@ -539,7 +539,7 @@
             
               <div class="site-state-item site-state-posts">
               
-                <a href="/archives/%20%7C%7C%20archive">
+                <a href="/blog/archives/%20%7C%7C%20archive">
               
                   <span class="site-state-item-count">75</span>
                   <span class="site-state-item-name">日志</span>
@@ -551,7 +551,7 @@
               
               
               <div class="site-state-item site-state-categories">
-                <a href="/categories/index.html">
+                <a href="/blog/categories/index.html">
                   <span class="site-state-item-count">6</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
@@ -562,7 +562,7 @@
               
               
               <div class="site-state-item site-state-tags">
-                <a href="/tags/index.html">
+                <a href="/blog/tags/index.html">
                   <span class="site-state-item-count">39</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
@@ -709,57 +709,57 @@
 
   
   
-    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+    <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
   
 
   
   
-    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+    <script type="text/javascript" src="/blog/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
   
 
   
   
-    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+    <script type="text/javascript" src="/blog/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
   
 
   
   
-    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+    <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
   
 
   
   
-    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+    <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
   
 
   
   
-    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+    <script type="text/javascript" src="/blog/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
   
-
-
-  
-
-
-  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
-
-  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
-
-
-
-  
-  
-
-  
-  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
-<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
-
 
 
   
 
 
-  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=5.1.4"></script>
 
 
 

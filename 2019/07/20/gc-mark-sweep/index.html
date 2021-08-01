@@ -40,7 +40,7 @@
 
   
   
-  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+  <link href="/blog/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
 
 
 
@@ -48,21 +48,21 @@
 
 
 
-<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
 
-<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
-
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+<link href="/blog/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
 
 
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+  <link rel="apple-touch-icon" sizes="180x180" href="/blog/images/apple-touch-icon-next.png?v=5.1.4">
 
 
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+  <link rel="icon" type="image/png" sizes="32x32" href="/blog/images/favicon-32x32-next.png?v=5.1.4">
 
 
-  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+  <link rel="icon" type="image/png" sizes="16x16" href="/blog/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/blog/images/logo.svg?v=5.1.4" color="#222">
 
 
 
@@ -82,18 +82,18 @@
 <meta name="description" content="在介绍JVM中提供的垃圾收集器之前，我觉得有必要先补充一下关于垃圾回收（以下简称 GC）的理论知识 —— 垃圾回收算法（以下简称 GC 算法）。 GC 算法的基本类型并不多，概括起来大概就以下三种：  标记-清除算法 (Mark-Sweep) - 由 John McCarthy 1960 年在论文 Recursive functions of symbolic expressions and th">
 <meta property="og:type" content="article">
 <meta property="og:title" content="GC算法笔记（一）标记-清除算法">
-<meta property="og:url" content="http://yoursite.com/2019/07/20/gc-mark-sweep/index.html">
+<meta property="og:url" content="http://liaodanqi.xyz/blog/2019/07/20/gc-mark-sweep/index.html">
 <meta property="og:site_name" content="Jane">
 <meta property="og:description" content="在介绍JVM中提供的垃圾收集器之前，我觉得有必要先补充一下关于垃圾回收（以下简称 GC）的理论知识 —— 垃圾回收算法（以下简称 GC 算法）。 GC 算法的基本类型并不多，概括起来大概就以下三种：  标记-清除算法 (Mark-Sweep) - 由 John McCarthy 1960 年在论文 Recursive functions of symbolic expressions and th">
 <meta property="og:locale">
-<meta property="og:image" content="http://yoursite.com/uploads/images/reachability-analysis.svg">
-<meta property="og:image" content="http://yoursite.com/uploads/images/mark-sweep-memory.svg">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/reachability-analysis.svg">
+<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/mark-sweep-memory.svg">
 <meta property="article:published_time" content="2019-07-20T07:36:14.000Z">
-<meta property="article:modified_time" content="2021-08-01T13:21:18.381Z">
+<meta property="article:modified_time" content="2021-08-01T15:19:26.409Z">
 <meta property="article:author" content="Jane Liao">
 <meta property="article:tag" content="GC">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://yoursite.com/uploads/images/reachability-analysis.svg">
+<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/reachability-analysis.svg">
 
 
 
@@ -123,7 +123,7 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2019/07/20/gc-mark-sweep/"/>
+  <link rel="canonical" href="http://liaodanqi.xyz/blog/2019/07/20/gc-mark-sweep/"/>
 
 
 
@@ -157,7 +157,7 @@
     
 
     <div class="custom-logo-site-title">
-      <a href="/"  class="brand" rel="start">
+      <a href="/blog/"  class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
         <span class="site-title">Jane</span>
         <span class="logo-line-after"><i></i></span>
@@ -185,7 +185,7 @@
       
         
         <li class="menu-item menu-item-home">
-          <a href="/%20" rel="section">
+          <a href="/blog/%20" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
@@ -195,7 +195,7 @@
       
         
         <li class="menu-item menu-item-categories">
-          <a href="/categories/%20" rel="section">
+          <a href="/blog/categories/%20" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
             
@@ -205,7 +205,7 @@
       
         
         <li class="menu-item menu-item-tags">
-          <a href="/tags/%20" rel="section">
+          <a href="/blog/tags/%20" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
             
@@ -215,7 +215,7 @@
       
         
         <li class="menu-item menu-item-archives">
-          <a href="/archives/%20" rel="section">
+          <a href="/blog/archives/%20" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
@@ -256,12 +256,12 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/07/20/gc-mark-sweep/">
+    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/blog/blog/2019/07/20/gc-mark-sweep/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="">
       <meta itemprop="description" content="">
-      <meta itemprop="image" content="/uploads/avatar.jpg">
+      <meta itemprop="image" content="/blog/uploads/avatar.jpg">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -308,7 +308,7 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                  <a href="/blog/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
                     <span itemprop="name">技术笔记</span>
                   </a>
                 </span>
@@ -501,7 +501,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/GC/" rel="tag"># GC</a>
+            <a href="/blog/tags/GC/" rel="tag"># GC</a>
           
         </div>
       
@@ -514,7 +514,7 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/07/13/java-memory-areas-and-oom/" rel="next" title="Java内存管理之运行时数据区">
+              <a href="/blog/2019/07/13/java-memory-areas-and-oom/" rel="next" title="Java内存管理之运行时数据区">
                 <i class="fa fa-chevron-left"></i> Java内存管理之运行时数据区
               </a>
             
@@ -524,7 +524,7 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2019/07/28/gc-reference-counting/" rel="prev" title="GC算法笔记（二）引用计数法">
+              <a href="/blog/2019/07/28/gc-reference-counting/" rel="prev" title="GC算法笔记（二）引用计数法">
                 GC算法笔记（二）引用计数法 <i class="fa fa-chevron-right"></i>
               </a>
             
@@ -593,7 +593,7 @@
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
               <img class="site-author-image" itemprop="image"
-                src="/uploads/avatar.jpg"
+                src="/blog/uploads/avatar.jpg"
                 alt="" />
             
               <p class="site-author-name" itemprop="name"></p>
@@ -605,7 +605,7 @@
             
               <div class="site-state-item site-state-posts">
               
-                <a href="/archives/%20%7C%7C%20archive">
+                <a href="/blog/archives/%20%7C%7C%20archive">
               
                   <span class="site-state-item-count">75</span>
                   <span class="site-state-item-name">日志</span>
@@ -617,7 +617,7 @@
               
               
               <div class="site-state-item site-state-categories">
-                <a href="/categories/index.html">
+                <a href="/blog/categories/index.html">
                   <span class="site-state-item-count">6</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
@@ -628,7 +628,7 @@
               
               
               <div class="site-state-item site-state-tags">
-                <a href="/tags/index.html">
+                <a href="/blog/tags/index.html">
                   <span class="site-state-item-count">39</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
@@ -775,57 +775,57 @@
 
   
   
-    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+    <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
   
 
   
   
-    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+    <script type="text/javascript" src="/blog/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
   
 
   
   
-    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+    <script type="text/javascript" src="/blog/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
   
 
   
   
-    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+    <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
   
 
   
   
-    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+    <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
   
 
   
   
-    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+    <script type="text/javascript" src="/blog/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
   
-
-
-  
-
-
-  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
-
-  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
-
-
-
-  
-  
-
-  
-  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
-<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
-
 
 
   
 
 
-  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=5.1.4"></script>
 
 
 
