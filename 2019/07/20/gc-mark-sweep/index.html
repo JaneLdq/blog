@@ -82,18 +82,18 @@
 <meta name="description" content="在介绍JVM中提供的垃圾收集器之前，我觉得有必要先补充一下关于垃圾回收（以下简称 GC）的理论知识 —— 垃圾回收算法（以下简称 GC 算法）。 GC 算法的基本类型并不多，概括起来大概就以下三种：  标记-清除算法 (Mark-Sweep) - 由 John McCarthy 1960 年在论文 Recursive functions of symbolic expressions and th">
 <meta property="og:type" content="article">
 <meta property="og:title" content="GC算法笔记（一）标记-清除算法">
-<meta property="og:url" content="http://liaodanqi.xyz/2019/07/20/gc-mark-sweep/index.html">
+<meta property="og:url" content="http://yoursite.com/2019/07/20/gc-mark-sweep/index.html">
 <meta property="og:site_name" content="Jane">
 <meta property="og:description" content="在介绍JVM中提供的垃圾收集器之前，我觉得有必要先补充一下关于垃圾回收（以下简称 GC）的理论知识 —— 垃圾回收算法（以下简称 GC 算法）。 GC 算法的基本类型并不多，概括起来大概就以下三种：  标记-清除算法 (Mark-Sweep) - 由 John McCarthy 1960 年在论文 Recursive functions of symbolic expressions and th">
 <meta property="og:locale">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/reachability-analysis.svg">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/mark-sweep-memory.svg">
+<meta property="og:image" content="http://yoursite.com/uploads/images/reachability-analysis.svg">
+<meta property="og:image" content="http://yoursite.com/uploads/images/mark-sweep-memory.svg">
 <meta property="article:published_time" content="2019-07-20T07:36:14.000Z">
-<meta property="article:modified_time" content="2021-08-01T09:41:50.539Z">
+<meta property="article:modified_time" content="2021-08-01T12:47:50.813Z">
 <meta property="article:author" content="Jane Liao">
 <meta property="article:tag" content="GC">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/reachability-analysis.svg">
+<meta name="twitter:image" content="http://yoursite.com/uploads/images/reachability-analysis.svg">
 
 
 
@@ -123,7 +123,7 @@
 
 
 
-  <link rel="canonical" href="http://liaodanqi.xyz/2019/07/20/gc-mark-sweep/"/>
+  <link rel="canonical" href="http://yoursite.com/2019/07/20/gc-mark-sweep/"/>
 
 
 
@@ -256,7 +256,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://liaodanqi.xyz/2019/07/20/gc-mark-sweep/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/07/20/gc-mark-sweep/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="">
@@ -285,7 +285,7 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-20T15:36:14+08:00">
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-20T07:36:14+00:00">
                 2019-07-20
               </time>
             
