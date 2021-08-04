@@ -86,19 +86,19 @@
 <meta property="og:site_name" content="Jane">
 <meta property="og:description" content="喜迎 2020 第一篇笔记！突然觉得没有赶在四年一遇的 2 月 29 日写，有点遗憾呢。 最近这几个月摸了不少鱼，也挖了一点点坑，总想着把一个主题全部过一遍再回顾写笔记，结果就是永远都没有开始，因为不会的实在是太多了，怎么都学不完呀，所以，还是边看边整理吧～  当初在搭这个博客时，少不了要为域名配置 DNS，按着教程在 DNSPod 上注册了个账号，配了几条记录。至于为什么要做这些，倒真是一直没有">
 <meta property="og:locale">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/domain-name-space.jpg">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/dns-root-server.png">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/dns-tld-server.png">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/dns-auth-server.png">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/dns-ip.png">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/dns-resolution.svg">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/domain-name-space.jpg">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/dns-root-server.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/dns-tld-server.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/dns-auth-server.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/dns-ip.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/dns-resolution.svg">
 <meta property="article:published_time" content="2020-03-01T02:40:30.000Z">
-<meta property="article:modified_time" content="2021-08-01T16:59:35.533Z">
+<meta property="article:modified_time" content="2021-08-04T10:07:48.609Z">
 <meta property="article:author" content="Jane Liao">
 <meta property="article:tag" content="网络">
 <meta property="article:tag" content="DNS">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/domain-name-space.jpg">
+<meta name="twitter:image" content="http://liaodanqi.xyz/blog/uploads/images/domain-name-space.jpg">
 
 
 
@@ -366,7 +366,7 @@
 </ul>
 <hr>
 <h2 id="域名空间与资源记录"><a href="#域名空间与资源记录" class="headerlink" title="域名空间与资源记录"></a>域名空间与资源记录</h2><h3 id="域名空间"><a href="#域名空间" class="headerlink" title="域名空间"></a>域名空间</h3><p>DNS 域名空间可以表示为一棵树，从根节点开始，依次是顶级域名、二级域名、三级域名依次类推。树的叶子代表没有子域的域，一个叶节点域可能包含一个主机，也可能包含多个主机。</p>
-<p><img src="/uploads/images/domain-name-space.jpg" alt="domain-name-space"></p>
+<p><img src="/blog/uploads/images/domain-name-space.jpg" alt="domain-name-space"></p>
 <p><strong>顶级域名</strong>由ICANN（Internet Corporation fro Assigned Name and Numbers，Internet名字与数字地址分配机构)专门管理。<br>每个域可以自己控制如何分配它下面的子域。为了创建一个新域，创建者必须得到包含该新域的上级域的许可。</p>
 <hr>
 <h3 id="域名资源记录"><a href="#域名资源记录" class="headerlink" title="域名资源记录"></a>域名资源记录</h3><p>每个域都有一组与它相关的资源记录(Resource Record, RR)，这些记录组成了DNS数据库。DNS 的基本功能就是将域名映射为资源记录。</p>
@@ -441,18 +441,18 @@
 <h3 id="域名解析"><a href="#域名解析" class="headerlink" title="域名解析"></a>域名解析</h3><p>接下来让我们一起来看看在域名解析过程中，这几类域名服务器各自扮演了怎样角色。</p>
 <p>以访问<code>home.sina.com</code>为例，我们可以用 <code>dig</code> 命令，在控制台输入<code>dig home.sina.com +trace</code>，这条命令会将 DNS 解析的过程都打印出来，我们一段段来看。</p>
 <ol>
-<li><p>首先，主机发起放向本地 DNS 服务器发起查询，如果本地 DNS 服务器没有相关记录，则会向根域名服务器发起查询。在下图中，我们可以看到主机的本地 DNS 服务器是127.0.0.1，按照前面提到的，每个 DNS 服务器都有一份根域名服务器的名单。<br><img src="/uploads/images/dns-root-server.png" alt="get root server info"></p>
+<li><p>首先，主机发起放向本地 DNS 服务器发起查询，如果本地 DNS 服务器没有相关记录，则会向根域名服务器发起查询。在下图中，我们可以看到主机的本地 DNS 服务器是127.0.0.1，按照前面提到的，每个 DNS 服务器都有一份根域名服务器的名单。<br><img src="/blog/uploads/images/dns-root-server.png" alt="get root server info"></p>
 </li>
-<li><p>本地 DNS 服务器得到根域名服务器地址后，将查询发给根服务器。在下图中，可以看到本地 DNS 服务器将请求发给了 <code>e.root-servers.net</code> 这个根服务器，并得到了 <code>.com</code> 这个顶级域名的 TLD 服务器的相关信息。<br><img src="/uploads/images/dns-tld-server.png" alt="get tld server info"></p>
+<li><p>本地 DNS 服务器得到根域名服务器地址后，将查询发给根服务器。在下图中，可以看到本地 DNS 服务器将请求发给了 <code>e.root-servers.net</code> 这个根服务器，并得到了 <code>.com</code> 这个顶级域名的 TLD 服务器的相关信息。<br><img src="/blog/uploads/images/dns-tld-server.png" alt="get tld server info"></p>
 </li>
-<li><p>本地 DNS 服务器拿到 TLD 服务器的地址，再将整个查询发给它，TLD 服务器返回新浪的权威 DNS 服务器信息，如下图所示，本地 DNS 服务器将请求发给了 <code>m.gtld-servers.net</code>，并得到了<code>sina.com</code>这个域名的域名服务器信息：<br><img src="/uploads/images/dns-auth-server.png" alt="get authoritative server info"></p>
+<li><p>本地 DNS 服务器拿到 TLD 服务器的地址，再将整个查询发给它，TLD 服务器返回新浪的权威 DNS 服务器信息，如下图所示，本地 DNS 服务器将请求发给了 <code>m.gtld-servers.net</code>，并得到了<code>sina.com</code>这个域名的域名服务器信息：<br><img src="/blog/uploads/images/dns-auth-server.png" alt="get authoritative server info"></p>
 </li>
-<li><p>接下来，本地 DNS 服务器向新浪的某个权威 DNS 服务器发送请求，如果该 DNS 服务器包含了查询域名的 IP 的地址，则返回相关RR；否则该 DNS 服务器将返回更底层的 DNS 服务器地址，本地 DNS 服务器向下一层 DNS 服务器发送查询请求，最终获得域名对应的 IP 地址或者查询失败。<br>在本例中，我们成功得到了 <code>home.sina.com</code> 的IP地址，如下图所示：<br><img src="/uploads/images/dns-ip.png" alt="get ip address"></p>
+<li><p>接下来，本地 DNS 服务器向新浪的某个权威 DNS 服务器发送请求，如果该 DNS 服务器包含了查询域名的 IP 的地址，则返回相关RR；否则该 DNS 服务器将返回更底层的 DNS 服务器地址，本地 DNS 服务器向下一层 DNS 服务器发送查询请求，最终获得域名对应的 IP 地址或者查询失败。<br>在本例中，我们成功得到了 <code>home.sina.com</code> 的IP地址，如下图所示：<br><img src="/blog/uploads/images/dns-ip.png" alt="get ip address"></p>
 </li>
 <li><p>本地 DNS 服务器将查询到的IP地址返回给主机。</p>
 </li>
 </ol>
-<p>至此，域名解析结束，整个过程如下图所示：<br><img src="/uploads/images/dns-resolution.svg" alt="dns resolution"></p>
+<p>至此，域名解析结束，整个过程如下图所示：<br><img src="/blog/uploads/images/dns-resolution.svg" alt="dns resolution"></p>
 <hr>
 <h3 id="查询机制"><a href="#查询机制" class="headerlink" title="查询机制"></a>查询机制</h3><p>我们看到上图图示中标示了两种查询机制，结合这个例子说明如下：</p>
 <ul>

@@ -86,14 +86,14 @@
 <meta property="og:site_name" content="Jane">
 <meta property="og:description" content="🎵 Dr.Evil: 叮咚，我有一个秘密，悄悄告诉你～ 虽然在 Bomb Lab 的提示里只提到了 6 个关卡，然而稍微留心一点便会发现，在反编译的代码中，出现了一个单词 “secret_phase”。显然，除了明面上的 6 个关卡，还有一个隐藏关等着我们。那么，这个 secret_phase 要如何才能触发呢？">
 <meta property="og:locale">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/bomb_phasefsec_tree.png">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/bomb_phasesec_tree_viz.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/bomb_phasesec_tree.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/bomb_phasesec_tree_viz.png">
 <meta property="article:published_time" content="2021-01-29T09:34:20.000Z">
-<meta property="article:modified_time" content="2021-08-01T16:59:35.533Z">
+<meta property="article:modified_time" content="2021-08-04T10:07:48.609Z">
 <meta property="article:author" content="Jane Liao">
 <meta property="article:tag" content="CSAPP">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/bomb_phasefsec_tree.png">
+<meta name="twitter:image" content="http://liaodanqi.xyz/blog/uploads/images/bomb_phasesec_tree.png">
 
 
 
@@ -360,7 +360,7 @@
 <li>如果输入值小于这个值，%rdi 变为 %rdi + 16 的地址里的内容，递归调用 <code>fun7</code>，将这次调用的返回值 * 2 + 1，然后返回。</li>
 <li>如果</li>
 </ul>
-<p>这个逻辑分析下来，是不是有点像二叉搜索呀：%rdi 的初始值 0x6030f0 存放的是二叉树的根节点，然后比较输入值与节点值的大小，移动 %rdi，使其指向左子节点或右子节点。<br>是不是越想越合理？赶紧打印出 0x6030f0 开始的内存内容看看是不是这样：<br><img src="/uploads/images/bomb_phasefsec_tree.png" alt="phase secret tree"><br>这下有理有据了，这个树画出来长下面这样（最后一个节点是 1001，偷懒用了 leetcode 的 tree visualizer，结果 4 位数显示不全…）<br><img src="/uploads/images/bomb_phasesec_tree_viz.png" alt="phase secret tree visualization"></p>
+<p>这个逻辑分析下来，是不是有点像二叉搜索呀：%rdi 的初始值 0x6030f0 存放的是二叉树的根节点，然后比较输入值与节点值的大小，移动 %rdi，使其指向左子节点或右子节点。<br>是不是越想越合理？赶紧打印出 0x6030f0 开始的内存内容看看是不是这样：<br><img src="/blog/uploads/images/bomb_phasesec_tree.png" alt="phase secret tree"><br>这下有理有据了，这个树画出来长下面这样（最后一个节点是 1001，偷懒用了 leetcode 的 tree visualizer，结果 4 位数显示不全…）<br><img src="/blog/uploads/images/bomb_phasesec_tree_viz.png" alt="phase secret tree visualization"></p>
 <p>最后一个需要解决的问题，就是要找出 secret phase 到底想搜索的是哪个值。根据上面的分析，我们已知 secret_phase 期望的返回值为 2，通过回溯递归的过程，最终找到目标值就是 22 或 20。</p>
 <hr>
 <p>🎉 那么，关于 Bomb Lab 的笔记到这里就全部结束啦～我们有缘再见～</p>

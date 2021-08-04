@@ -86,14 +86,14 @@
 <meta property="og:site_name" content="Jane">
 <meta property="og:description" content="在介绍JVM中提供的垃圾收集器之前，我觉得有必要先补充一下关于垃圾回收（以下简称 GC）的理论知识 —— 垃圾回收算法（以下简称 GC 算法）。 GC 算法的基本类型并不多，概括起来大概就以下三种：  标记-清除算法 (Mark-Sweep) - 由 John McCarthy 1960 年在论文 Recursive functions of symbolic expressions and th">
 <meta property="og:locale">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/reachability-analysis.svg">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/mark-sweep-memory.svg">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/reachability-analysis.svg">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/mark-sweep-memory.svg">
 <meta property="article:published_time" content="2019-07-20T07:36:14.000Z">
-<meta property="article:modified_time" content="2021-08-01T16:59:35.533Z">
+<meta property="article:modified_time" content="2021-08-04T10:07:48.609Z">
 <meta property="article:author" content="Jane Liao">
 <meta property="article:tag" content="GC">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/reachability-analysis.svg">
+<meta name="twitter:image" content="http://liaodanqi.xyz/blog/uploads/images/reachability-analysis.svg">
 
 
 
@@ -379,7 +379,7 @@
 <hr>
 <p>在进入本文的正题之前，还有一个问题要解决：<strong>哪些对象是需要回收的呢？</strong><br>这就涉及到一个判定方法 —— 可达性分析。</p>
 <h1 id="可达性分析"><a href="#可达性分析" class="headerlink" title="可达性分析"></a>可达性分析</h1><p>可达性分析 (Reachability Analysis) 是现在主流商用程序语言 (Java、C#等）的实现中用于判断对象是否存活的一种算法。<br>它的基本思想就是通过一组被称为 <strong>“GC Root”</strong> 的对象作为起始点，从这些节点开始遍历，所经过的路径被称为 <strong>“引用链”</strong>，当一个对象没有存在于任何一个 <strong>“GC Root”</strong> 的引用链上时，就证明此对象是<strong>不可达的</strong>。这些不可达的对象就是要回收的对象。</p>
-<p>举个例子，如下图所示，对象 object 6、object 7、object 8 都是GC Roots 不可达的，所以它们会被判定为可回收对象。<br><img src="/uploads/images/reachability-analysis.svg" alt="reachability analysis example"></p>
+<p>举个例子，如下图所示，对象 object 6、object 7、object 8 都是GC Roots 不可达的，所以它们会被判定为可回收对象。<br><img src="/blog/uploads/images/reachability-analysis.svg" alt="reachability analysis example"></p>
 <p>那么哪些对象属于 <strong>“GC Root”</strong> 呢？通常包括如下几类：</p>
 <ul>
 <li><strong>寄存器中的数据 (registers)</strong></li>
@@ -403,7 +403,7 @@
 <ul>
 <li>在清除阶段，GC 会遍历整个堆，也就是说，<strong>清除时间与堆大小成正比</strong></li>
 </ul>
-<p>我们可以通过一张图来看看堆中的空间在垃圾回收前后状态的变化：<br><img src="/uploads/images/mark-sweep-memory.svg" alt="mark-sweep memory"></p>
+<p>我们可以通过一张图来看看堆中的空间在垃圾回收前后状态的变化：<br><img src="/blog/uploads/images/mark-sweep-memory.svg" alt="mark-sweep memory"></p>
 <p>不难看出，经过多轮空间分配和垃圾回收后，堆从一整片完整的空间被划分为了很多不连续的碎片。空闲链表中的每个节点就都指向这样一个大小不一的分块。</p>
 <hr>
 <h3 id="合并"><a href="#合并" class="headerlink" title="合并"></a>合并</h3><p>如果在清除垃圾时发现前后两个分块是连续的，则可以考虑把小分块连在一起形成一个大分块。<br>这种<strong>连接连续分块</strong>的操作就叫做<strong>合并</strong>。</p>

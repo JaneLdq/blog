@@ -86,15 +86,15 @@
 <meta property="og:site_name" content="Jane">
 <meta property="og:description" content="网络安全这个话题实在太庞大了，小到单个资源的访问控制、通信内容的防窃听与防篡改，大到对组织整体网络 DDoS 攻击的防控，都属于网络安全的范畴。如果要对这些具体的操作详细说明，那么每个都可以单独拿出来写出长篇大论，而作为一篇入门向笔记，我们还是从最简单的场景开始吧。 现在疫情这么严重，大家很多都是在家办公，每天只能通过网络交流工作，我们自然希望 1）通信内容是保密的，不会在传输过程中被他人窃取；2">
 <meta property="og:locale">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/letter_freq.svg">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/letter_freq.svg">
 <meta property="article:published_time" content="2020-04-07T02:48:44.000Z">
-<meta property="article:modified_time" content="2021-08-01T16:59:35.537Z">
+<meta property="article:modified_time" content="2021-08-04T10:07:48.609Z">
 <meta property="article:author" content="Jane Liao">
 <meta property="article:tag" content="网络安全">
 <meta property="article:tag" content="对称密钥加密">
 <meta property="article:tag" content="非对称密钥加密">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/letter_freq.svg">
+<meta name="twitter:image" content="http://liaodanqi.xyz/blog/uploads/images/letter_freq.svg">
 
 
 
@@ -379,7 +379,7 @@
 <li>凯撒密码一般化：按照字母序移动 k 个位置，<strong>26</strong> 种可能性</li>
 <li>凯撒密码改进版：让每个字母映射为另一个字母，<strong>26!</strong> 种可能性</li>
 </ul>
-<p>像这种一一对应的置换策略被成为<strong>单字母置换</strong>。针对这种加密方式的基本攻击手段是<strong>利用自然语言的统计特性，计算所有字母在密文中的出现频率，与自然语言中字母的出现频率相比较，逐个试探映射关系</strong>。除此之外，综合常见的两字母组合、三字母组合，比如 <code>th</code>, <code>er</code>, <code>the</code>, <code>and</code> 等。<br>下图为26个字母的频率分布（图来自 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Letter_frequency">Letter Frequency - Wikipedia</a>），可以看到 <code>e</code> 为最常见的字母，<code>t</code> 次之。根据这些特性，在分析一段密文时，我们可以猜测出现频率最高的字母置换的就是 <code>e</code>，次之为 <code>t</code>。接下来，若看到常见的 <code>tXe</code> 组合，那么可以合理推测 <code>X</code> 置换的是 <code>h</code>。通过一系列的猜测，可以逐渐试探出明文。<br><img src="/uploads/images/letter_freq.svg" alt="Letter frequency"></p>
+<p>像这种一一对应的置换策略被成为<strong>单字母置换</strong>。针对这种加密方式的基本攻击手段是<strong>利用自然语言的统计特性，计算所有字母在密文中的出现频率，与自然语言中字母的出现频率相比较，逐个试探映射关系</strong>。除此之外，综合常见的两字母组合、三字母组合，比如 <code>th</code>, <code>er</code>, <code>the</code>, <code>and</code> 等。<br>下图为26个字母的频率分布（图来自 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Letter_frequency">Letter Frequency - Wikipedia</a>），可以看到 <code>e</code> 为最常见的字母，<code>t</code> 次之。根据这些特性，在分析一段密文时，我们可以猜测出现频率最高的字母置换的就是 <code>e</code>，次之为 <code>t</code>。接下来，若看到常见的 <code>tXe</code> 组合，那么可以合理推测 <code>X</code> 置换的是 <code>h</code>。通过一系列的猜测，可以逐渐试探出明文。<br><img src="/blog/uploads/images/letter_freq.svg" alt="Letter frequency"></p>
 <h3 id="移位密码"><a href="#移位密码" class="headerlink" title="移位密码"></a>移位密码</h3><p>移位密码 (transposition cipher)，<strong>将明文中的字母重新排列，本身不变，只是位置变了</strong>。<br>一种常见的移位密码方案为<strong>列换位</strong>。列换位使用一个不包含重复字母的单词或短语作为密钥，假设密钥长度为 L, 明文长度为 N，则将明文以每行长度为 L 进行排列，得到 N 列字符串。密文则按密钥字母最小的那列开始按列输出。<br>举个例子，假设我们以 <code>HIWORLD</code> 作为密钥来加密 <code>phpisthebestlanguageintheworld</code> 这段明文：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">H I W O R L D</span><br><span class="line">2 3 7 5 6 4 1</span><br><span class="line">-------------</span><br><span class="line">p h p i s t h</span><br><span class="line">e b e s t l a </span><br><span class="line">n g u a g e i </span><br><span class="line">n t h e w o r </span><br><span class="line">l d</span><br></pre></td></tr></table></figure><br>如上所示，按字母序 <code>D H I L O R W</code> 逐个输出每一列得到密文 <code>hairpennlhbgtdtleoisaestgwpeuh</code>。<br>在移位密码中，每个字母都代表自己，因此通过分析密文中的字母出现的频率分布就可以判断加密方式是否为移位加密。至于移位密码的破解，我也没有详细研究，就不多提了。</p>
 <hr>
 <h2 id="两个基本密码学原则"><a href="#两个基本密码学原则" class="headerlink" title="两个基本密码学原则"></a>两个基本密码学原则</h2><ol>

@@ -86,14 +86,14 @@
 <meta property="og:site_name" content="Jane">
 <meta property="og:description" content="从读书到工作，用 Java 写过一些 Web 应用，由于大多项目都是基于 Spring 开始，而 Spring 作为一个非常成熟的开发框架，为开发者隐去了很多底层细节，导致自己现在对于 Java Web 的基本运作原理的理解远不够深刻。为了弄明白 Java Web 到底是怎么一回事，我决定从 Tomcat 入手，好好捋一捋。 为什么是 Tomcat 呢？我们来看看 Tomcat 的官方介绍：  T">
 <meta property="og:locale">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/java-servlet.svg">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/java-servlet.svg">
 <meta property="article:published_time" content="2020-08-12T12:13:25.000Z">
-<meta property="article:modified_time" content="2021-08-01T16:59:35.537Z">
+<meta property="article:modified_time" content="2021-08-04T10:07:48.609Z">
 <meta property="article:author" content="Jane Liao">
 <meta property="article:tag" content="Java">
 <meta property="article:tag" content="Servlet">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/java-servlet.svg">
+<meta name="twitter:image" content="http://liaodanqi.xyz/blog/uploads/images/java-servlet.svg">
 
 
 
@@ -369,7 +369,7 @@
 <hr>
 <h1 id="ServletRequest-与-ServletResponse"><a href="#ServletRequest-与-ServletResponse" class="headerlink" title="ServletRequest 与 ServletResponse"></a>ServletRequest 与 ServletResponse</h1><p><code>ServletRequest</code> 包含了客户端请求的所有信息。Servlet Container 在收到客户端请求后，负责将其封装成 <code>ServletRequest</code> 实例作为入参传递给 Servlet 的 <code>service</code> 方法。特定的协议请求可以继承该接口并扩展提供协议相关的数据。<code>javax.servlet.http.HttpServletRequest</code> 就继承了该接口并封装了 HTTP 协议特定的数据，比如 HTTP Header，HTTP Session 等。</p>
 <p><code>ServletResponse</code> 定义了一组接口用于 Servlet 响应请求。<code>ServletResponse</code> 的创建也有 Servlet Container 负责，并在调用 Servlet 的 <code>service</code> 方法时作为入参传入。</p>
-<p>下面是一张简单概括 Servlet, ServletConfig 和 ServletContext 关系的 UML 图：<br><img src="/uploads/images/java-servlet.svg" alt="Java Servlet"></p>
+<p>下面是一张简单概括 Servlet, ServletConfig 和 ServletContext 关系的 UML 图：<br><img src="/blog/uploads/images/java-servlet.svg" alt="Java Servlet"></p>
 <hr>
 <p><strong>参考资料</strong></p>
 <ul>

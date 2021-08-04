@@ -86,15 +86,15 @@
 <meta property="og:site_name" content="Jane">
 <meta property="og:description" content="复制 (Copying GC) 算法最早由 Marvin Lee Minsky 于1963年在 A LISP Garbage Collector Algorithm Using Serial Secondary Storage 中提出。 复制算法的基本思想很简单，就是把整个堆空间一分为二，每次只使用一半的空间用于分配：  正在使用的空间叫做 From 空间，空置的另一半称为 To 空间； 执行 G">
 <meta property="og:locale">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/copying-gc.svg">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/recursive-copying-gc.png">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/cheney-copying-gc.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/copying-gc.svg">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/recursive-copying-gc.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/cheney-copying-gc.png">
 <meta property="article:published_time" content="2019-07-31T11:50:57.000Z">
-<meta property="article:modified_time" content="2021-08-01T16:59:35.533Z">
+<meta property="article:modified_time" content="2021-08-04T10:07:48.609Z">
 <meta property="article:author" content="Jane Liao">
 <meta property="article:tag" content="GC">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/copying-gc.svg">
+<meta name="twitter:image" content="http://liaodanqi.xyz/blog/uploads/images/copying-gc.svg">
 
 
 
@@ -355,7 +355,7 @@
 </ul>
 <p>复制算法的一大特点就是它关注的是<strong>活动对象</strong>，而不像之前提到的<strong>标记-清除算法</strong>及<strong>引用计数法</strong>，都是遍历查找非活动对象。</p>
 <span id="more"></span>
-<p>复制算法概要如下图所示：<br><img src="/uploads/images/copying-gc.svg" alt="copying-gc"></p>
+<p>复制算法概要如下图所示：<br><img src="/blog/uploads/images/copying-gc.svg" alt="copying-gc"></p>
 <p>接下来，我们将主要介绍两种复制算法的实现方式：</p>
 <ul>
 <li><strong>递归实现</strong> - 由 Robert R. Fenichel 和 Jerome C. Yochelson 于 1969 年在 <em>A LISP Garbage-Collector for Virtual-Memory Computer Systems</em> 中提出。</li>
@@ -366,7 +366,7 @@
 <h1 id="递归复制算法"><a href="#递归复制算法" class="headerlink" title="递归复制算法"></a>递归复制算法</h1><p>Robert R. Fenichel 和 Jerome C. Yochelson 给出的GC复制算法的实现<strong>采用递归的形式，遍历每个 GC Root，并递归复制其子对象</strong>。</p>
 <p>下面是算法伪码：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">copying</span>() &#123;</span><br><span class="line">    $free = $to_start</span><br><span class="line">    <span class="comment">// 遍历每个GC Root</span></span><br><span class="line">    <span class="keyword">for</span> (r: $roots) &#123;</span><br><span class="line">        <span class="comment">// 将root指向GC后的新地址</span></span><br><span class="line">        *r = <span class="built_in">copy</span>(*r)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 交换From和To空间</span></span><br><span class="line">    <span class="built_in">swap</span>($from_start, $to_start)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">copy</span>(obj) &#123;</span><br><span class="line">    <span class="keyword">if</span> (obj.tag != COPIED) &#123;</span><br><span class="line">        <span class="comment">// 这里虽然将obj拷贝到了To空间，但是obj中包含的指针还指向From空间</span></span><br><span class="line">        <span class="built_in">copy_data</span>($free, obj, obj.size)</span><br><span class="line">        obj.tag = COPIED</span><br><span class="line">        <span class="comment">// forwarding指针指向该对象在To空间的新地址，之后遇到指向From空间的该对象时要将指针更新为forwarding指针</span></span><br><span class="line">        obj.forwarding = $free</span><br><span class="line">        $free += obj.size</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 递归复制子对象</span></span><br><span class="line">        <span class="keyword">for</span> (child: <span class="built_in">children</span>(obj.forwarding)) &#123;</span><br><span class="line">            *child = <span class="built_in">copy</span>(*child)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> obj.forwarding</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>很认真地画了个图，希望能带大家更直观地感受一下整个过程：</p>
-<p><img src="/uploads/images/recursive-copying-gc.png" alt="recursive-copying-gc"></p>
+<p><img src="/blog/uploads/images/recursive-copying-gc.png" alt="recursive-copying-gc"></p>
 <p>上图中一共有四个对象存在于 From 空间，其中从 Root 开始遍历一共能找到 3 个活动对象 <code>A</code>、<code>B</code> 和 <code>D</code>，通过递归复制，将这个三个对象依次复制到 To 空间得到 <code>A&#39;</code>、<code>B&#39;</code> 和 <code>D&#39;</code>。可以看到复制到 To 空间后，对象内部包含的指针还是指向 From 空间的，直到递归返回时，用复制子对象得到的 forwarding 覆盖原子对象指针才完成指针的更新。最后，回收 From 空间所有对象并完成空间交换。</p>
 <hr>
 <h2 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h2><ul>
@@ -390,7 +390,7 @@
 <li>GC Root复制完成后，移动 <strong>scan</strong> 指针从队列中依次读取被复制的对象，遍历其引用的子对象，完成复制并加入队列（整个过程中 <strong>scan</strong> 每前进一次， <strong>$free</strong> 可能前进零次或 N 次，取决于是否有引用子对象）；</li>
 <li>直到 <strong>scan</strong> 和 <strong>$free</strong> 相遇，说明队列为空，复制结束。</li>
 </ul>
-<p>看个例子加深一下理解吧～<br><img src="/uploads/images/cheney-copying-gc.png" alt="cheney copying gc"></p>
+<p>看个例子加深一下理解吧～<br><img src="/blog/uploads/images/cheney-copying-gc.png" alt="cheney copying gc"></p>
 <hr>
 <h2 id="优点-1"><a href="#优点-1" class="headerlink" title="优点"></a>优点</h2><ul>
 <li><strong>迭代算法</strong>，消除了递归调用函数的额外负担和栈的消耗。</li>

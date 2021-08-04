@@ -86,16 +86,16 @@
 <meta property="og:site_name" content="Jane">
 <meta property="og:description" content="在前一篇笔记中我们总结了网络层的拥塞控制机制，主要以检测拥塞并及时反馈拥塞为主，毕竟要想控制拥塞，还得从根本上解决 —— 减缓传输层的发送速率以减少传输层注入到网络层的流量。 换言之，我们希望采用某种拥塞控制算法能为传输层找到一种好的带宽分配方法，这种分配方法具备如下特质：  物尽其用 - 能利用所有可用带宽却能避免拥塞 一视同仁 - 为网络中相互竞争的流是公平地分配带宽 随机应变 - 能及时跟踪">
 <meta property="og:locale">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/congestion-collapse.svg">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/tcp-congestion-control.svg">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/aimd.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/congestion-collapse.svg">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/tcp-congestion-control.svg">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/aimd.png">
 <meta property="article:published_time" content="2020-03-22T02:51:43.000Z">
-<meta property="article:modified_time" content="2021-08-01T16:59:35.533Z">
+<meta property="article:modified_time" content="2021-08-04T10:07:48.609Z">
 <meta property="article:author" content="Jane Liao">
 <meta property="article:tag" content="拥塞控制">
 <meta property="article:tag" content="TCP">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/congestion-collapse.svg">
+<meta name="twitter:image" content="http://liaodanqi.xyz/blog/uploads/images/congestion-collapse.svg">
 
 
 
@@ -356,7 +356,7 @@
 </ul>
 <span id="more"></span>
 <h1 id="理想的带宽分配"><a href="#理想的带宽分配" class="headerlink" title="理想的带宽分配"></a>理想的带宽分配</h1><p>下面我们就来展开聊聊传输层的“理想型”吧~</p>
-<h2 id="输入负载与实际吞吐量"><a href="#输入负载与实际吞吐量" class="headerlink" title="输入负载与实际吞吐量"></a>输入负载与实际吞吐量</h2><p>下图描述了拥塞发生的过程，横坐标表示<strong>输入负载 (offered load)</strong> —— 即原始数据加上重传的传输速率，纵坐标表示<strong>实际吞吐量 (throughput)</strong> —— 即传递原始数据的速率。<br><img src="/uploads/images/congestion-collapse.svg" alt="Congestion collapse"></p>
+<h2 id="输入负载与实际吞吐量"><a href="#输入负载与实际吞吐量" class="headerlink" title="输入负载与实际吞吐量"></a>输入负载与实际吞吐量</h2><p>下图描述了拥塞发生的过程，横坐标表示<strong>输入负载 (offered load)</strong> —— 即原始数据加上重传的传输速率，纵坐标表示<strong>实际吞吐量 (throughput)</strong> —— 即传递原始数据的速率。<br><img src="/blog/uploads/images/congestion-collapse.svg" alt="Congestion collapse"></p>
 <p>可以看到，在到达网络的承载极限之前，实际吞吐量随输入负载的增加而增加，然而，随着输入负载接近网络的承载能力，偶尔突发的流量填满了路由器的缓冲区，造成丢包。这些丢失的数据消耗了部分容量，并且会引起重传，因此送达的数据低于理想曲线。如果这个时候还不控制输入负载，那么最终网络会被重传的数据包占领，导致实际吞吐量急速下降，出现<strong>拥塞崩溃 (congestion collapse)</strong>。<br>相应的，在输入负载提升的初期，延迟稳定在一定水平，表示穿过整个网络的传输延迟。随着负载接近临界，延迟逐步上升，最终演变为急剧上升。</p>
 <p>因此，我们希望一个好的拥塞控制算法能有效控制输入负载，在避免导致拥塞出现的情况下，最大程度发挥所有可用带宽的作用，是为“物尽其用”。</p>
 <hr>
@@ -416,11 +416,11 @@
 <h3 id="快速重传-快速恢复"><a href="#快速重传-快速恢复" class="headerlink" title="快速重传 / 快速恢复"></a>快速重传 / 快速恢复</h3><p>当收到三个重复 ACK 后，TCP 会根据这个 ACK 的序号推算出可能丢包的那个数据段，并立即重传，这种机制被称为<strong>快速重传</strong>。</p>
 <p>在<strong>快速恢复</strong>状态下，<strong>每收到一个重复 ACK，<code>cwnd</code> 的值增加 1 MSS</strong>，直到收到了新的 ACK，这意味着接收方已经收到了之前一直没收到的数据段，TCP 会切回拥塞避免状态，并将 <code>cwnd</code> 的值设为 <code>ssthresh</code> 的值。</p>
 <p>如果在快速恢复的状态下发生了超时，则跟前面两种状态一样，设置 <code>ssthresh</code> 为当前 <code>cwnd</code> 的一半，再重置 <code>cwnd</code> 为初始值，并切回<strong>慢启动</strong>状态。</p>
-<p>下图是 TCP 拥塞控制的有限状态机：<br><img src="/uploads/images/tcp-congestion-control.svg" alt="TCP congestion control FSM"></p>
+<p>下图是 TCP 拥塞控制的有限状态机：<br><img src="/blog/uploads/images/tcp-congestion-control.svg" alt="TCP congestion control FSM"></p>
 <p>想了解更详细的 TCP 拥塞机制，请戳<a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc5681">RFC 5681</a>。<br>值得一题的是，我们上述描述的 TCP 拥塞机制源于 TCP Reno，而在 Reno 之后，也出现了很多变种的 TCP，比如 TCP NewReno, CUBIC TCP, TCP Vegas, TCP BBR等等，感兴趣的可戳<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/TCP_congestion_control#Algorithms">TCP Congestion Control</a></p>
 <hr>
 <h1 id="AIMD"><a href="#AIMD" class="headerlink" title="AIMD"></a>AIMD</h1><p>TCP 的拥塞控制通常被称为 <strong>AIMD</strong> 控制算法。AIMD 是 <strong>Addictive Increase Multiplicative Decrease</strong> 的缩写，即<strong>加法递增乘法递减</strong>。<br>AIMD 被证明是能达到有效和公平性的最优店的流量控制规则，详见 Chiu, Dah-Ming; Raj Jain (1989). <strong>Analysis of increase and decrease algorithms for congestion avoidance in computer networks</strong>。</p>
-<p><img src="/uploads/images/aimd.png" alt="AIMD"></p>
+<p><img src="/blog/uploads/images/aimd.png" alt="AIMD"></p>
 <p>如上图所示（图取自 Computer Networking A Top-down Approach 7th)，黑线表示效率，蓝线表示公平性。假设有两个连接共用一条链路，在某一时刻网络中两个连接的吞吐量处于图中 A 点状态，此时网络带宽还有盈余，两个连接加法递增各自的带宽，当到达 B 点时，网络负载超载，出现拥塞，双方占用带宽减半，到达 C 点，这时带宽又出现富余，双方带宽再次加法递增，达到 D 点，…，如此往复，这种行为的轨迹最终将收敛到兼顾效率与公平的平衡点。</p>
 <hr>
 <p>拥塞控制并不是一件容易的事情，时至今日，针对日益变化的网络形态，很多学者仍在研究的更优的拥塞控制算法，以上内容也不过浅尝辄止罢了。</p>

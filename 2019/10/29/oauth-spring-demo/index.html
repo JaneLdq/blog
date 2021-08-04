@@ -86,23 +86,23 @@
 <meta property="og:site_name" content="Jane">
 <meta property="og:description" content="上两篇笔记把 OAuth 2.0 基本的理论知识都介绍了一下，在本篇笔记中，就让我们一起来实现一个 OAuth 2.0  服务器吧，简单起见，这个服务器既承担资源服务器的角色，也承担授权服务器的角色。 我们使用 Spring Security 作为底层支持。Spring Security 是 Spring 全家桶中提供的与安全相关一套框架。它对一般 Web 应用都需要的认证和授权这一块的功能进行了">
 <meta property="og:locale">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/oauth-password-response.png">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/oauth-request-resource.png">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/oauth-code-grant-1.png">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/oauth-code-grant-2.png">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/oauth-code-grant-3.png">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/oauth-code-grant-4.png">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/oauth-code-grant-5.png">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/oauth-postman-request-token.png">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/oauth-postman-client.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/oauth-password-response.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/oauth-request-resource.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/oauth-code-grant-1.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/oauth-code-grant-2.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/oauth-code-grant-3.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/oauth-code-grant-4.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/oauth-code-grant-5.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/oauth-postman-request-token.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/oauth-postman-client.png">
 <meta property="article:published_time" content="2019-10-29T13:53:19.000Z">
-<meta property="article:modified_time" content="2021-08-01T16:59:35.537Z">
+<meta property="article:modified_time" content="2021-08-04T10:07:48.613Z">
 <meta property="article:author" content="Jane Liao">
 <meta property="article:tag" content="网络安全">
 <meta property="article:tag" content="OAuth">
 <meta property="article:tag" content="认证与授权">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/oauth-password-response.png">
+<meta name="twitter:image" content="http://liaodanqi.xyz/blog/uploads/images/oauth-password-response.png">
 
 
 
@@ -399,23 +399,23 @@
 <h3 id="Resource-Owner-Password-授权"><a href="#Resource-Owner-Password-授权" class="headerlink" title="Resource Owner Password 授权"></a>Resource Owner Password 授权</h3><p>敲入如下命令，我们就可以以 Resource Owner Password 授权的方式来获得 Access Token：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">curl -X POST \</span><br><span class="line">  http://localhost:8080/oauth/token \</span><br><span class="line">  -H &#x27;authorization: Basic Zm9vOnNlY3JldA==&#x27; \</span><br><span class="line">  -H &#x27;content-type: application/x-www-form-urlencoded&#x27; \</span><br><span class="line">  -d &#x27;grant_type=password&amp;username=alice&amp;password=alice&#x27;</span><br></pre></td></tr></table></figure>
 <p><code>authorization: Basic Zm9vOnNlY3JldA==</code> 头部中包含的就是我们在授权服务器中注册的客户端的 id 和 secret。</p>
-<p>返回结果如下图所示：<br><img src="/uploads/images/oauth-password-response.png" alt="OAuth Password Grant Type Response Screenshot"></p>
-<p>接下来，我们就可以将返回的 Access Token 放到请求的 Authorization 首部，以 Bearer Token 的形式来访问资源：<br><img src="/uploads/images/oauth-request-resource.png" alt="OAuth Access Token Request"></p>
+<p>返回结果如下图所示：<br><img src="/blog/uploads/images/oauth-password-response.png" alt="OAuth Password Grant Type Response Screenshot"></p>
+<p>接下来，我们就可以将返回的 Access Token 放到请求的 Authorization 首部，以 Bearer Token 的形式来访问资源：<br><img src="/blog/uploads/images/oauth-request-resource.png" alt="OAuth Access Token Request"></p>
 <hr>
-<h3 id="Authorization-Code-授权"><a href="#Authorization-Code-授权" class="headerlink" title="Authorization Code 授权"></a>Authorization Code 授权</h3><p>现在，我们打开浏览器，来看看授权码授权的过程。<br>在浏览器地址栏输入：<br><code>http://localhost:8080/oauth/authorize?grant_type=authorization_code&amp;response_type=code&amp;scopes=read,write&amp;client_id=foo&amp;state=1234</code><br><img src="/uploads/images/oauth-code-grant-1.png" alt="Authorization Code Grant 1"></p>
+<h3 id="Authorization-Code-授权"><a href="#Authorization-Code-授权" class="headerlink" title="Authorization Code 授权"></a>Authorization Code 授权</h3><p>现在，我们打开浏览器，来看看授权码授权的过程。<br>在浏览器地址栏输入：<br><code>http://localhost:8080/oauth/authorize?grant_type=authorization_code&amp;response_type=code&amp;scopes=read,write&amp;client_id=foo&amp;state=1234</code><br><img src="/blog/uploads/images/oauth-code-grant-1.png" alt="Authorization Code Grant 1"></p>
 <p>接下来，你会发现页面会自动跳转到 <code>localhost:8080/login</code>，这是因为我们配置的 <code>authenticationManager</code> 是应用自身默认提供的，采用的也是默认的 <code>formLogin</code>。</p>
-<p><img src="/uploads/images/oauth-code-grant-2.png" alt="Authorization Code Grant 2"></p>
+<p><img src="/blog/uploads/images/oauth-code-grant-2.png" alt="Authorization Code Grant 2"></p>
 <p>这是对应的重定向响应截图：</p>
-<p><img src="/uploads/images/oauth-code-grant-3.png" alt="Authorization Code Grant 3"></p>
+<p><img src="/blog/uploads/images/oauth-code-grant-3.png" alt="Authorization Code Grant 3"></p>
 <p>我们使用预设的 alice 账号登录，成功后会跳转到默认提供的授权页面，如下图所示，由于我们在授权请求中提交了 2 个 scope，这里可以分别授权：</p>
-<p><img src="/uploads/images/oauth-code-grant-4.png" alt="Authorization Code Grant 4"></p>
+<p><img src="/blog/uploads/images/oauth-code-grant-4.png" alt="Authorization Code Grant 4"></p>
 <p>用户同意部分授权，授权请求发送给服务器，服务器验证后生成授权码，并将其作为重定向 URL 参数传递给客户端。可以看到，重定向 URL 为 <code>localhost:8081?code=OPfyhZ&amp;state=1234</code>，正是我们在注册客户端时为其配置的重定向 URL。</p>
-<p><img src="/uploads/images/oauth-code-grant-5.png" alt="Authorization Code Grant 5"></p>
+<p><img src="/blog/uploads/images/oauth-code-grant-5.png" alt="Authorization Code Grant 5"></p>
 <p>到目前为止，localhost:8081 还只是一个普通的 Spring Boot 项目，我们还没有将其实现为 OAuth 2.0 客户端，所以它还不知道要怎么获取 Access Token。</p>
 <hr>
 <p>可是，此刻真的很想提前体验一把完整的 <strong>获得授权 - 获取 Access Token - 访问资源</strong> 的这个过程呢，没关系，我们还有 Postman。</p>
-<p>使用 Postman 向资源服务器请求资源，并选择认证模式为 OAuth 2，然后我们可以在 Get New Access Token 里配置获取 Token 需要的信息，如下所示：<br><img src="/uploads/images/oauth-postman-request-token.png" alt="Postman Get Access Token Configuration"></p>
-<p>点击 Request Token 获取 Access Token，然后发送请求，Postman 就可以作为一个 OAuth 2 客户端访问我们的资源服务器了。<br>结果如下图所示：<br><img src="/uploads/images/oauth-postman-client.png" alt="Postman as OAuth 2 Client"></p>
+<p>使用 Postman 向资源服务器请求资源，并选择认证模式为 OAuth 2，然后我们可以在 Get New Access Token 里配置获取 Token 需要的信息，如下所示：<br><img src="/blog/uploads/images/oauth-postman-request-token.png" alt="Postman Get Access Token Configuration"></p>
+<p>点击 Request Token 获取 Access Token，然后发送请求，Postman 就可以作为一个 OAuth 2 客户端访问我们的资源服务器了。<br>结果如下图所示：<br><img src="/blog/uploads/images/oauth-postman-client.png" alt="Postman as OAuth 2 Client"></p>
 <hr>
 <p>到此为止，我们的 OAuth 2 服务器已经运转起来，那么，OAuth 2 客户端又要如何实现呢？</p>
 <p>未完待续～</p>

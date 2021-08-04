@@ -490,7 +490,7 @@
 <p>上面是去年九月开坑时写的开头，中间连着准备两场考试实在是精力有限，一下就拖到了 2021 年。QAQ 被高数虐了一个多月却仍然挂得很惨，月初休息了一波修复碎成渣渣的玻璃心。最近工作不怎么忙了，所以我回来填坑啦～</p>
 <hr>
 <p>言归正传，在 Bomb Lab 中，我们会拿到一个名为 bomb 的可执行文件和一个 bomb.c 文件。通过 bomb.c 中的代码我们可以知道要拆除这个炸弹一共有6道关卡，只有每个关卡都给出正确输入才能拆除炸弹，否则炸弹就会爆炸，如下图所示：</p>
-<p><img src="/uploads/images/bomb_boom.png" alt="Bomb Boom"></p>
+<p><img src="/blog/uploads/images/bomb_boom.png" alt="Bomb Boom"></p>
 <p>面对如此嚣张的威胁，我们要如何解决呢？<br>在 Bomb Lab 的 Writeup 里提到了一些非常有用的工具：gdb, objdump, strings。实践证明，它们真的很管用！<br>那么接下来，我们就一起来拆炸弹吧～<br>
           <!--noindex-->
           <div class="post-button text-center">
@@ -1702,7 +1702,7 @@
 <p>网络拥塞的治疗方案由网络层和传输层协作实施，网络层作为直接经历拥塞的部分，需要它最终决定如何处理过载的数据；而传输层作为“幕后黑手”，要控制拥塞还需其积极配合。<br><!--more---></p>
 <hr>
 <h1 id="网络层的拥塞控制"><a href="#网络层的拥塞控制" class="headerlink" title="网络层的拥塞控制"></a>网络层的拥塞控制</h1><p>那我们先来看看在网络层，有哪些方法可用于拥塞控制。<br>拥塞的发生表明<strong>当前的网络负载大于资源可以处理的能力</strong>，显然，解决方案有两个方向，<strong>减少负载</strong>或<strong>增加资源</strong>。<br>下图展示了主要的几种解决方案，从左至右，解决方案的反应时间由慢变快。左侧属于预防性措施，一般要经历长期过程；右侧则属于应急响应，效果立竿见影。<br>打个比方，若是应对感冒，最左好比锻炼身体增强免疫力，最右好比退烧针。</p>
-<p><img src="/uploads/images/congestion-control-network-layer.svg" alt="congestion-control-network-layer"></p>
+<p><img src="/blog/uploads/images/congestion-control-network-layer.svg" alt="congestion-control-network-layer"></p>
 <hr>
 <h2 id="网络供给-Provisioning"><a href="#网络供给-Provisioning" class="headerlink" title="网络供给 Provisioning"></a>网络供给 Provisioning</h2><p>当出现严重拥塞时，通过动态增加网络资源疏通流量，比如使用备用路由器或者购买更多的带宽等；平时及时对经常使用的链路和路由器升级；<br>这些或临时或日常的操作统称为供给（provisioning），目的是建立一个与流量良好匹配的网络，网络供给通常在长期流量趋势的推动下需要几个月的时间来调整和完善。</p>
 <hr>

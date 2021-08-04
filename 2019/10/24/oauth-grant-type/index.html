@@ -86,18 +86,18 @@
 <meta property="og:site_name" content="Jane">
 <meta property="og:description" content="在上一篇笔记中，我们了解了一些 OAuth 2.0 中的概念，其中最重要的就是 OAuth 2.0 的四个角色：资源拥有者（用户）、客户端、授权服务器和资源服务器。在本篇笔记里，我们将介绍 OAuth 2.0 中的授权类型。 针对不同的授权场景，OAuth 2.0 定义了 4 种授权类型：  Authorization Code Implicit Resource Owner Password C">
 <meta property="og:locale">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/oauth2-code-grant.png">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/oauth2-implicit-grant.png">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/oauth2-resource-owner-credentials-grant.png">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/oauth2-client-credentials-grant.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/oauth2-code-grant.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/oauth2-implicit-grant.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/oauth2-resource-owner-credentials-grant.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/oauth2-client-credentials-grant.png">
 <meta property="article:published_time" content="2019-10-24T02:27:06.000Z">
-<meta property="article:modified_time" content="2021-08-01T16:59:35.537Z">
+<meta property="article:modified_time" content="2021-08-04T10:07:48.613Z">
 <meta property="article:author" content="Jane Liao">
 <meta property="article:tag" content="网络安全">
 <meta property="article:tag" content="OAuth">
 <meta property="article:tag" content="认证与授权">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/oauth2-code-grant.png">
+<meta name="twitter:image" content="http://liaodanqi.xyz/blog/uploads/images/oauth2-code-grant.png">
 
 
 
@@ -363,7 +363,7 @@
 <span id="more"></span>
 <hr>
 <h2 id="Authorization-Code"><a href="#Authorization-Code" class="headerlink" title="Authorization Code"></a>Authorization Code</h2><p>Authorization Code（授权码）这一授权类型基于重定向的过程，因此在整个授权过程中，有多个步骤要求 User Agent（通常指浏览器，这一组件在上图中没有体现）的参与。它既可以用来获取 Access Token，也可以用来获取 Refresh Token。</p>
-<p>先看图：<br><img src="/uploads/images/oauth2-code-grant.png" alt="Authorization Code Grant"></p>
+<p>先看图：<br><img src="/blog/uploads/images/oauth2-code-grant.png" alt="Authorization Code Grant"></p>
 <ol>
 <li>客户端通过 User Agent 向授权服务器发起获取授权码的请求，在请求中会带上 <code>client_id</code>, <code>scope</code>, <code>state</code> 和一个在获取授权码后要跳转到的 <code>redirect_uri</code>（请记住这个URL，我们还会再见到它好几次）。</li>
 <li>授权服务器将 User Agent 重定向到用户认证页面，对用户进行认证，并授权给客户端，然后授权服务器将 User Agent 重定向到刚刚客户端在请求中指定的那个 <code>redirect_uri</code>，并附加上授权码和客户端在请求中带上的<code>state</code>。（用户也可以在这一步拒绝授权，那么在这一步将返回 Error Response）。</li>
@@ -374,7 +374,7 @@
 <p>在这一授权类型中，<strong>授权服务器充当了客户端和用户之间的媒介，在整个过程中，用户只与授权服务器交互完成认证，因此用户的认证信息不需要与客户端共享。</strong></p>
 <hr>
 <h2 id="Implicit"><a href="#Implicit" class="headerlink" title="Implicit"></a>Implicit</h2><p>一种为浏览器客户端应用简化的授权流程。注意，这里的浏览器客户端是指指类似与运行在浏览器中的 Javascript 应用，而非通过浏览器访问、实际部署在远程服务器上的应用。<br>在 Implicit 这类授权中，客户端使用脚本语言直接请求授权，跳过了“获取授权码”这个步骤，Access Token 将作为 <code>redirect_uri</code> 的一部分返回给客户端。</p>
-<p>Implicit 授权过程如图所示：<br><img src="/uploads/images/oauth2-implicit-grant.png" alt="Impilicit Grant"></p>
+<p>Implicit 授权过程如图所示：<br><img src="/blog/uploads/images/oauth2-implicit-grant.png" alt="Impilicit Grant"></p>
 <ol>
 <li>客户端向授权服务器发送授权请求。</li>
 <li>授权服务器重定向到用户认证界面，用户通过认证并同意授权。</li>
@@ -392,7 +392,7 @@
 <hr>
 <h2 id="Resource-Owner-Password-Credentials"><a href="#Resource-Owner-Password-Credentials" class="headerlink" title="Resource Owner Password Credentials"></a>Resource Owner Password Credentials</h2><p>Resource Owner Password Credentials（用户密码认证）授权，即客户端直接使用用户的用户名密码进行认证获得 Access Token，这种方式要求客户端能够获取用户的用户名密码。</p>
 <p>这种授权类型只应该在高度信任客户端的情况下使用，比如当客户端是操作系统的一部分，或者其他认证类型不可行的时候。</p>
-<p>授权过程如图所示：<br><img src="/uploads/images/oauth2-resource-owner-credentials-grant.png" alt="Resource Owner Password Credentials Grant"></p>
+<p>授权过程如图所示：<br><img src="/blog/uploads/images/oauth2-resource-owner-credentials-grant.png" alt="Resource Owner Password Credentials Grant"></p>
 <ol>
 <li>用户向客户端提供用户名和密码。</li>
 <li>客户端利用用户的用户密码向授权服务器请求授权。</li>
@@ -402,7 +402,7 @@
 <p>通常，这一类型是用来将使用直接认证的客户端（比如使用 HTTP Basic 或 Digest 认证）迁移到 OAuth 服务器，也就是说原来这些客户端要保存用户名密码，现在转为保存 Token。</p>
 <hr>
 <h2 id="Client-Credentials"><a href="#Client-Credentials" class="headerlink" title="Client Credentials"></a>Client Credentials</h2><p>在这一类型中客户端以自己的名义，而不是以用户的名义向资源服务器请求资源，因此在获取 Access Token 时客户端直接采用自己的认证信息进行认证就可以了。这一模式从本质上来讲，客户端自身就是“资源拥有者”，因此并不存在是授权问题。</p>
-<p>授权过程如下图所示：<br><img src="/uploads/images/oauth2-client-credentials-grant.png" alt="Client Credentials Grant"></p>
+<p>授权过程如下图所示：<br><img src="/blog/uploads/images/oauth2-client-credentials-grant.png" alt="Client Credentials Grant"></p>
 <ol>
 <li>客户端向授权服务器进行认证。在上一篇笔记中我们有提到 OAuth 没有规定要如何认证客户端，关于客户端的认证见另一个基于 OAuth 发展的协议 OpenID Connect。</li>
 <li>客户端认证通过后，授权服务器向客户端发送 Access Token。</li>

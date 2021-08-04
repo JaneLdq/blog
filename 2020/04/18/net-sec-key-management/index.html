@@ -86,18 +86,18 @@
 <meta property="og:site_name" content="Jane">
 <meta property="og:description" content="我们可以说网络通信的安全性几乎是建立在密钥的安全性上，因此如何管理密钥和分发密钥是一个非常重要的话题。下文中我们将一一介绍如下概念：  密钥分发中心 (KDC, Key Distribution Center) 数字证书 (Certificate) 认证中心 (CA, Certification Authority) 公钥基础设施 (PKI, Public Key Infrastructure)">
 <meta property="og:locale">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/kdc.svg">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/wiki-cert.png">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/intermediate-ca.png">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/root-ca.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/kdc.svg">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/wiki-cert.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/intermediate-ca.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/root-ca.png">
 <meta property="article:published_time" content="2020-04-18T13:33:20.000Z">
-<meta property="article:modified_time" content="2021-08-01T16:59:35.537Z">
+<meta property="article:modified_time" content="2021-08-04T10:07:48.609Z">
 <meta property="article:author" content="Jane Liao">
 <meta property="article:tag" content="网络安全">
 <meta property="article:tag" content="密钥分发">
 <meta property="article:tag" content="数字证书">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/kdc.svg">
+<meta name="twitter:image" content="http://liaodanqi.xyz/blog/uploads/images/kdc.svg">
 
 
 
@@ -359,7 +359,7 @@
 <span id="more"></span>
 <hr>
 <h1 id="密钥分发中心"><a href="#密钥分发中心" class="headerlink" title="密钥分发中心"></a>密钥分发中心</h1><p>为了安全地分发密钥，我们可以设立一个大家都信任的<strong>密钥分发中心 (KDC, Key Distribution Center)</strong>，它负责 7*24 为用户提供密钥分发服务。 </p>
-<h2 id="对称密钥分发"><a href="#对称密钥分发" class="headerlink" title="对称密钥分发"></a>对称密钥分发</h2><p>在应用对称密钥加密的场景中，KDC 通常要负责为通信双方生成一个临时的会话密钥，大致流程如下图所示：<br><img src="/uploads/images/kdc.svg" alt="KDC"></p>
+<h2 id="对称密钥分发"><a href="#对称密钥分发" class="headerlink" title="对称密钥分发"></a>对称密钥分发</h2><p>在应用对称密钥加密的场景中，KDC 通常要负责为通信双方生成一个临时的会话密钥，大致流程如下图所示：<br><img src="/blog/uploads/images/kdc.svg" alt="KDC"></p>
 <ol>
 <li>Alice 和 Bob 事先在 KDC 中注册了自己的<strong>主密钥 (master key)</strong>，主密钥用于加密与 KDC 的通信</li>
 <li>当 Alice 想与 Bob 通信时，她将自己和 Bob 的标识发送给 KDC</li>
@@ -379,7 +379,7 @@
 <li>签名用到的哈希算法</li>
 </ul>
 <p>证书的基本目标就是将一个实体的名字与一个公钥绑定，证书本身是公开的。Alice 可以将她获得的证书放到自己的网站，当 Bob 想与 Alice 建立安全通信时，就可以从 Alice 的网站获取她的证书，并从中得到 Alice 的公钥。这时，如果有个第三者 X 将 Alice 的证书换成了自己的，那么 Bob 可以很快发现证书上持有者的名字并不是 Alice。如果这个 X 只替换了公钥，而保留其他信息，Bob 仍然可以通过计算证书的哈希值，并将其与使用 CA 的公钥解密签名获得的值进行比对发现问题（X 没有 CA 的私钥，无法伪造签名）。</p>
-<p>举个实例，下图是维基百科网站的证书，可以看到这个证书是由 <code>DigiCert SHA2 High Assureance Server CA</code> 颁发的，从上自下依次是持有者的信息、颁发者的信息、持有者公钥和数字签名的详细信息：<br><img src="/uploads/images/wiki-cert.png" alt="certificate of *.wikipedia.org"></p>
+<p>举个实例，下图是维基百科网站的证书，可以看到这个证书是由 <code>DigiCert SHA2 High Assureance Server CA</code> 颁发的，从上自下依次是持有者的信息、颁发者的信息、持有者公钥和数字签名的详细信息：<br><img src="/blog/uploads/images/wiki-cert.png" alt="certificate of *.wikipedia.org"></p>
 <h2 id="X-509-证书"><a href="#X-509-证书" class="headerlink" title="X.509 证书"></a>X.509 证书</h2><p>如果每个实体申请的证书格式都不一样，那么管理不同格式的证书会成为非常痛苦的事情，因此，人们设计了一个统一的证书格式标准，也就是 <strong>X.509</strong>。<br>因此，当我们提起 <strong>X.509 证书</strong> 时，即表示这个证书满足 X.509 格式标准。(想当初，我还以为X.509是什么很神秘的东西呢，毕竟又是X又是奇怪的数字)</p>
 <p>更多关于 X.509 的信息，见 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/X.509">X.509 - Wiki</a></p>
 <hr>
@@ -388,7 +388,7 @@
 <p>A public key infrastructure (PKI) is a set of roles, policies, hardware, software and procedures needed to create, manage, distribute, use, store and revoke digital certificates and manage public-key encryption. (from wikipedia)</p>
 </blockquote>
 <p>一种简单的 PKI 形式是 CA 层级结构，最顶层的 CA，又被称为 Root CA，它的责任是证明第二级的 CA，第二级的 CA 下面可能还有第三级的 CA，那么二级 CA 则负责证明三级 CA，三级 CA 才是最终负责为用户颁发证书的 CA。</p>
-<p><img src="/uploads/images/intermediate-ca.png" alt="Intermediate CA"><br><img src="/uploads/images/root-ca.png" alt="Root CA"></p>
+<p><img src="/blog/uploads/images/intermediate-ca.png" alt="Intermediate CA"><br><img src="/blog/uploads/images/root-ca.png" alt="Root CA"></p>
 <p>上图维基百科的证书为例，可以看到维基百科的证书是由 <code>DigiCert SHA2 High Assurance Server CA</code> 颁发，它的类型属于 <strong>Intermediate certificate authority</strong>，而这个 CA 的证书又是由 <code>DigiCert High Assurance EV Root CA</code> 颁发，它的类型则是 <strong>Root certificate authority</strong>，仔细看它的颁发者也是它自己，说明这是一个自签的 CA (self-signed CA)。</p>
 <p>当浏览器想验证这个网站的证书时，它会从网站自身的证书开始逐级向上验证，向这样自底向上回溯到根的证书链常被称为<strong>信任链 (chain of trust)</strong>。</p>
 <p>正如我们之前提到的，谁来独揽运行根 CA 都不合适，因此现实世界中，全球范围内有多个根 CA，每个根 CA 有自己的子 CA。目前大约有 100 多个根 CA 的证书是被预先安装到浏览器中的，它们也被称为<strong>信任锚 (trust anchor)</strong>。</p>

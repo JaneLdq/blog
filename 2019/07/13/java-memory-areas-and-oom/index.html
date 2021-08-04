@@ -86,13 +86,13 @@
 <meta property="og:site_name" content="Jane">
 <meta property="og:description" content="“你是什么垃圾？” ¯\_(ツ)_&#x2F;¯ 最近垃圾分类的话题那是相当火热，作为紧跟时代的程序员，我们不仅要开创格子衫的天下，还要走在时尚的最前沿～于是，我决定趁此机会，理一理Java中的内存管理与垃圾回收机制～ 「辣鸡系列」正式开坑～(⊙v⊙)  在日常的 Java 开发中，有 JVM 的自动内存管理机制，我们一般也不怎么关注 Java 的内存分配和垃圾回收，因为不太容易出现内存泄漏和溢出的问题。不">
 <meta property="og:locale">
-<meta property="og:image" content="http://liaodanqi.xyz/uploads/images/jvm-runtime-data-area.svg">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/jvm-runtime-data-area.svg">
 <meta property="article:published_time" content="2019-07-13T14:24:13.000Z">
-<meta property="article:modified_time" content="2021-08-01T16:59:35.537Z">
+<meta property="article:modified_time" content="2021-08-04T10:07:48.609Z">
 <meta property="article:author" content="Jane Liao">
 <meta property="article:tag" content="Java">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://liaodanqi.xyz/uploads/images/jvm-runtime-data-area.svg">
+<meta name="twitter:image" content="http://liaodanqi.xyz/blog/uploads/images/jvm-runtime-data-area.svg">
 
 
 
@@ -414,7 +414,7 @@
 </tr>
 </tbody>
 </table>
-<p><img src="/uploads/images/jvm-runtime-data-area.svg" alt="Boyermoore Example"></p>
+<p><img src="/blog/uploads/images/jvm-runtime-data-area.svg" alt="Boyermoore Example"></p>
 <hr>
 <h2 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h2><p>直接内存 (Direct Memory) 并不是 JVM 运行时数据区的一部分，也不是 JVM 规范中定义的内存区域，不过由于这部分内存也被频繁使用，既然都是内存，就稍微提一下。<br>直接内存由 NIO 类引入，它可以使用 Native 函数库<strong>直接分配堆外内存</strong>，然后通过存储在 Java 堆中的 <code>DirectByteBuffer</code> 对象引用这块内存进行操作。<br>直接内存的分配不受 Java 堆大小的限制，但是会<strong>受本机总内存大小和处理器寻址空间的限制</strong>。<br>在配置虚拟机参数时，如果忽略了直接内存，容易使得各个内存区域总和大于物理内存限制，导致动态扩展时出现 OutOfMemoryError。</p>
 <h3 id="为什么要引入直接内存呢？"><a href="#为什么要引入直接内存呢？" class="headerlink" title="为什么要引入直接内存呢？"></a>为什么要引入直接内存呢？</h3><p><code>java.nio</code> 包中的 <code>ByteBuffer</code> 类有三个子类: <code>HeapByteBuffer</code>、<code>DirectByteBuffer</code> 和 <code>MappedByteBuffer</code>。顾名思义，<code>HeapByteBuffer</code>采用的从堆中分配内存的方式，其本质就是封装了一个 <code>byte[]</code>。那么为什么还要提供另外两个采用分配直接内存的实现类呢？<br>要回答这个问题，要从操作系统的I/O操作说起。操作系统的读写操作都是基于一块连续的空间 (contiguous sequence of bytes)，但是一个 <code>byte[]</code> 在堆上的会是一块连续的空间吗？并不一定，按照 JVM 规范中的描述，堆的物理实现都可以是不连续的，那这就无法保证堆上的字节数组一定会在一个连续空间里了。虽然 JVM 把一个一维字节数组分开存储的可能性不大，但是Java堆仍是不能被原生的I/O直接操作的，得先把堆上的数据拷贝到本机内存 (native memeory) 上，才能执行操作系统级的I/O操作。这样效率就低了很多，<strong>直接内存</strong>的出现就是为了提高这类操作的效率。</p>
