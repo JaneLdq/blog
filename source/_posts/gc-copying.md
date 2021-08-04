@@ -155,6 +155,6 @@ Cheney算法其实质其实就是**广度优先遍历**：
 * Robert R. Fenichel, Jerome C. Yochelson, *A LISP Garbage-Collector for Virtual-Memory Computer Systems*, 1969
 * C. J. Cheney, *A Nonrecursive List Compacting Algorithm*, 1970
 
-  [1]:/uploads/images/copying-gc.svg
-  [2]:/uploads/images/recursive-copying-gc.png
-  [3]:/uploads/images/cheney-copying-gc.png
+  [1]:/blog/uploads/images/copying-gc.svg
+  [2]:/blog/uploads/images/recursive-copying-gc.png
+  [3]:/blog/uploads/images/cheney-copying-gc.png

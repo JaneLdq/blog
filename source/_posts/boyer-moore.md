@@ -136,4 +136,4 @@ public class BoyerMoore {
 
   [1]: https://en.wikipedia.org/wiki/Robert_S._Boyer
   [2]: https://en.wikipedia.org/wiki/J_Strother_Moore
-  [3]: /uploads/images/boyermoore.png
+  [3]: /blog/uploads/images/boyermoore.png

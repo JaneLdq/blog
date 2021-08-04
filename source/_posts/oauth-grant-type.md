@@ -110,7 +110,7 @@ So，我计划用 Spring Security OAuth 来实现一个 OAuth 2.0 授权场景�
 * [RFC6749 - The OAuth 2.0 Authorization Framework](https://tools.ietf.org/html/rfc6749)
 * [Is the OAuth 2.0 Implicit Flow Dead?](https://developer.okta.com/blog/2019/05/01/is-the-oauth-implicit-flow-dead)
 
-  [1]:/uploads/images/oauth2-code-grant.png
-  [2]:/uploads/images/oauth2-implicit-grant.png
-  [3]:/uploads/images/oauth2-resource-owner-credentials-grant.png
-  [4]:/uploads/images/oauth2-client-credentials-grant.png
+  [1]:/blog/uploads/images/oauth2-code-grant.png
+  [2]:/blog/uploads/images/oauth2-implicit-grant.png
+  [3]:/blog/uploads/images/oauth2-resource-owner-credentials-grant.png
+  [4]:/blog/uploads/images/oauth2-client-credentials-grant.png

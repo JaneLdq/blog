@@ -556,13 +556,13 @@ for (int i = 0; i < 6; i++) {
 
 ---
 
-[1]: /uploads/images/bomb_boom.png
-[2]: /uploads/images/bomb_phase1_debug.png
-[3]: /uploads/images/bomb_phase1_debug.png
-[4]: /uploads/images/bomb_phase3_addr.png
-[5]: /uploads/images/bomb_phase5_strings.png
-[6]: /uploads/images/bomb_phase6_linklist.png
-[7]: /uploads/images/bomb_phase6_stack.png
-[8]: /uploads/images/bomb_phase6_sort.png
-[9]: /uploads/images/bomb_phase6_update.png
-[10]: /uploads/images/bomb_defused.png
+[1]: /blog/uploads/images/bomb_boom.png
+[2]: /blog/uploads/images/bomb_phase1_debug.png
+[3]: /blog/uploads/images/bomb_phase1_debug.png
+[4]: /blog/uploads/images/bomb_phase3_addr.png
+[5]: /blog/uploads/images/bomb_phase5_strings.png
+[6]: /blog/uploads/images/bomb_phase6_linklist.png
+[7]: /blog/uploads/images/bomb_phase6_stack.png
+[8]: /blog/uploads/images/bomb_phase6_sort.png
+[9]: /blog/uploads/images/bomb_phase6_update.png
+[10]: /blog/uploads/images/bomb_defused.png

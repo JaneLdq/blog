@@ -145,6 +145,6 @@ $$C=E_{K_{public}}(P), \, D_{K_{private}}(C)=P$$
 * [Block cipher - Wiki](https://en.wikipedia.org/wiki/Block_cipher)
 * [Block cipher mode of operations - Wiki](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation)
 
-[1]:/uploads/images/letter_freq.svg
+[1]:/blog/uploads/images/letter_freq.svg
 
 

@@ -128,5 +128,5 @@ tags: CSAPP
 
 ---
 
-[1]: /uploads/images/bomb_phasefsec_tree.png
-[2]: /uploads/images/bomb_phasesec_tree_viz.png
+[1]: /blog/uploads/images/bomb_phasesec_tree.png
+[2]: /blog/uploads/images/bomb_phasesec_tree_viz.png

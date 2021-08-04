@@ -149,7 +149,7 @@ OAuth 2.0 没有明确规定客户端的认证方式，这取决于应用的具�
 * [stackoverflow - OAuth v2 communication between authentication and resource server](https://stackoverflow.com/questions/6255104/oauth-v2-communication-between-authentication-and-resource-server)
 * [stackoverflow - How Resource Server can identify user from token?](https://stackoverflow.com/questions/48770574/how-resource-server-can-identify-user-from-token)
 
-  [1]: /uploads/images/oauth-roles.svg
+  [1]: /blog/uploads/images/oauth-roles.svg
 
 
 

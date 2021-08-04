@@ -196,7 +196,7 @@ Exception in thread "main" java.lang.OutOfMemoryError: Java heap space
 * [Understand the OutOfMemoryError Exception][3]
 * [Understanding Java Buffer Pool Memory Space][4]
 
-  [1]: /uploads/images/jvm-runtime-data-area.svg
+  [1]: /blog/uploads/images/jvm-runtime-data-area.svg
   [2]: https://docs.oracle.com/javase/specs/jvms/se12/html/index.html
   [3]: https://docs.oracle.com/en/java/javase/12/troubleshoot/troubleshoot-memory-leaks.html
   [4]: https://www.fusion-reactor.com/evangelism/understanding-java-buffer-pool-memory-space/

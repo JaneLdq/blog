@@ -85,5 +85,5 @@ TLS 握手协议承担了创建 TLS 会话的重任，成功握手意味着通�
 * [HTTPS - wiki](https://en.wikipedia.org/wiki/HTTPS)
 * [Transport Layer Security - wiki](https://en.wikipedia.org/wiki/Transport_Layer_Security)
 
-[1]:/uploads/images/http-tls-tcp.svg
-[2]:/uploads/images/tls-2-handshake.svg
+[1]:/blog/uploads/images/http-tls-tcp.svg
+[2]:/blog/uploads/images/tls-2-handshake.svg

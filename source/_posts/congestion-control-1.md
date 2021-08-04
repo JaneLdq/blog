@@ -124,4 +124,4 @@ RED 最早由 Floyd 和 Jacobson 在 1993 年提出，后来又出现了不少�
 * [Wikipedia - Network Congestion](https://en.wikipedia.org/wiki/Network_congestion)
 * Computer Networking: A Top-Down Approach, 7th Edition
 
-[1]:/uploads/images/congestion-control-network-layer.svg
+[1]:/blog/uploads/images/congestion-control-network-layer.svg

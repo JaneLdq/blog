@@ -235,5 +235,5 @@ sweep_phase () {
   [1]:https://en.wikipedia.org/wiki/John_McCarthy_(computer_scientist)
   [2]:https://en.wikipedia.org/wiki/George_E._Collins
   [3]:https://en.wikipedia.org/wiki/Marvin_Minsky
-  [4]:/uploads/images/reachability-analysis.svg
-  [5]:/uploads/images/mark-sweep-memory.svg
+  [4]:/blog/uploads/images/reachability-analysis.svg
+  [5]:/blog/uploads/images/mark-sweep-memory.svg

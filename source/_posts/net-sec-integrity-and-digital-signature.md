@@ -110,4 +110,4 @@ MAC 行不行？不行。MAC 中通信双方共享一个 secret，这意味当 A
 * Computer Networking: A Top-Down Approach, 7th Edition
 * [MAC - wiki](https://en.wikipedia.org/wiki/Message_authentication_code)
 
-[1]:/uploads/images/digital-signature.png
+[1]:/blog/uploads/images/digital-signature.png

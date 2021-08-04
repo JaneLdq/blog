@@ -132,6 +132,6 @@ AIMD 被证明是能达到有效和公平性的最优店的流量控制规则，
 * [RFC 5681](https://tools.ietf.org/html/rfc5681)
 * [TCP Reno and Congestion Management](http://intronetworks.cs.luc.edu/current/html/reno.html)
 
-[1]:/uploads/images/congestion-collapse.svg
-[2]:/uploads/images/tcp-congestion-control.svg
-[3]:/uploads/images/aimd.png
+[1]:/blog/uploads/images/congestion-collapse.svg
+[2]:/blog/uploads/images/tcp-congestion-control.svg
+[3]:/blog/uploads/images/aimd.png

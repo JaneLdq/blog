@@ -177,9 +177,9 @@ DNS采用UDP作为传输层协议，DNS消息通过UDP数据包发送，格式�
 * [What is DNS](https://ns1.com/resources/what-is-dns)
 * [What does getaddrinfo do](https://jameshfisher.com/2018/02/03/what-does-getaddrinfo-do/)
 
-  [1]:/uploads/images/domain-name-space.jpg
-  [2]:/uploads/images/dns-root-server.png
-  [3]:/uploads/images/dns-tld-server.png
-  [4]:/uploads/images/dns-auth-server.png
-  [5]:/uploads/images/dns-ip.png
-  [6]:/uploads/images/dns-resolution.svg
+  [1]:/blog/uploads/images/domain-name-space.jpg
+  [2]:/blog/uploads/images/dns-root-server.png
+  [3]:/blog/uploads/images/dns-tld-server.png
+  [4]:/blog/uploads/images/dns-auth-server.png
+  [5]:/blog/uploads/images/dns-ip.png
+  [6]:/blog/uploads/images/dns-resolution.svg

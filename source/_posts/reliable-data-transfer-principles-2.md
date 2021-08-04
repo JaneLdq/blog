@@ -90,5 +90,5 @@ SR 的发送方同样也要对如下三种事件做出响应：
 * Computer Networking: A Top-Down Approach, 7th Edition
 * 计算机网络，第五版
 
-[1]:/uploads/images/gbn-sender.png
-[2]:/uploads/images/sr-sender-receiver.png
+[1]:/blog/uploads/images/gbn-sender.png
+[2]:/blog/uploads/images/sr-sender-receiver.png

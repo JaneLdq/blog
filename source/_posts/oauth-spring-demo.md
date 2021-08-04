@@ -292,16 +292,16 @@ curl -X POST \
 * [Spring - OAuth 2 Developers Guide](https://projects.spring.io/spring-security-oauth/docs/oauth2.html)
 * [How to Secure REST API using Spring Security and OAuth2 – part 3](http://sivatechlab.com/secure-rest-api-using-spring-security-oauth2-part-3/)
 
-  [1]: /uploads/images/oauth-password-response.png
-  [2]: /uploads/images/oauth-code-grant-1.png
-  [3]: /uploads/images/oauth-code-grant-2.png
-  [4]: /uploads/images/oauth-code-grant-3.png
-  [5]: /uploads/images/oauth-code-grant-4.png
-  [6]: /uploads/images/oauth-code-grant-5.png
-  [7]: /uploads/images/oauth-code-grant-6.png
-  [8]: /uploads/images/oauth-request-resource.png
-  [9]: /uploads/images/oauth-postman-request-token.png
-  [10]: /uploads/images/oauth-postman-client.png
+  [1]: /blog/uploads/images/oauth-password-response.png
+  [2]: /blog/uploads/images/oauth-code-grant-1.png
+  [3]: /blog/uploads/images/oauth-code-grant-2.png
+  [4]: /blog/uploads/images/oauth-code-grant-3.png
+  [5]: /blog/uploads/images/oauth-code-grant-4.png
+  [6]: /blog/uploads/images/oauth-code-grant-5.png
+  [7]: /blog/uploads/images/oauth-code-grant-6.png
+  [8]: /blog/uploads/images/oauth-request-resource.png
+  [9]: /blog/uploads/images/oauth-postman-request-token.png
+  [10]: /blog/uploads/images/oauth-postman-client.png
 
 
 

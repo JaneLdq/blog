@@ -135,8 +135,8 @@ RDT 3.0 综合以上四类机制实现了可靠的数据传输，然而作为一
 * Computer Networking: A Top-Down Approach, 7th Edition
 * 计算机网络，第五版
 
-[1]:/uploads/images/rdt-1.svg
-[2]:/uploads/images/rdt-2.svg
-[3]:/uploads/images/rdt-2-1-sender.svg
-[4]:/uploads/images/rdt-2-1-receiver.svg
-[5]:/uploads/images/rdt-3-sender.svg
+[1]:/blog/uploads/images/rdt-1.svg
+[2]:/blog/uploads/images/rdt-2.svg
+[3]:/blog/uploads/images/rdt-2-1-sender.svg
+[4]:/blog/uploads/images/rdt-2-1-receiver.svg
+[5]:/blog/uploads/images/rdt-3-sender.svg

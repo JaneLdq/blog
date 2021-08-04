@@ -91,7 +91,7 @@ CA 负责颁发证书，但不可能全球用户的证书都由一个 CA 来颁�
 * [Public key infrastucture](https://en.wikipedia.org/wiki/Public_key_infrastructure)
 
 
-[1]:/uploads/images/kdc.svg
-[2]:/uploads/images/wiki-cert.png
-[3]:/uploads/images/intermediate-ca.png
-[4]:/uploads/images/root-ca.png
+[1]:/blog/uploads/images/kdc.svg
+[2]:/blog/uploads/images/wiki-cert.png
+[3]:/blog/uploads/images/intermediate-ca.png
+[4]:/blog/uploads/images/root-ca.png

@@ -98,4 +98,4 @@ Web 服务器上的每一个 Web 应用都关联了一个 `ServletContext` 实�
 **参考资料**
 * Java Servlet Specification 4.0
 
-[1]:/uploads/images/java-servlet.svg
+[1]:/blog/uploads/images/java-servlet.svg
