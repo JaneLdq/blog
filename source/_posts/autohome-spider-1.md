@@ -194,8 +194,8 @@ class FeedbacksSpider(scrapy.Spider):
   [7]: https://k.autohome.com.cn/detail/view_01c2dazamh64w3ae1n6wsg0000.html
   [8]: https://scrapy.org/
   [9]: http://static.zybuluo.com/JaneL/qcslb6i8nj91kikp66g0joup/spider-structure.PNG
-  [10]: http://static.zybuluo.com/JaneL/4un9ajhraio6l92ckqu9wdp4/get_car_list_api.PNG
-  [11]: http://static.zybuluo.com/JaneL/7ehin4n9z6jelk6is6oc75mm/get_car_list_api_result.PNG
+  [10]: /blog/uploads/images/get_car_list_api.PNG
+  [11]: /blog/uploads/images/get_car_list_api_result.PNG
   [12]: https://www.w3.org/TR/selectors/
   [13]: https://www.w3.org/TR/xpath/
   [14]: https://chrome.google.com/webstore/detail/selectorgadget/mhjhnkcfbdhnjickkkdbjoemdmbfginb

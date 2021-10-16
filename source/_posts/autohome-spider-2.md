@@ -134,6 +134,6 @@ meta_no_redirect = {
   [2]: http://litten.me/2014/09/26/history-of-browser-useragent/
   [3]: https://tools.ietf.org/html/rfc2616#section-10.3.3
   [4]: https://tools.ietf.org/html/rfc1945
-  [5]: http://static.zybuluo.com/JaneL/94dvbnt1g36lrh8nddrusb3q/response_header.PNG
-  [6]: http://static.zybuluo.com/JaneL/xz9stzk5abid981x913s7bis/image.png
+  [5]: /blog/uploads/images/response_header.PNG
+  [6]: /blog/uploads/images/image.png
   [7]: https://doc.scrapy.org/en/latest/topics/spider-middleware.html#std:reqmeta-handle_httpstatus_list

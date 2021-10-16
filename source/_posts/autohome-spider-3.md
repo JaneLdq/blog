@@ -267,14 +267,14 @@ def run_js( js):
 * [PyV8安装记录][15]
 
 
-  [1]: http://static.zybuluo.com/JaneL/d9b7zs0268c0vgvtm7hcl3h7/css_font_example.PNG
-  [2]: http://static.zybuluo.com/JaneL/ahs4skde5r5ie22ubrcj2nnk/font-face.PNG
-  [3]: http://static.zybuluo.com/JaneL/t4a3becpdqn2in71v6gz74gj/font-example.PNG
+  [1]: /blog/uploads/images/css_font_example.PNG
+  [2]: /blog/uploads/images/font-face.PNG
+  [3]: /blog/uploads/images/font-example.PNG
   [4]: https://github.com/fonttools/fonttools
   [5]: http://www.high-logic.com/font-editor/fontcreator.html
   [6]: https://github.com/fonttools/fonttools
-  [7]: http://static.zybuluo.com/JaneL/vbxz2ib9jln7lqkrmpsfln6w/js_block.PNG
-  [8]: http://static.zybuluo.com/JaneL/pgbcxh0zupzi6cf6vaxkt7si/js_replace.PNG
+  [7]: /blog/uploads/images/js_block.PNG
+  [8]: /blog/uploads/images/js_replace.PNG
   [9]: https://my.oschina.net/u/854530/blog/853808
   [10]: https://blog.csdn.net/zz153417230/article/details/79087170
   [11]: https://github.com/sbilly/pyv8/issues/248
