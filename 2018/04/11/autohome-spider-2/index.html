@@ -87,10 +87,10 @@
 <meta property="og:description" content="在上一篇文章中，基于Scrapy的爬虫的架子已经搭起来了，满心欢喜以为虫子能跑起来了，结果发现高兴得太早噢~ 写程序没有bug那还有什么乐趣？与八阿哥斗，其乐无穷啊！下面，就来看看八阿哥都使出了哪些招数吧~  Headers即使网站的页面都是对公众开放随意访问的，但是对于原始数据，很多网站如果没有公开API那就是不愿意轻易让大家获取的了。对于基本的robot或是真实用户的访问，通过HTTP请求的h">
 <meta property="og:locale">
 <meta property="og:image" content="http://static.zybuluo.com/JaneL/ynfga9s8melz5yq5y2nesfm7/headers.PNG">
-<meta property="og:image" content="http://static.zybuluo.com/JaneL/94dvbnt1g36lrh8nddrusb3q/response_header.PNG">
-<meta property="og:image" content="http://static.zybuluo.com/JaneL/xz9stzk5abid981x913s7bis/image.png">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/response_header.PNG">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/image.png">
 <meta property="article:published_time" content="2018-04-11T13:05:47.000Z">
-<meta property="article:modified_time" content="2021-08-04T10:07:48.609Z">
+<meta property="article:modified_time" content="2021-10-16T11:19:35.757Z">
 <meta property="article:author" content="Jane Liao">
 <meta property="article:tag" content="爬虫">
 <meta name="twitter:card" content="summary">
@@ -388,12 +388,12 @@
 <hr>
 <h3 id="cookie不能丢"><a href="#cookie不能丢" class="headerlink" title="cookie不能丢"></a>cookie不能丢</h3><p>写好爬虫第一次启动时，就掉进了一个坑。从浏览器访问口碑详情页完全没问题，但是用scrapy访问的时候，就拿不到页面了，好奇怪。</p>
 <p>也是因为对HTTP请求访问不熟悉，用抓包工具大概折腾了一天，很仔细的对比了浏览器访问和用命令访问的请求过程，问题就出现在上一节提到的重定向过程里。</p>
-<p>再来仔细看看第一次302响应头里的内容：<br><img src="http://static.zybuluo.com/JaneL/94dvbnt1g36lrh8nddrusb3q/response_header.PNG" alt="302 Response Header"><br>这里高亮部分<code>Set-Cookie</code>非常重要，它里面包含了一个<em>autoac</em>值，看起来是个token之类的东西，总之如果丢了这个，之后即使重定向也不能正常拿到页面了。</p>
+<p>再来仔细看看第一次302响应头里的内容：<br><img src="/blog/uploads/images/response_header.PNG" alt="302 Response Header"><br>这里高亮部分<code>Set-Cookie</code>非常重要，它里面包含了一个<em>autoac</em>值，看起来是个token之类的东西，总之如果丢了这个，之后即使重定向也不能正常拿到页面了。</p>
 <p>我们可以用curl命令看看详细的过程，以如下命令为例：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -L -v -b -i  &#x27;https://k.autohome.com.cn/detail/view_01bz95vp0d64w30e9h70sg0000.html&#x27;</span><br></pre></td></tr></table></figure><br>参数说明：</p>
 <ul>
 <li><code>-L</code>开启重定向，否则会直接返回302的结果，不会再继续访问重定向URL</li>
 <li><code>-b</code>也是这个问题的关键了，允许将之前收到的响应头中的<code>Set-Cookie</code>的值加到后续请求头中</li>
-<li><code>-i</code>,<code>-v</code>主要是为了查看请求头和响应头。<br>调用结果部分截图如下，可以看到第二次的重定向请求带上了cookie，这样服务器就会再次重定向回原URL，最终获取到页面。如果不带<code>-b</code>参数，就会重定向循坏，最终被服务器判断为爬虫，重定向到用户验证界面结束。<br><img src="http://static.zybuluo.com/JaneL/xz9stzk5abid981x913s7bis/image.png" alt="curl-header-detail"></li>
+<li><code>-i</code>,<code>-v</code>主要是为了查看请求头和响应头。<br>调用结果部分截图如下，可以看到第二次的重定向请求带上了cookie，这样服务器就会再次重定向回原URL，最终获取到页面。如果不带<code>-b</code>参数，就会重定向循坏，最终被服务器判断为爬虫，重定向到用户验证界面结束。<br><img src="/blog/uploads/images/image.png" alt="curl-header-detail"></li>
 </ul>
 <p>找到根本原因了，再来看看在Scrapy里我们要怎么修改代呢？<br>Scrapy默认不会处理非2xx的响应，因此跑之前的代码会导致什么都拿不到，为了让scrapy的spider处理30x在FeedbacksSpider类中添加如下参数，然后scrapy就会帮我们做好重定向以及set cookie的工作了。（详细介绍参见<a target="_blank" rel="noopener" href="https://doc.scrapy.org/en/latest/topics/spider-middleware.html#std:reqmeta-handle_httpstatus_list">Scrapy文档</a>）:<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">meta_no_redirect = &#123;</span><br><span class="line">    &#x27;handle_httpstatus_list&#x27;: [302, 404]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <hr>

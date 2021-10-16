@@ -87,10 +87,10 @@
 <meta property="og:description" content="在这个阳光明媚的周末下午，我决定写一篇笔记纪念一下我写第二只爬虫的心路历程，毕竟苦苦挣扎了将近一个月呢。 以下为本人的碎碎念，看正文可直接跳过去下一小节了~ 为什么是第二只呢，因为第一只虫子头脑简单四肢发达，顺利出生在狗年春节之前。那是在我还是一个彻头彻尾的爬虫小白的时候，在老司机们的推荐下用框架Scrapy以汽车之家-搜索文章页面为入口写了一个简单的以关键词为输入爬取搜索结果页面的爬虫，这个过程">
 <meta property="og:locale">
 <meta property="og:image" content="http://static.zybuluo.com/JaneL/qcslb6i8nj91kikp66g0joup/spider-structure.PNG">
-<meta property="og:image" content="http://static.zybuluo.com/JaneL/4un9ajhraio6l92ckqu9wdp4/get_car_list_api.PNG">
-<meta property="og:image" content="http://static.zybuluo.com/JaneL/7ehin4n9z6jelk6is6oc75mm/get_car_list_api_result.PNG">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/get_car_list_api.PNG">
+<meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/get_car_list_api_result.PNG">
 <meta property="article:published_time" content="2018-04-08T07:56:39.000Z">
-<meta property="article:modified_time" content="2021-08-04T10:07:48.609Z">
+<meta property="article:modified_time" content="2021-10-16T11:19:35.757Z">
 <meta property="article:author" content="Jane Liao">
 <meta property="article:tag" content="爬虫">
 <meta name="twitter:card" content="summary">
@@ -373,8 +373,8 @@
 </ol>
 <hr>
 <h3 id="创建spider"><a href="#创建spider" class="headerlink" title="创建spider"></a>创建spider</h3><p>数据结构定义好了，存储也搞定了，现在就剩下最关键的一步——<strong>数据爬取</strong>。不要方，有了Scrapy，数据爬取也变得超简单~<br>在<strong>spiders</strong>文件夹下创建<strong>feedbacks_spider.py</strong>，里面定义<em>FeedbacksSpider</em>类继承自<em>scrapy.Spider</em>类，实现具体的爬虫逻辑。按照上文提到的爬虫思路，这个类主要定义了三个方法：</p>
-<h4 id="def-start-requests"><a href="#def-start-requests" class="headerlink" title="def start_requests"></a>def start_requests</h4><p>这是Spider类的入口方法，按照最初的思路，这个方法只需要返回一个<em>Request</em>，url=<a target="_blank" rel="noopener" href="https://k.autohome.com.cn">https://k.autohome.com.cn</a> ，然后交给一个callback解析获取跳转到所有车系的link，但是实际操作时，我并没有这样做。在访问这个url时，我发现戳不同的筛选条件，网站都会发送一个ajax请求调用一个API，如下图所示：<br><img src="http://static.zybuluo.com/JaneL/4un9ajhraio6l92ckqu9wdp4/get_car_list_api.PNG" alt="get_car_list_api.PNG-49.7kB"></p>
-<p>使用postman访问这个API-<a target="_blank" rel="noopener" href="https://k.autohome.com.cn/ajax/getSceneSelectCar?minprice=2&amp;maxprice=110&amp;_appid=koubei&amp;level=3">https://k.autohome.com.cn/ajax/getSceneSelectCar?minprice=2&amp;maxprice=110&amp;_appid=koubei&amp;level=3</a> ，可以得到一个JSON对象，如下图所示：<br><img src="http://static.zybuluo.com/JaneL/7ehin4n9z6jelk6is6oc75mm/get_car_list_api_result.PNG" alt="get_car_list_api_result.PNG-21kB"></p>
+<h4 id="def-start-requests"><a href="#def-start-requests" class="headerlink" title="def start_requests"></a>def start_requests</h4><p>这是Spider类的入口方法，按照最初的思路，这个方法只需要返回一个<em>Request</em>，url=<a target="_blank" rel="noopener" href="https://k.autohome.com.cn">https://k.autohome.com.cn</a> ，然后交给一个callback解析获取跳转到所有车系的link，但是实际操作时，我并没有这样做。在访问这个url时，我发现戳不同的筛选条件，网站都会发送一个ajax请求调用一个API，如下图所示：<br><img src="/blog/uploads/images/get_car_list_api.PNG" alt="get_car_list_api.PNG-49.7kB"></p>
+<p>使用postman访问这个API-<a target="_blank" rel="noopener" href="https://k.autohome.com.cn/ajax/getSceneSelectCar?minprice=2&amp;maxprice=110&amp;_appid=koubei&amp;level=3">https://k.autohome.com.cn/ajax/getSceneSelectCar?minprice=2&amp;maxprice=110&amp;_appid=koubei&amp;level=3</a> ，可以得到一个JSON对象，如下图所示：<br><img src="/blog/uploads/images/get_car_list_api_result.PNG" alt="get_car_list_api_result.PNG-21kB"></p>
 <p>这是result是一个list，里面返回了全部符合筛选条件的车系的基本信息，你会发现，高亮部分的<strong>SeriesId</strong>对我们的爬虫非常有用，因为车系口碑列表页link长这样<code>https://k.autohome.com.cn/&#123;SeriesId&#125;</code>。</p>
 <p>有了这个发现，我们就不需要先爬取口碑入口页，再解析这个页面获取车系列表页链接，更新后的<strong>爬虫思路-Version 2</strong>：</p>
 <ol>
