@@ -88,7 +88,7 @@
 <meta property="og:locale">
 <meta property="og:image" content="http://liaodanqi.xyz/blog/uploads/images/congestion-control-network-layer.svg">
 <meta property="article:published_time" content="2020-03-16T10:58:29.000Z">
-<meta property="article:modified_time" content="2021-10-16T11:19:35.757Z">
+<meta property="article:modified_time" content="2022-08-17T14:41:08.487Z">
 <meta property="article:author" content="Jane Liao">
 <meta property="article:tag" content="拥塞控制">
 <meta name="twitter:card" content="summary">
@@ -352,8 +352,7 @@
 <li>当一个数据包传到一半时被丢弃了，则在这之前消耗的资源都被浪费了</li>
 </ul>
 <p>知道了症状，也知道了病因，才好积极预防、对症下药嘛~</p>
-<p>网络拥塞的治疗方案由网络层和传输层协作实施，网络层作为直接经历拥塞的部分，需要它最终决定如何处理过载的数据；而传输层作为“幕后黑手”，要控制拥塞还需其积极配合。<br><!--more---></p>
-<hr>
+<p>网络拥塞的治疗方案由网络层和传输层协作实施，网络层作为直接经历拥塞的部分，需要它最终决定如何处理过载的数据；而传输层作为“幕后黑手”，要控制拥塞还需其积极配合。<br><span id="more"></span></p>
 <h1 id="网络层的拥塞控制"><a href="#网络层的拥塞控制" class="headerlink" title="网络层的拥塞控制"></a>网络层的拥塞控制</h1><p>那我们先来看看在网络层，有哪些方法可用于拥塞控制。<br>拥塞的发生表明<strong>当前的网络负载大于资源可以处理的能力</strong>，显然，解决方案有两个方向，<strong>减少负载</strong>或<strong>增加资源</strong>。<br>下图展示了主要的几种解决方案，从左至右，解决方案的反应时间由慢变快。左侧属于预防性措施，一般要经历长期过程；右侧则属于应急响应，效果立竿见影。<br>打个比方，若是应对感冒，最左好比锻炼身体增强免疫力，最右好比退烧针。</p>
 <p><img src="/blog/uploads/images/congestion-control-network-layer.svg" alt="congestion-control-network-layer"></p>
 <hr>
@@ -626,7 +625,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

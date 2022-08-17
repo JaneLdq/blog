@@ -1690,8 +1690,7 @@
 
       
         
-          
-            <p>我们之前提到网络传输的两大基本问题，一个是「如何提供可靠的数据传输」，这个问题我们在前面的笔记中已经给出了指南，本文将解答第二个问题「如何避免网络拥塞以及在拥塞发生时如何恢复」。</p>
+          <p>我们之前提到网络传输的两大基本问题，一个是「如何提供可靠的数据传输」，这个问题我们在前面的笔记中已经给出了指南，本文将解答第二个问题「如何避免网络拥塞以及在拥塞发生时如何恢复」。</p>
 <p>什么是网络拥塞？<strong>当网络中存在太多的流量导致数据包被延迟或丢失，从而降低了网络性能</strong>，这种情况就被称之为网络拥塞。</p>
 <p>病名：<strong>网络拥塞</strong><br>早期症状：消化不良 —— 过度延迟、<strong>丢包</strong><br>晚期后果：瘫痪 —— <strong>拥塞崩溃 (congestion collapse)</strong>，因负载过重超出了网络承受能力，导致网络性能骤降<br>病因：被投喂过多 —— <strong>发送方发送速率太快，导致路由器缓冲区溢出</strong><br>不良影响：</p>
 <ul>
@@ -1699,68 +1698,14 @@
 <li>当一个数据包传到一半时被丢弃了，则在这之前消耗的资源都被浪费了</li>
 </ul>
 <p>知道了症状，也知道了病因，才好积极预防、对症下药嘛~</p>
-<p>网络拥塞的治疗方案由网络层和传输层协作实施，网络层作为直接经历拥塞的部分，需要它最终决定如何处理过载的数据；而传输层作为“幕后黑手”，要控制拥塞还需其积极配合。<br><!--more---></p>
-<hr>
-<h1 id="网络层的拥塞控制"><a href="#网络层的拥塞控制" class="headerlink" title="网络层的拥塞控制"></a>网络层的拥塞控制</h1><p>那我们先来看看在网络层，有哪些方法可用于拥塞控制。<br>拥塞的发生表明<strong>当前的网络负载大于资源可以处理的能力</strong>，显然，解决方案有两个方向，<strong>减少负载</strong>或<strong>增加资源</strong>。<br>下图展示了主要的几种解决方案，从左至右，解决方案的反应时间由慢变快。左侧属于预防性措施，一般要经历长期过程；右侧则属于应急响应，效果立竿见影。<br>打个比方，若是应对感冒，最左好比锻炼身体增强免疫力，最右好比退烧针。</p>
-<p><img src="/blog/uploads/images/congestion-control-network-layer.svg" alt="congestion-control-network-layer"></p>
-<hr>
-<h2 id="网络供给-Provisioning"><a href="#网络供给-Provisioning" class="headerlink" title="网络供给 Provisioning"></a>网络供给 Provisioning</h2><p>当出现严重拥塞时，通过动态增加网络资源疏通流量，比如使用备用路由器或者购买更多的带宽等；平时及时对经常使用的链路和路由器升级；<br>这些或临时或日常的操作统称为供给（provisioning），目的是建立一个与流量良好匹配的网络，网络供给通常在长期流量趋势的推动下需要几个月的时间来调整和完善。</p>
-<hr>
-<h2 id="流量感知的路由-Traffic-aware-routing"><a href="#流量感知的路由-Traffic-aware-routing" class="headerlink" title="流量感知的路由 Traffic-aware routing"></a>流量感知的路由 Traffic-aware routing</h2><p>为了充分利用现有的网络容量，<strong>根据每天的流量模式定制路由</strong>，就被称为流量感知的路由(traffic-aware routing)。<br>以全球范围为例，不同时区的用户醒着和睡觉的时间不同，不同地区的流量在不同时间段也是不同的。通过改变最短路径的权重可以更改数据包的路由，以达到使流量远离频繁使用的路径的目的。<br>一种简单的链路权重计算方法为将其设为一个固定链路带宽、传输延迟、可变测量负载或平均排队延迟的函数，然而这种方式由于引入了可变的负载/排队延迟，很容易造成路由振荡。</p>
-<p>举个例子，假设有两条链路 A 和 B：</p>
-<ol>
-<li>一开始，链路 A 经过计算为大部分流量所选择的最短路径，后续流量都选择路径 A；</li>
-<li>一段时间后，链路 A 由于负载变重延迟变大，链路 B 更具有吸引力，后续流量选择路由 B；</li>
-<li>同理，又过了一段时间，链路 B 由于负载变重延迟变大，而链路 A 的负载因为被 B 分流而得到了缓解，后续流量更倾向于选择 A；</li>
-<li>如此摇摆，路由表可能一直处于振荡状态，从而导致不稳定的路由和其他问题</li>
-</ol>
-<p>因为这些问题的存在，Internet 路由协议通常不依赖于负载来调整自己的路由，而是在路由协议外部通过慢慢改变它的输入来调整路由，即所谓的<strong>流量工程(traffic engineering)</strong>。</p>
-<hr>
-<h2 id="准入控制-Admission-control"><a href="#准入控制-Admission-control" class="headerlink" title="准入控制 Admission control"></a>准入控制 Admission control</h2><p>很多时候，我们不是想增加资源就能增加的，这个时候，就只能降低负载了。<strong>准入控制</strong>的思想那是相当的简单：<strong>如果新增的连接将导致网络拥塞，那就拒绝建立新连接。</strong><br>一个萝卜一个坑，拒绝超载。</p>
-<hr>
-<h2 id="流量控制-Traffic-Control"><a href="#流量控制-Traffic-Control" class="headerlink" title="流量控制 Traffic Control"></a>流量控制 Traffic Control</h2><p>拥塞的发生通常是因为发送方传输速度过快导致，如果能有方法动态调节流量，使得拥塞发生之前网络能正常高效地工作，而在拥塞迫在眉睫之时通知发送方降低传输速度就好了。<br>要实现流量控制，主要解决两个问题：</p>
-<ul>
-<li><strong>路由器如何确定即将发生拥塞？</strong></li>
-<li><strong>路由器如何把信息反馈给造成拥塞的发送方？</strong></li>
-</ul>
-<hr>
-<h3 id="如何确定拥塞即将发生"><a href="#如何确定拥塞即将发生" class="headerlink" title="如何确定拥塞即将发生"></a>如何确定拥塞即将发生</h3><p>路由器可以监测的资源数据包括：</p>
-<ul>
-<li><del>输出线路的利用率</del> - 平均利用率没有考虑突发的流量</li>
-<li><del>因缓冲区溢出而丢失的数据包数量</del> - 因此丢包的计数来得太晚，丢包发生时，拥塞已经形成</li>
-<li><strong>在路由器缓冲区内排队的数据包</strong> - 通过数据包的排队延迟可以及时反映拥塞情况，排队延迟大部分时间应该很低，当突发流量产生积压时会跳跃。</li>
-</ul>
-<p>通常，会使用<strong>指数加权移动平均 (EWMA, Exponentially Weighted Moving Average)</strong>来估计排队延迟 <code>d</code>，<code>s</code> 表示某个瞬时队列长度，常数 <code>α</code> 决定路由器多快忘记最近的历史：<br>$$d_{new}=\alpha \, d_{old} + (1-\alpha) s$$<br>当 <code>d</code> 升高到某个阈值之上，就表示拥塞可能要发生了。</p>
-<hr>
-<h3 id="路由器如何把拥塞信息反馈给发送方"><a href="#路由器如何把拥塞信息反馈给发送方" class="headerlink" title="路由器如何把拥塞信息反馈给发送方"></a>路由器如何把拥塞信息反馈给发送方</h3><p>主要有如下几种方式：</p>
-<h4 id="抑制包-Choke-packet"><a href="#抑制包-Choke-packet" class="headerlink" title="抑制包 Choke packet"></a>抑制包 Choke packet</h4><p>当拥塞发生时，路由器选择一个被拥塞的数据包，给该数据包的源主机返回一个<strong>抑制包 (choke packet)</strong>，同时路由器会在原来的拥塞数据包上添加一个标记，这样这个数据包在后续转发的路径上不会产生更多的抑制包。当源主机收到抑制包后必须减少发送给目标主机的流量。</p>
-<h4 id="显式拥塞通知-Explicit-Congestion-Notification"><a href="#显式拥塞通知-Explicit-Congestion-Notification" class="headerlink" title="显式拥塞通知 Explicit Congestion Notification"></a>显式拥塞通知 Explicit Congestion Notification</h4><p>当拥塞发生时，路由器在它转发的任何数据包上设置某个标志位发出信号，表明发生了拥塞。接收方收到后在应答时顺便将拥塞的消息告知发送方。这种方式被称为显式拥塞通知，Internet 用的就是这种方式。</p>
-<h4 id="逐跳后压"><a href="#逐跳后压" class="headerlink" title="逐跳后压"></a>逐跳后压</h4><p>当网络速度很快或者距离很远时，由于传输延迟，拥塞信号发出后到它产生作用期间又产生了很多新流量。有一种改进方法是让抑制信号在每一跳都发挥作用。这种方式可以很快缓解拥塞点的拥塞现象，不过代价是其上游路径需要消耗更多的缓冲区空间。<br>这种方法可以将拥塞消灭在萌芽状态。</p>
-<hr>
-<h2 id="减载-Load-shedding"><a href="#减载-Load-shedding" class="headerlink" title="减载 Load shedding"></a>减载 Load shedding</h2><p>当以上方法都没有办法消除拥塞时，就只能用最直接粗暴的方案了：当路由器来不及处理数据包时，就直接丢弃。<br>问题在于：丢弃哪些数据包呢？</p>
-<p>一种最简单的方式就是<strong>尾丢弃 (drop-tail)</strong>，顾名思义，队尾新来的放不下的数据包会被丢弃。</p>
-<p>然而，在某些情况下，这并不是一种好的丢弃策略。考虑到应用程序的类型，不同时刻到达的数据包其重要性并不是一样的。<br>举几个例子：</p>
-<ul>
-<li>对于文件传输 - 旧数据包比新数据包重要，如果丢弃数据包6，而保存7-9，则会迫使接收方缓存这些暂时不能使用的数据</li>
-<li>对于实时流媒体 - 新的数据包要比旧的重要</li>
-</ul>
-<p>因此，在选择丢弃数据包的时候考虑应用程序的类型是一种相对更好的方式。如果要实现更智能的丢包策略，则还需要应用程序的参与，比如要求它们为每个数据包标记其重要性，路由器根据这个值来决定丢弃哪些数据包。</p>
-<p>一般来说，在拥塞苗头刚刚出现时及时扼杀比等它发生之后再处理更有效。因此，在路由器缓冲区用尽之前提前丢包或者标记以给发送方发出拥塞的信号不失为一种有用的预防机制。</p>
-<p>事实上，已经有很多主动性的丢包/标记策略被提出，统称为<strong>主动队列管理 (Active Queue Management, AQM) 算法</strong>。下文提到的<strong>随机早期检测 (RED)</strong> 是其中应用最广泛的算法之一。</p>
-<hr>
-<h3 id="随机早期检测-Random-Early-Detection"><a href="#随机早期检测-Random-Early-Detection" class="headerlink" title="随机早期检测 Random Early Detection"></a>随机早期检测 Random Early Detection</h3><p><strong>随机早期检测</strong>提供了一种确定“提前”丢包的时间点的方式：路由器维护一个队列长度的平均值，当平均队列长度超过某个阈值时，该链路就被认为拥塞，路由器会随机丢一部分数据包。随机选择使得传输速度较快的发送方发现丢包的可能性更大。当没有出现期待的应答时，发送方会发现丢包，然后传输协议将放慢速度。在这里，丢失的数据包起到了抑制包的作用，但却是隐含的，不需要路由器发送任何显式信号。</p>
-<p>RED 最早由 Floyd 和 Jacobson 在 1993 年提出，后来又出现了不少基于 RED 的改进算法，比如 <strong><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Weighted_random_early_detection">Weighted Random Early Detection (WRED)</a></strong>、<strong><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Robust_random_early_detection">Robust Random Early Detection (RRED)</a></strong> 等。</p>
-<p>除此之外，还有很多其他的 AQM 算法，更多有关 AQM 可见其 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Active_queue_management">Wiki - Active Queue Management</a>。</p>
-<hr>
-<p>到此为止，我们总结了几种主要的网络层采用的拥塞控制机制，那么传输层的拥塞控制又需要做些什么呢？<br>未完待续…</p>
-<p><strong>参考资料</strong></p>
-<ul>
-<li>计算机网络，第五版</li>
-<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Network_congestion">Wikipedia - Network Congestion</a></li>
-<li>Computer Networking: A Top-Down Approach, 7th Edition</li>
-</ul>
-
-          
+<p>网络拥塞的治疗方案由网络层和传输层协作实施，网络层作为直接经历拥塞的部分，需要它最终决定如何处理过载的数据；而传输层作为“幕后黑手”，要控制拥塞还需其积极配合。<br>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/blog/2020/03/16/congestion-control-1/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -1923,7 +1868,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2021</span>
+        <div class="copyright">&copy; 2015 &mdash; <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
